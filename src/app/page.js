@@ -14,7 +14,6 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>🗓️ 월별 일정표</h1>
         <Calendar />
       </main>
     </div>

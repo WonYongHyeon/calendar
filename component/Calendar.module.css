@@ -7,7 +7,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 25px var(--shadow-color);
   overflow: hidden;
-  margin-top: 2rem;
+  margin: 1rem auto;
 }
 
 .calendarHeader {
@@ -106,11 +106,23 @@
 }
 
 .eventItem {
-  background-color: var(--secondary-color);
-  color: white;
-  padding: 3px 6px;
+  background-color: #e0f2f1;
+  color: #388e3c;
+  padding: 2px 4px;
   border-radius: 4px;
-  margin-bottom: 4px;
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventItemImportant {
+  background-color: #ffb74d;
+  color: #fff;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.8em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -187,7 +199,7 @@
   margin-bottom: 20px;
 }
 
-.eventListModal li {
+/* .eventListModal li {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -195,7 +207,7 @@
   padding: 8px 12px;
   border-radius: 5px;
   margin-bottom: 5px;
-}
+} */
 
 .deleteEventBtn {
   background: none;
@@ -263,4 +275,109 @@
 
 .saveBtn:hover {
   background-color: #27ae60;
+}
+
+/* 모달 전용 리스트 아이템 스타일 */
+.eventListItem {
+  background-color: #02fdff; /* 연한 초록색 */
+  color: #111;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.importantEventListItem {
+  background-color: #faee7b; /* 주황색 */
+  color: #111;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 슬라이딩 토글 버튼 스타일 */
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 45px;
+  height: 25px;
+  margin: auto;
+}
+
+.toggleSwitch input {
+  opacity: 0; /* 체크박스를 숨김 */
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  border-radius: 25px; /* 둥근 모서리 */
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  border-radius: 50%; /* 원형 슬라이더 */
+}
+
+input:checked + .slider {
+  background-color: #ffb74d; /* 체크되면 주황색으로 변경 */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #ffb74d;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px); /* 체크되면 오른쪽으로 이동 */
+}
+
+/* 토글 레이블 스타일 (옵션) */
+.toggleLabel {
+  font-size: 0.9em;
+  color: #666;
+  margin: 0 10px;
+  align-self: center; /* 수직 정렬 */
+}
+
+/* 추가 스타일: 중요 체크박스 섹션 */
+.importantCheckbox {
+  display: flex;
+  align-items: center;
+}
+
+.modalTitle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0 10px;
+  font-weight: 600;
+  text-align: center;
+  margin: auto;
 }

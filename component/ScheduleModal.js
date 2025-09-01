@@ -1,22 +1,28 @@
 // components/ScheduleModal.js
 import { useState, useEffect } from "react";
-import styles from "./Calendar.module.css"; // 캘린더 CSS를 같이 사용
+import styles from "./Calendar.module.css";
 
 const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
   const [memo, setMemo] = useState("");
   const [newEvent, setNewEvent] = useState("");
+  const [isImportant, setIsImportant] = useState(false);
   const [isMemoEditing, setIsMemoEditing] = useState(false);
 
   useEffect(() => {
-    setEvents(data.events);
-    setMemo(data.memo);
+    setEvents(data.events || []);
+    setMemo(data.memo || "");
   }, [data]);
 
   const handleAddEvent = (e) => {
     if (e.key === "Enter" && newEvent.trim()) {
-      setEvents([...events, newEvent.trim()]);
+      const newEventItem = {
+        text: newEvent.trim(),
+        isImportant: isImportant,
+      };
+      setEvents([...events, newEventItem]);
       setNewEvent("");
+      setIsImportant(false);
     }
   };
 
@@ -42,19 +48,43 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
           </button>
         </div>
         <div className={styles.modalBody}>
-          <h4>🗓️ 일정 추가</h4>
-          <input
-            type="text"
-            className={styles.eventInput}
-            placeholder="일정을 입력하고 Enter를 누르세요"
-            value={newEvent}
-            onChange={(e) => setNewEvent(e.target.value)}
-            onKeyUp={handleAddEvent}
-          />
+          <div className={styles.modalTitle}>
+            <h4>🗓️ 일정 추가</h4>
+            <div>
+              <span className={styles.toggleLabel}>아침</span>
+              <label className={styles.toggleSwitch}>
+                <span className={styles.slider}></span>
+                <input
+                  type="checkbox"
+                  checked={isImportant}
+                  onChange={(e) => setIsImportant(e.target.checked)}
+                />
+                <span className={styles.slider}></span>
+              </label>
+              <span className={styles.toggleLabel}>저녁</span>
+            </div>
+          </div>
+          <div className={styles.addEventRow}>
+            <input
+              type="text"
+              className={styles.eventInput}
+              placeholder="일정을 입력하고 Enter를 누르세요"
+              value={newEvent}
+              onChange={(e) => setNewEvent(e.target.value)}
+              onKeyUp={handleAddEvent}
+            />
+          </div>
           <ul className={styles.eventListModal}>
             {events.map((event, index) => (
-              <li key={index}>
-                {event}
+              <li
+                key={index}
+                className={
+                  event.isImportant
+                    ? styles.importantEventListItem
+                    : styles.eventListItem
+                }
+              >
+                {event.text}
                 <button
                   className={styles.deleteEventBtn}
                   onClick={() => handleDeleteEvent(index)}

@@ -1,3 +1,4 @@
+// components/Calendar.js
 import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
@@ -5,11 +6,10 @@ import ScheduleModal from "./ScheduleModal";
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduleData, setScheduleData] = useState({});
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
 
-  // 컴포넌트가 처음 렌더링될 때 DB에서 데이터 불러오기
   useEffect(() => {
     const fetchSchedules = async () => {
       setIsLoading(true);
@@ -22,7 +22,6 @@ const Calendar = () => {
         setScheduleData(data);
       } catch (error) {
         console.error("Failed to fetch schedules from API:", error);
-        // 사용자에게 에러를 알리는 UI를 추가할 수도 있습니다.
       }
       setIsLoading(false);
     };
@@ -51,7 +50,6 @@ const Calendar = () => {
     setSelectedDate(null);
   };
 
-  // 서버 API로 데이터를 전송하여 저장하는 함수
   const handleSaveSchedule = async (dateStr, newEvents, newMemo) => {
     const optimisticData = { ...scheduleData };
     if (newEvents.length === 0 && !newMemo.trim()) {
@@ -59,7 +57,6 @@ const Calendar = () => {
     } else {
       optimisticData[dateStr] = { events: newEvents, memo: newMemo };
     }
-    // UI를 즉시 업데이트 (사용자 경험 향상)
     setScheduleData(optimisticData);
     handleCloseModal();
 
@@ -80,11 +77,9 @@ const Calendar = () => {
       }
     } catch (error) {
       console.error("Failed to save schedule to API:", error);
-      // 에러 발생 시 UI를 원래 데이터로 되돌리는 로직을 추가할 수 있습니다.
     }
   };
 
-  // 헤더 렌더링 (월/년, 네비게이션)
   const renderHeader = () => {
     return (
       <div className={styles.calendarHeader}>
@@ -101,7 +96,6 @@ const Calendar = () => {
     );
   };
 
-  // 요일 이름 렌더링
   const renderDays = () => {
     const days = ["일", "월", "화", "수", "목", "금", "토"];
     return (
@@ -115,7 +109,6 @@ const Calendar = () => {
     );
   };
 
-  // 날짜 셀 렌더링
   const renderCells = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -123,8 +116,6 @@ const Calendar = () => {
     const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
 
     const cells = [];
-
-    // 이전 달 날짜
     for (let i = 0; i < firstDayOfMonth; i++) {
       cells.push(
         <div
@@ -134,17 +125,16 @@ const Calendar = () => {
       );
     }
 
-    // 현재 달 날짜
     for (let day = 1; day <= lastDateOfMonth; day++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
-        day
-      ).padStart(2, "0")}`;
+      const date = new Date(year, month, day);
+      const dateStr = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const today = new Date();
       const isToday =
         day === today.getDate() &&
         month === today.getMonth() &&
         year === today.getFullYear();
-
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
       const maxEventsToShow = 2;
@@ -157,22 +147,23 @@ const Calendar = () => {
         >
           <div className={styles.dateNum}>{day}</div>
           <div className={styles.eventsList}>
-            {events.slice(0, maxEventsToShow).map((event, i) => (
-              <div key={i} className={styles.eventItem}>
-                {event}
+            {events.map((event, i) => (
+              <div
+                key={i}
+                className={
+                  event.isImportant
+                    ? styles.eventItemImportant
+                    : styles.eventItem
+                }
+              >
+                {event.text}
               </div>
             ))}
-            {events.length > maxEventsToShow && (
-              <div className={styles.moreEvents}>
-                +{events.length - maxEventsToShow}개 더보기
-              </div>
-            )}
           </div>
         </div>
       );
     }
 
-    // 다음 달 날짜 (마지막 줄 채우기)
     while (cells.length % 7 !== 0) {
       cells.push(
         <div
@@ -189,7 +180,6 @@ const Calendar = () => {
     <div className={styles.calendarContainer}>
       {renderHeader()}
       {renderDays()}
-      {/* 로딩 중일 때와 아닐 때를 구분하여 렌더링 */}
       {isLoading ? (
         <div
           className={styles.calendarGrid}
