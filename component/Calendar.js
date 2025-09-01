@@ -82,13 +82,28 @@ const Calendar = () => {
     setSelectedDate(null);
   };
 
-  const handleSaveSchedule = async (dateStr, newEvents, newMemo) => {
+  const handleSaveSchedule = async (
+    dateStr,
+    newEvents,
+    newMemo,
+    isBreakDay
+  ) => {
     const optimisticData = { ...scheduleData };
-    if (newEvents.length === 0 && !newMemo.trim()) {
-      delete optimisticData[dateStr];
+
+    if (isBreakDay) {
+      optimisticData[dateStr] = { events: [], memo: newMemo, isBreakDay: true };
     } else {
-      optimisticData[dateStr] = { events: newEvents, memo: newMemo };
+      if (newEvents.length > 0 || newMemo.trim()) {
+        optimisticData[dateStr] = {
+          events: newEvents,
+          memo: newMemo,
+          isBreakDay: false,
+        };
+      } else {
+        delete optimisticData[dateStr];
+      }
     }
+
     setScheduleData(optimisticData);
     handleCloseModal();
 
@@ -104,6 +119,7 @@ const Calendar = () => {
             date: dateStr,
             events: newEvents,
             memo: newMemo,
+            isBreakDay: isBreakDay,
           }),
         }
       );
@@ -115,7 +131,6 @@ const Calendar = () => {
     }
   };
 
-  // 기존 renderHeader() 함수를 아래와 같이 변경합니다.
   const renderHeader = () => {
     return (
       <div className={styles.calendarHeader}>
@@ -178,36 +193,35 @@ const Calendar = () => {
         year === today.getFullYear();
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
+      const memo = cellData ? cellData.memo : "";
 
-      // 변경된 부분: 보여줄 일정의 최대 개수
+      const isBreakDayWithReason = cellData?.isBreakDay && memo.trim();
+      const isBreakDayWithoutReason = cellData?.isBreakDay && !memo.trim();
+
       const maxEventsToShow = 6;
 
       cells.push(
         <div
           key={dateStr}
-          className={`${styles.dateCell} ${isToday ? styles.today : ""}`}
+          className={`${styles.dateCell} ${isToday ? styles.today : ""} ${
+            cellData?.isBreakDay === true ? styles.breakDay : ""
+          }`}
           onClick={() => handleDateClick(dateStr)}
         >
           <div className={styles.dateNum}>{day}</div>
-          <div className={styles.eventsList}>
-            {/* 5개까지는 모두 표시 */}
-            {events.length <= 6 ? (
-              events.map((event, i) => (
-                <div
-                  key={i}
-                  className={
-                    event.isImportant
-                      ? styles.eventItemImportant
-                      : styles.eventItem
-                  }
-                >
-                  {event.text}
-                </div>
-              ))
-            ) : (
-              // 6개 이상일 경우, 4개만 보여주고 나머지는 더보기로 표시
-              <>
-                {events.slice(0, maxEventsToShow).map((event, i) => (
+          {/* 조건부 렌더링 수정 */}
+          {isBreakDayWithoutReason ? (
+            <div className={styles.breakMessage}>
+              <span className={styles.breakReasonTitle}>휴방</span>
+            </div>
+          ) : isBreakDayWithReason ? (
+            <div className={styles.breakReasonOnly}>
+              <p className={styles.breakReasonText}>{memo}</p>
+            </div>
+          ) : (
+            <div className={styles.eventsList}>
+              {events.length <= maxEventsToShow ? (
+                events.map((event, i) => (
                   <div
                     key={i}
                     className={
@@ -218,13 +232,28 @@ const Calendar = () => {
                   >
                     {event.text}
                   </div>
-                ))}
-                <div className={styles.moreEvents}>
-                  +{events.length - maxEventsToShow}개 더보기
-                </div>
-              </>
-            )}
-          </div>
+                ))
+              ) : (
+                <>
+                  {events.slice(0, maxEventsToShow).map((event, i) => (
+                    <div
+                      key={i}
+                      className={
+                        event.isImportant
+                          ? styles.eventItemImportant
+                          : styles.eventItem
+                      }
+                    >
+                      {event.text}
+                    </div>
+                  ))}
+                  <div className={styles.moreEvents}>
+                    +{events.length - maxEventsToShow}개 더보기
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       );
     }

@@ -1,21 +1,22 @@
-/* styles/Calendar.module.css */
+/* --- 캘린더 기본 레이아웃 --- */
 .calendarContainer {
   width: 100%;
   max-width: 1400px;
   margin: auto;
   background-color: white;
   border-radius: 14px;
-  box-shadow: 0 8px 25px var(--shadow-color);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   margin: 1rem auto;
 }
 
+/* --- 캘린더 헤더 --- */
 .calendarHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px 25px;
-  background-color: var(--primary-color);
+  background-color: #3498db;
   color: white;
 }
 
@@ -24,7 +25,6 @@
   font-weight: 500;
 }
 
-/* 새로 추가된 navButtons 클래스 */
 .navButtons {
   display: flex;
   gap: 10px;
@@ -39,7 +39,6 @@
   padding: 5px 10px;
   border-radius: 50%;
   transition: background-color 0.2s ease;
-  /* SVG 아이콘을 위한 정렬 */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +48,6 @@
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* 새로 추가된 오늘 버튼 스타일 */
 .todayBtn {
   background-color: #e74c3c;
   color: white;
@@ -67,6 +65,7 @@
   background-color: #c0392b;
 }
 
+/* --- 요일 표시 --- */
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -78,7 +77,7 @@
   font-weight: 700;
   color: #888;
   font-size: 0.9rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .dayName:first-child {
@@ -88,12 +87,13 @@
   color: #3498db;
 }
 
+/* --- 날짜 셀 --- */
 .dateCell {
   position: relative;
   height: 300px;
   width: 200px;
-  border-right: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-color);
+  border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
   padding: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -112,7 +112,7 @@
 }
 
 .dateCell.today .dateNum {
-  background-color: var(--primary-color);
+  background-color: #3498db;
   color: white;
   width: 28px;
   height: 28px;
@@ -128,43 +128,93 @@
   cursor: default;
 }
 
+/* --- 휴방 스타일 --- */
+.dateCell.breakDay {
+  background-color: #f1f1f1;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.dateCell.breakDay:hover {
+  background-color: #e2e6ea;
+}
+
+/* 사유가 없을 때 '휴방' 글자만 표시 */
+.breakMessage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.breakReasonTitle {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* 사유가 있을 때 사유만 표시 (박스 없이) */
+.breakReasonOnly {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.breakReasonText {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #6c757d;
+  margin: 0;
+  word-break: break-word;
+  text-align: center;
+}
+
+/* --- 일정 목록 --- */
 .eventsList {
   font-size: 1.2rem;
   margin: 3px;
-}
-
-.eventsList div {
-  padding: 5px 8px;
-  margin: 4px 0;
-  border-radius: 6px;
-  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: 100%;
 }
 
 .eventItem {
   background-color: #02fdff;
   color: #333;
-  border-radius: 4px;
+  padding: 5px 8px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-weight: bold;
   font-size: 0.8em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
 .eventItemImportant {
   background-color: #faed7b;
   color: #333;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 5px 8px;
+  margin: 4px 0;
+  border-radius: 6px;
+  font-weight: bold;
   font-size: 0.8em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
 .moreEvents {
   font-weight: bold;
-  color: var(--primary-color);
-  /* margin-top: 5px; */
+  color: #3498db;
   font-size: 0.8rem;
 }
 
@@ -175,7 +225,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--modal-overlay-color);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -195,13 +245,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e0e0e0;
   padding-bottom: 15px;
   margin-bottom: 20px;
 }
 
 .modalHeader h3 {
   font-size: 1.4rem;
+  flex-grow: 1;
+  margin: 0;
 }
 
 .closeBtn {
@@ -241,13 +293,14 @@
 .eventInput {
   flex-grow: 1;
   padding: 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e0e0e0;
   border-radius: 5px;
   font-size: 1rem;
+  resize: vertical;
 }
 
 .addEventBtn {
-  background-color: var(--primary-color);
+  background-color: #3498db;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -292,7 +345,7 @@
   width: 100%;
   min-height: 100px;
   padding: 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #e0e0e0;
   border-radius: 5px;
   font-size: 1rem;
   resize: vertical;
@@ -304,7 +357,7 @@
 }
 
 .editMemoBtn {
-  background-color: var(--primary-color);
+  background-color: #3498db;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -323,7 +376,7 @@
 }
 
 .saveBtn {
-  background-color: var(--secondary-color);
+  background-color: #2ecc71;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -366,13 +419,20 @@
   white-space: normal;
 }
 
-/* 슬라이딩 토글 버튼 스타일 */
+/* 휴방 토글 스위치 컨테이너 */
+.breakDayToggle {
+  display: flex;
+  align-items: center;
+  margin-right: 25px;
+  gap: 8px;
+}
+
+/* 토글 스위치 스타일 */
 .toggleSwitch {
   position: relative;
   display: inline-block;
-  width: 45px;
-  height: 25px;
-  margin: auto;
+  width: 40px;
+  height: 20px;
 }
 
 .toggleSwitch input {
@@ -390,56 +450,84 @@
   bottom: 0;
   background-color: #ccc;
   transition: 0.4s;
-  border-radius: 25px;
+  border-radius: 20px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
-  left: 3px;
-  bottom: 3px;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #ffb74d;
+  background-color: #e74c3c;
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 1px #ffb74d;
+  box-shadow: 0 0 1px #e74c3c;
 }
 
 input:checked + .slider:before {
   transform: translateX(20px);
 }
 
+/* 휴방 텍스트 라벨 */
 .toggleLabel {
   font-size: 0.9em;
-  color: #666;
-  margin: 0 10px;
-  align-self: center;
+  color: #333;
+  font-weight: bold;
+  line-height: 20px;
 }
 
+/* 아침/저녁 토글 스위치 스타일 */
 .importantCheckbox {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
-.modalTitle {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0 10px;
-  font-weight: 600;
-  text-align: center;
-  margin: auto;
+.importantCheckbox .toggleSwitch {
+  width: 45px;
+  height: 25px;
 }
 
+.importantCheckbox .slider {
+  border-radius: 25px;
+}
+
+.importantCheckbox .slider:before {
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  border-radius: 50%;
+}
+
+.importantCheckbox input:checked + .slider {
+  background-color: #ffb74d;
+}
+
+.importantCheckbox input:focus + .slider {
+  box-shadow: 0 0 1px #ffb74d;
+}
+
+.importantCheckbox input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.importantCheckbox .toggleLabel {
+  font-size: 0.9em;
+  color: #666;
+  margin: 0;
+}
+
+/* 모바일 최적화 */
 @media (max-width: 768px) {
   .calendarContainer {
     padding: 10px;
