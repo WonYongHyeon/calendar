@@ -1,4 +1,4 @@
-// api/schedules/route.js
+// /api/schedules/route.js
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 

@@ -1,8 +1,9 @@
+// /src/app/page.js
 "use client";
-// pages/index.js
+
 import Head from "next/head";
 import styles from "./page.module.css";
-import Calendar from "../../component/Calendar";
+import Calendar from "../../components/Calendar";
 
 export default function Home() {
   return (
