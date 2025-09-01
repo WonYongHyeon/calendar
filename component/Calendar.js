@@ -16,7 +16,6 @@ const Calendar = () => {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
-          // "../api/schedules"
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -64,17 +63,20 @@ const Calendar = () => {
     handleCloseModal();
 
     try {
-      const response = await fetch("/api/schedules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date: dateStr,
-          events: newEvents,
-          memo: newMemo,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: dateStr,
+            events: newEvents,
+            memo: newMemo,
+          }),
+        }
+      );
       if (!response.ok) {
         throw new Error("Failed to save schedule");
       }
@@ -141,6 +143,9 @@ const Calendar = () => {
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
 
+      // 변경된 부분: 보여줄 일정의 최대 개수
+      const maxEventsToShow = 4;
+
       cells.push(
         <div
           key={dateStr}
@@ -149,18 +154,40 @@ const Calendar = () => {
         >
           <div className={styles.dateNum}>{day}</div>
           <div className={styles.eventsList}>
-            {events.map((event, i) => (
-              <div
-                key={i}
-                className={
-                  event.isImportant
-                    ? styles.eventItemImportant
-                    : styles.eventItem
-                }
-              >
-                {event.text}
-              </div>
-            ))}
+            {/* 5개까지는 모두 표시 */}
+            {events.length <= 5 ? (
+              events.map((event, i) => (
+                <div
+                  key={i}
+                  className={
+                    event.isImportant
+                      ? styles.eventItemImportant
+                      : styles.eventItem
+                  }
+                >
+                  {event.text}
+                </div>
+              ))
+            ) : (
+              // 6개 이상일 경우, 4개만 보여주고 나머지는 더보기로 표시
+              <>
+                {events.slice(0, maxEventsToShow).map((event, i) => (
+                  <div
+                    key={i}
+                    className={
+                      event.isImportant
+                        ? styles.eventItemImportant
+                        : styles.eventItem
+                    }
+                  >
+                    {event.text}
+                  </div>
+                ))}
+                <div className={styles.moreEvents}>
+                  +{events.length - maxEventsToShow}개 더보기
+                </div>
+              </>
+            )}
           </div>
         </div>
       );
