@@ -3,6 +3,32 @@ import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 
+// 왼쪽 화살표 SVG 컴포넌트
+const PrevArrow = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    width="24px"
+    height="24px"
+  >
+    <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12L15.41 7.41Z" />
+  </svg>
+);
+
+// 오른쪽 화살표 SVG 컴포넌트
+const NextArrow = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    width="24px"
+    height="24px"
+  >
+    <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.59Z" />
+  </svg>
+);
+
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduleData, setScheduleData] = useState({});
@@ -40,6 +66,10 @@ const Calendar = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
     );
+  };
+
+  const handleGoToday = () => {
+    setCurrentDate(new Date());
   };
 
   const handleDateClick = (dateStr) => {
@@ -85,18 +115,24 @@ const Calendar = () => {
     }
   };
 
+  // 기존 renderHeader() 함수를 아래와 같이 변경합니다.
   const renderHeader = () => {
     return (
       <div className={styles.calendarHeader}>
-        <button className={styles.navBtn} onClick={handlePrevMonth}>
-          &lt;
-        </button>
-        <h2>
+        <h2 className={styles.currentMonth}>
           {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
         </h2>
-        <button className={styles.navBtn} onClick={handleNextMonth}>
-          &gt;
-        </button>
+        <div className={styles.navButtons}>
+          <button className={styles.navBtn} onClick={handlePrevMonth}>
+            <PrevArrow />
+          </button>
+          <button className={styles.todayBtn} onClick={handleGoToday}>
+            오늘
+          </button>
+          <button className={styles.navBtn} onClick={handleNextMonth}>
+            <NextArrow />
+          </button>
+        </div>
       </div>
     );
   };

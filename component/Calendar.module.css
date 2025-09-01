@@ -24,19 +24,47 @@
   font-weight: 500;
 }
 
+/* 새로 추가된 navButtons 클래스 */
+.navButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .navBtn {
   background: none;
   border: none;
   color: white;
-  font-size: 1.8rem;
   cursor: pointer;
   padding: 5px 10px;
   border-radius: 50%;
   transition: background-color 0.2s ease;
+  /* SVG 아이콘을 위한 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navBtn:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 새로 추가된 오늘 버튼 스타일 */
+.todayBtn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.todayBtn:hover {
+  background-color: #c0392b;
 }
 
 .calendarGrid {
