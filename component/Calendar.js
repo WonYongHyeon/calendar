@@ -144,7 +144,7 @@ const Calendar = () => {
       const events = cellData ? cellData.events : [];
 
       // 변경된 부분: 보여줄 일정의 최대 개수
-      const maxEventsToShow = 4;
+      const maxEventsToShow = 6;
 
       cells.push(
         <div
@@ -155,7 +155,7 @@ const Calendar = () => {
           <div className={styles.dateNum}>{day}</div>
           <div className={styles.eventsList}>
             {/* 5개까지는 모두 표시 */}
-            {events.length <= 5 ? (
+            {events.length <= 6 ? (
               events.map((event, i) => (
                 <div
                   key={i}

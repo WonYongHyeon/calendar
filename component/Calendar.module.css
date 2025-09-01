@@ -62,7 +62,7 @@
 
 .dateCell {
   position: relative;
-  min-height: 300px;
+  height: 300px;
   width: 200px;
   border-right: 1px solid var(--border-color);
   border-top: 1px solid var(--border-color);
@@ -101,13 +101,13 @@
 }
 
 .eventsList {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   margin: 3px;
 }
 
 .eventsList div {
   padding: 5px 8px;
-  margin: 8px 0;
+  margin: 4px 0;
   border-radius: 6px;
   font-weight: bold;
 }
@@ -125,7 +125,6 @@
 .eventItemImportant {
   background-color: #faed7b;
   color: #333;
-
   padding: 2px 4px;
   border-radius: 4px;
   font-size: 0.8em;
@@ -137,8 +136,8 @@
 .moreEvents {
   font-weight: bold;
   color: var(--primary-color);
-  margin-top: 5px;
-  font-size: 0.85rem;
+  /* margin-top: 5px; */
+  font-size: 0.8rem;
 }
 
 /* --- 모달 --- */

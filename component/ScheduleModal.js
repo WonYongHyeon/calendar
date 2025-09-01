@@ -24,7 +24,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         };
         setEvents([...events, newEventItem]);
         setNewEvent("");
-        setIsImportant(false);
       }
     }
   };
