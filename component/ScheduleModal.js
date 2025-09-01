@@ -15,14 +15,17 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   }, [data]);
 
   const handleAddEvent = (e) => {
-    if (e.key === "Enter" && newEvent.trim()) {
-      const newEventItem = {
-        text: newEvent.trim(),
-        isImportant: isImportant,
-      };
-      setEvents([...events, newEventItem]);
-      setNewEvent("");
-      setIsImportant(false);
+    // 엔터 키 (e.key === 'Enter') 또는 버튼 클릭 (e.type === 'click') 시 동작
+    if (e.key === "Enter" || e.type === "click") {
+      if (newEvent.trim()) {
+        const newEventItem = {
+          text: newEvent.trim(),
+          isImportant: isImportant,
+        };
+        setEvents([...events, newEventItem]);
+        setNewEvent("");
+        setIsImportant(false);
+      }
     }
   };
 
@@ -48,12 +51,12 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
           </button>
         </div>
         <div className={styles.modalBody}>
-          <div className={styles.modalTitle}>
+          {/* 일정 추가 타이틀과 중요 버튼을 한 줄에 배치 */}
+          <div className={styles.eventTitleRow}>
             <h4>🗓️ 일정 추가</h4>
-            <div>
+            <div className={styles.importantCheckbox}>
               <span className={styles.toggleLabel}>아침</span>
               <label className={styles.toggleSwitch}>
-                <span className={styles.slider}></span>
                 <input
                   type="checkbox"
                   checked={isImportant}
@@ -64,15 +67,19 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               <span className={styles.toggleLabel}>저녁</span>
             </div>
           </div>
+
           <div className={styles.addEventRow}>
             <input
               type="text"
               className={styles.eventInput}
-              placeholder="일정을 입력하고 Enter를 누르세요"
+              placeholder="일정을 입력하세요"
               value={newEvent}
               onChange={(e) => setNewEvent(e.target.value)}
               onKeyUp={handleAddEvent}
             />
+            <button className={styles.addEventBtn} onClick={handleAddEvent}>
+              등록
+            </button>
           </div>
           <ul className={styles.eventListModal}>
             {events.map((event, index) => (

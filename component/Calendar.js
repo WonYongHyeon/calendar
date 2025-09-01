@@ -16,6 +16,7 @@ const Calendar = () => {
       try {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
+          // "../api/schedules"
         );
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -139,7 +140,6 @@ const Calendar = () => {
         year === today.getFullYear();
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
-      const maxEventsToShow = 2;
 
       cells.push(
         <div

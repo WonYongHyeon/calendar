@@ -101,14 +101,20 @@
 }
 
 .eventsList {
-  margin-top: 5px;
-  font-size: 0.8rem;
+  font-size: 1.5rem;
+  margin: 3px;
+}
+
+.eventsList div {
+  padding: 5px 8px;
+  margin: 8px 0;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
 .eventItem {
-  background-color: #e0f2f1;
-  color: #388e3c;
-  padding: 2px 4px;
+  background-color: #02fdff;
+  color: #333;
   border-radius: 4px;
   font-size: 0.8em;
   white-space: nowrap;
@@ -117,9 +123,9 @@
 }
 
 .eventItemImportant {
-  background-color: #ffb74d;
-  color: #fff;
-  font-weight: bold;
+  background-color: #faed7b;
+  color: #333;
+
   padding: 2px 4px;
   border-radius: 4px;
   font-size: 0.8em;
@@ -185,29 +191,56 @@
   font-weight: 500;
 }
 
+/* 일정 추가 타이틀과 중요 버튼 정렬 */
+.eventTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.eventTitleRow h4 {
+  margin: 0;
+}
+
+/* 일정 추가 인풋과 등록 버튼 정렬 */
+.addEventRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
 .eventInput {
-  width: 100%;
+  flex-grow: 1;
   padding: 10px;
   border: 1px solid var(--border-color);
   border-radius: 5px;
   font-size: 1rem;
-  margin-bottom: 15px;
+}
+
+.addEventBtn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.addEventBtn:hover {
+  background-color: #2980b9;
 }
 
 .eventListModal {
   list-style: none;
+  padding: 0;
   margin-bottom: 20px;
 }
-
-/* .eventListModal li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #f1f3f5;
-  padding: 8px 12px;
-  border-radius: 5px;
-  margin-bottom: 5px;
-} */
 
 .deleteEventBtn {
   background: none;
@@ -279,8 +312,8 @@
 
 /* 모달 전용 리스트 아이템 스타일 */
 .eventListItem {
-  background-color: #02fdff; /* 연한 초록색 */
-  color: #111;
+  background-color: #02fdff;
+  color: #333;
   font-weight: bold;
   padding: 8px 12px;
   border-radius: 6px;
@@ -288,11 +321,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .importantEventListItem {
-  background-color: #faee7b; /* 주황색 */
-  color: #111;
+  background-color: #faed7b;
+  color: #333;
   font-weight: bold;
   padding: 8px 12px;
   border-radius: 6px;
@@ -300,6 +335,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  word-break: break-all;
+  white-space: normal;
 }
 
 /* 슬라이딩 토글 버튼 스타일 */
@@ -312,7 +349,7 @@
 }
 
 .toggleSwitch input {
-  opacity: 0; /* 체크박스를 숨김 */
+  opacity: 0;
   width: 0;
   height: 0;
 }
@@ -325,9 +362,8 @@
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  -webkit-transition: 0.4s;
   transition: 0.4s;
-  border-radius: 25px; /* 둥근 모서리 */
+  border-radius: 25px;
 }
 
 .slider:before {
@@ -338,13 +374,12 @@
   left: 3px;
   bottom: 3px;
   background-color: white;
-  -webkit-transition: 0.4s;
   transition: 0.4s;
-  border-radius: 50%; /* 원형 슬라이더 */
+  border-radius: 50%;
 }
 
 input:checked + .slider {
-  background-color: #ffb74d; /* 체크되면 주황색으로 변경 */
+  background-color: #ffb74d;
 }
 
 input:focus + .slider {
@@ -352,20 +387,16 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-  -webkit-transform: translateX(20px);
-  -ms-transform: translateX(20px);
-  transform: translateX(20px); /* 체크되면 오른쪽으로 이동 */
+  transform: translateX(20px);
 }
 
-/* 토글 레이블 스타일 (옵션) */
 .toggleLabel {
   font-size: 0.9em;
   color: #666;
   margin: 0 10px;
-  align-self: center; /* 수직 정렬 */
+  align-self: center;
 }
 
-/* 추가 스타일: 중요 체크박스 섹션 */
 .importantCheckbox {
   display: flex;
   align-items: center;
@@ -380,4 +411,84 @@ input:checked + .slider:before {
   font-weight: 600;
   text-align: center;
   margin: auto;
+}
+
+@media (max-width: 768px) {
+  .calendarContainer {
+    padding: 10px;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .calendarHeader h2 {
+    font-size: 1.2rem;
+  }
+
+  .navBtn {
+    font-size: 1.5rem;
+    padding: 3px 6px;
+  }
+
+  .dayName {
+    padding: 8px 0;
+    font-size: 0.8rem;
+  }
+
+  .dateCell {
+    min-height: 120px;
+    padding: 4px;
+  }
+
+  .dateNum {
+    font-size: 0.9rem;
+  }
+
+  .eventsList {
+    font-size: 0.75rem;
+  }
+
+  .eventItem,
+  .eventItemImportant {
+    font-size: 0.7em;
+  }
+
+  .moreEvents {
+    font-size: 0.7rem;
+  }
+
+  .modalContent {
+    width: 95%;
+    max-width: 95%;
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .modalHeader h3 {
+    font-size: 1.2rem;
+  }
+
+  .modalBody h4 {
+    font-size: 0.9rem;
+  }
+
+  .eventInput {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .addEventBtn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .memoInput {
+    font-size: 0.9rem;
+  }
+
+  .saveBtn,
+  .editMemoBtn {
+    font-size: 0.9rem;
+    padding: 10px 15px;
+  }
 }
