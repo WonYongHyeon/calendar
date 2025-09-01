@@ -1,6 +1,23 @@
 import { sql } from "@vercel/postgres";
 
-export default async function handler(req, res) {
+// CORS 설정을 위한 함수
+const allowCors = (fn) => async (req, res) => {
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  res.setHeader("Access-Control-Allow-Origin", "*"); // 모든 도메인 허용
+  // 또는 특정 도메인만 허용: 'https://haevelyn-schedule.vercel.app'
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,POST");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+  );
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+  return await fn(req, res);
+};
+
+const handler = async (req, res) => {
   if (req.method === "GET") {
     try {
       const { rows } = await sql`SELECT * FROM schedules;`;
@@ -90,4 +107,7 @@ export default async function handler(req, res) {
 
   res.setHeader("Allow", ["GET", "POST"]);
   res.status(405).end(`Method ${req.method} Not Allowed`);
-}
+};
+
+// CORS를 적용한 핸들러 함수를 export
+export default allowCors(handler);
