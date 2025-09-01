@@ -14,7 +14,9 @@ const Calendar = () => {
     const fetchSchedules = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("../api/schedules");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
+        );
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
