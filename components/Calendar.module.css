@@ -710,9 +710,6 @@ input:checked + .slider:before {
     opacity: 1;
     border-color: #ffaa00;
   }
-  50% {
-    transform: scale(1.02); /* 살짝 커지는 효과 */
-  }
   100% {
     transform: scale(1);
     opacity: 1; /* 완전히 사라지지 않고 원래 상태로 돌아오게 함 */
