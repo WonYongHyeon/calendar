@@ -58,7 +58,7 @@ const Calendar = () => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/schedules`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -170,7 +170,7 @@ const Calendar = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/schedules`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`,
         {
           method: "POST",
           headers: {
