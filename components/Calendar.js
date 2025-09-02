@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 
-const local = "/api/schedules";
-
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
   <svg
@@ -41,7 +39,9 @@ const Calendar = () => {
   const fetchSchedules = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${NEXT_PUBLIC_API_URL}/api/schedules`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
+      );
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -121,19 +121,22 @@ const Calendar = () => {
     handleCloseModal();
 
     try {
-      const response = await fetch(`${NEXT_PUBLIC_API_URL}/api/schedules`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date: dateStr,
-          events: newEvents,
-          memo: newMemo,
-          isBreakDay: isBreakDay,
-          version: originalData.version,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            date: dateStr,
+            events: newEvents,
+            memo: newMemo,
+            isBreakDay: isBreakDay,
+            version: originalData.version,
+          }),
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 409) {
