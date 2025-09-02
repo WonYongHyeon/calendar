@@ -1,3 +1,5 @@
+// pages/api/schedules/route.js
+
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
@@ -43,7 +45,7 @@ export async function POST(request) {
       return NextResponse.json(
         {
           error:
-            "다른 사용자가 이미 수정하였습니다. 페이지를 새로고침합니다.\n최신 데이터를 확인 후 다시 시도해주세요.",
+            "다른 사용자가 이미 수정하였습니다.\n페이지를 새로고침하여 최신 데이터를 확인 후 다시 시도해주세요.",
         },
         { status: 409 }
       );
@@ -51,9 +53,7 @@ export async function POST(request) {
 
     let updatedSchedule = null;
 
-    if (isBreakDay && !memo.trim()) {
-      await sql`DELETE FROM schedules WHERE date = ${date};`;
-    } else if (isBreakDay) {
+    if (isBreakDay) {
       const { rows } = await sql`
         INSERT INTO schedules (date, events, memo, is_break_day, version)
         VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay}, 1)

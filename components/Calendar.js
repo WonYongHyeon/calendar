@@ -92,29 +92,39 @@ const Calendar = () => {
     const originalData = scheduleData[dateStr] || {
       events: [],
       memo: "",
+      isBreakDay: false,
       version: 0,
     };
 
-    // 낙관적 업데이트: UI를 먼저 변경
     const optimisticData = { ...scheduleData };
-    if (isBreakDay && !newMemo.trim()) {
-      delete optimisticData[dateStr];
-    } else if (isBreakDay) {
-      optimisticData[dateStr] = {
-        events: [],
-        memo: newMemo,
-        isBreakDay: true,
-        version: originalData.version + 1,
-      };
-    } else if (newEvents.length > 0 || newMemo.trim()) {
-      optimisticData[dateStr] = {
-        events: newEvents,
-        memo: newMemo,
-        isBreakDay: false,
-        version: originalData.version + 1,
-      };
+
+    if (isBreakDay) {
+      if (!newMemo.trim()) {
+        optimisticData[dateStr] = {
+          events: [],
+          memo: "",
+          isBreakDay: true,
+          version: (originalData.version || 0) + 1,
+        };
+      } else {
+        optimisticData[dateStr] = {
+          events: [],
+          memo: newMemo,
+          isBreakDay: true,
+          version: (originalData.version || 0) + 1,
+        };
+      }
     } else {
-      delete optimisticData[dateStr];
+      if (newEvents.length > 0 || newMemo.trim()) {
+        optimisticData[dateStr] = {
+          events: newEvents,
+          memo: newMemo,
+          isBreakDay: false,
+          version: (originalData.version || 0) + 1,
+        };
+      } else {
+        delete optimisticData[dateStr];
+      }
     }
 
     setScheduleData(optimisticData);
@@ -145,7 +155,6 @@ const Calendar = () => {
         } else {
           setToastMessage("일정 저장에 실패했습니다. 다시 시도해 주세요.");
         }
-        // 에러 발생 시 원래 상태로 롤백하고, 최신 데이터 전체를 다시 가져옴
         setScheduleData((prevData) => ({
           ...prevData,
           [dateStr]: originalData,
@@ -153,10 +162,8 @@ const Calendar = () => {
         fetchSchedules();
         setTimeout(() => setToastMessage(""), 5000);
       } else {
-        // 성공: 서버에서 받은 데이터로 해당 날짜만 업데이트
         const { schedule } = await response.json();
 
-        // API 응답 구조에 맞게 데이터 재구성
         const formattedSchedule = schedule
           ? {
               events: schedule.events,
@@ -181,7 +188,6 @@ const Calendar = () => {
       setToastMessage(
         "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
       );
-      // 네트워크 에러 시 원래 상태로 롤백하고, 최신 데이터 전체를 다시 가져옴
       setScheduleData((prevData) => ({ ...prevData, [dateStr]: originalData }));
       fetchSchedules();
       setTimeout(() => setToastMessage(""), 5000);

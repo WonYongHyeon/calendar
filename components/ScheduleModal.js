@@ -1,3 +1,5 @@
+// ScheduleModal.js
+
 import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
 import {
@@ -15,7 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// 정렬 가능한 아이템 컴포넌트
+// SortableItem 컴포넌트는 변경 없음
 const SortableItem = ({ event, handleDeleteEvent }) => {
   const {
     attributes,
@@ -62,22 +64,36 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [isBreakDay, setIsBreakDay] = useState(false);
 
+  const [originalData, setOriginalData] = useState({
+    events: [],
+    memo: "",
+    isBreakDay: false,
+  });
+
   useEffect(() => {
-    if (data && data.events) {
+    if (data) {
       const eventsWithId = data.events.map((event, index) => ({
         ...event,
         id: event.id || `event-${Date.now()}-${index}`,
       }));
       setEvents(eventsWithId);
-    }
-    if (data && data.memo) {
-      setMemo(data.memo);
-    }
+      setMemo(data.memo || "");
+      setIsBreakDay(data.isBreakDay || false);
 
-    if (data && data.isBreakDay) {
-      setIsBreakDay(true);
+      setOriginalData({
+        events: data.events,
+        memo: data.memo,
+        isBreakDay: data.isBreakDay,
+      });
     } else {
+      setEvents([]);
+      setMemo("");
       setIsBreakDay(false);
+      setOriginalData({
+        events: [],
+        memo: "",
+        isBreakDay: false,
+      });
     }
   }, [data]);
 
@@ -111,8 +127,66 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   };
 
   const handleSave = () => {
-    const eventsToSave = isBreakDay ? [] : events;
+    let finalEvents = events;
+    if (newEvent.trim()) {
+      finalEvents = [...events, { text: newEvent.trim(), isImportant }];
+    }
+    const eventsToSave = isBreakDay ? [] : finalEvents;
     onSave(dateStr, eventsToSave, memo, isBreakDay);
+  };
+
+  const handleClose = () => {
+    onClose();
+  };
+
+  // ✅ 버튼 활성화 여부를 정확하게 판단하는 함수
+  const showSaveButton = () => {
+    // 1. 초기 상태가 비어있고, 입력된 내용도 없다면 false 반환
+    const isInitialEmpty =
+      originalData.events.length === 0 &&
+      originalData.memo === "" &&
+      !originalData.isBreakDay;
+    const isCurrentEmpty =
+      events.length === 0 &&
+      memo.trim() === "" &&
+      !isBreakDay &&
+      newEvent.trim() === "";
+    if (isInitialEmpty && isCurrentEmpty) {
+      return false;
+    }
+
+    // 2. 휴방 상태 변경
+    if (isBreakDay !== originalData.isBreakDay) {
+      return true;
+    }
+
+    // 3. 이벤트 목록의 변경 확인 (순서 포함)
+    const currentEvents = [...events];
+    if (newEvent.trim()) {
+      currentEvents.push({ text: newEvent.trim(), isImportant });
+    }
+    const currentEventTexts = currentEvents.map((e) =>
+      JSON.stringify({ text: e.text, isImportant: e.isImportant })
+    );
+    const originalEventTexts = originalData.events.map((e) =>
+      JSON.stringify({ text: e.text, isImportant: e.isImportant })
+    );
+
+    if (currentEventTexts.length !== originalEventTexts.length) {
+      return true;
+    }
+    for (let i = 0; i < currentEventTexts.length; i++) {
+      if (currentEventTexts[i] !== originalEventTexts[i]) {
+        return true;
+      }
+    }
+
+    // 4. 메모 변경
+    if (memo !== originalData.memo) {
+      return true;
+    }
+
+    return false;
   };
 
   const sensors = useSensors(
@@ -126,8 +200,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const date = new Date(dateStr);
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>{`${date.getFullYear()}년 ${
             date.getMonth() + 1
@@ -148,7 +222,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               <span className={styles.slider}></span>
             </label>
           </div>
-          <button className={styles.closeBtn} onClick={handleSave}>
+          <button className={styles.closeBtn} onClick={onClose}>
             &times;
           </button>
         </div>
@@ -228,8 +302,11 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
           </div>
         </div>
         <div className={styles.modalFooter}>
-          <button className={styles.saveBtn} onClick={handleSave}>
-            저장하고 닫기
+          <button
+            className={styles.saveBtn}
+            onClick={showSaveButton() ? handleSave : handleClose}
+          >
+            {showSaveButton() ? "저장하고 닫기" : "닫기"}
           </button>
         </div>
       </div>
