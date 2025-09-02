@@ -1,6 +1,58 @@
-// components/ScheduleModal.js
 import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+// 정렬 가능한 아이템 컴포넌트
+const SortableItem = ({ event, handleDeleteEvent }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: event.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: "grab",
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={
+        event.isImportant ? styles.importantEventListItem : styles.eventListItem
+      }
+      data-is-dragging={isDragging}
+    >
+      {event.text}
+      <button
+        className={styles.deleteEventBtn}
+        onClick={() => handleDeleteEvent(event.id)}
+      >
+        X
+      </button>
+    </li>
+  );
+};
 
 const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
@@ -12,13 +64,16 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   useEffect(() => {
     if (data && data.events) {
-      setEvents(data.events);
+      const eventsWithId = data.events.map((event, index) => ({
+        ...event,
+        id: event.id || `event-${Date.now()}-${index}`,
+      }));
+      setEvents(eventsWithId);
     }
     if (data && data.memo) {
       setMemo(data.memo);
     }
 
-    // isBreakDay 속성을 사용하여 휴방 여부 초기화
     if (data && data.isBreakDay) {
       setIsBreakDay(true);
     } else {
@@ -30,6 +85,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     if (e.key === "Enter" || e.type === "click") {
       if (newEvent.trim()) {
         const newEventItem = {
+          id: `event-${Date.now()}`,
           text: newEvent.trim(),
           isImportant: isImportant,
         };
@@ -39,14 +95,33 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     }
   };
 
-  const handleDeleteEvent = (indexToDelete) => {
-    setEvents(events.filter((_, index) => index !== indexToDelete));
+  const handleDeleteEvent = (idToDelete) => {
+    setEvents(events.filter((event) => event.id !== idToDelete));
+  };
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      setEvents((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const handleSave = () => {
     const eventsToSave = isBreakDay ? [] : events;
     onSave(dateStr, eventsToSave, memo, isBreakDay);
   };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   const date = new Date(dateStr);
 
@@ -108,26 +183,26 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                   등록
                 </button>
               </div>
-              <ul className={styles.eventListModal}>
-                {events.map((event, index) => (
-                  <li
-                    key={index}
-                    className={
-                      event.isImportant
-                        ? styles.importantEventListItem
-                        : styles.eventListItem
-                    }
-                  >
-                    {event.text}
-                    <button
-                      className={styles.deleteEventBtn}
-                      onClick={() => handleDeleteEvent(index)}
-                    >
-                      X
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={events.map((e) => e.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <ul className={styles.eventListModal}>
+                    {events.map((event) => (
+                      <SortableItem
+                        key={event.id}
+                        event={event}
+                        handleDeleteEvent={handleDeleteEvent}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
             </>
           )}
 

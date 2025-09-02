@@ -1,7 +1,8 @@
-// components/Calendar.js
 import { useState, useEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
+
+const local = "/api/schedules";
 
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
@@ -35,25 +36,24 @@ const Calendar = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const fetchSchedules = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${NEXT_PUBLIC_API_URL}/api/schedules`);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      setScheduleData(data);
+    } catch (error) {
+      console.error("Failed to fetch schedules from API:", error);
+    }
+    setIsLoading(false);
+  };
 
   useEffect(() => {
-    const fetchSchedules = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
-          // "/api/schedules"
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setScheduleData(data);
-      } catch (error) {
-        console.error("Failed to fetch schedules from API:", error);
-      }
-      setIsLoading(false);
-    };
     fetchSchedules();
   }, []);
 
@@ -89,47 +89,99 @@ const Calendar = () => {
     newMemo,
     isBreakDay
   ) => {
-    const optimisticData = { ...scheduleData };
+    const originalData = scheduleData[dateStr] || {
+      events: [],
+      memo: "",
+      version: 0,
+    };
 
-    if (isBreakDay) {
-      optimisticData[dateStr] = { events: [], memo: newMemo, isBreakDay: true };
+    // 낙관적 업데이트: UI를 먼저 변경
+    const optimisticData = { ...scheduleData };
+    if (isBreakDay && !newMemo.trim()) {
+      delete optimisticData[dateStr];
+    } else if (isBreakDay) {
+      optimisticData[dateStr] = {
+        events: [],
+        memo: newMemo,
+        isBreakDay: true,
+        version: originalData.version + 1,
+      };
+    } else if (newEvents.length > 0 || newMemo.trim()) {
+      optimisticData[dateStr] = {
+        events: newEvents,
+        memo: newMemo,
+        isBreakDay: false,
+        version: originalData.version + 1,
+      };
     } else {
-      if (newEvents.length > 0 || newMemo.trim()) {
-        optimisticData[dateStr] = {
-          events: newEvents,
-          memo: newMemo,
-          isBreakDay: false,
-        };
-      } else {
-        delete optimisticData[dateStr];
-      }
+      delete optimisticData[dateStr];
     }
 
     setScheduleData(optimisticData);
     handleCloseModal();
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`,
-        // "/api/schedules",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            date: dateStr,
-            events: newEvents,
-            memo: newMemo,
-            isBreakDay: isBreakDay,
-          }),
-        }
-      );
+      const response = await fetch(`${NEXT_PUBLIC_API_URL}/api/schedules`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: dateStr,
+          events: newEvents,
+          memo: newMemo,
+          isBreakDay: isBreakDay,
+          version: originalData.version,
+        }),
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to save schedule");
+        if (response.status === 409) {
+          const errorData = await response.json();
+          setToastMessage(errorData.error);
+        } else {
+          setToastMessage("일정 저장에 실패했습니다. 다시 시도해 주세요.");
+        }
+        // 에러 발생 시 원래 상태로 롤백하고, 최신 데이터 전체를 다시 가져옴
+        setScheduleData((prevData) => ({
+          ...prevData,
+          [dateStr]: originalData,
+        }));
+        fetchSchedules();
+        setTimeout(() => setToastMessage(""), 5000);
+      } else {
+        // 성공: 서버에서 받은 데이터로 해당 날짜만 업데이트
+        const { schedule } = await response.json();
+
+        // API 응답 구조에 맞게 데이터 재구성
+        const formattedSchedule = schedule
+          ? {
+              events: schedule.events,
+              memo: schedule.memo,
+              isBreakDay: schedule.is_break_day,
+              version: schedule.version,
+            }
+          : null;
+
+        setScheduleData((prevData) => {
+          const newScheduleData = { ...prevData };
+          if (formattedSchedule) {
+            newScheduleData[dateStr] = formattedSchedule;
+          } else {
+            delete newScheduleData[dateStr];
+          }
+          return newScheduleData;
+        });
       }
     } catch (error) {
       console.error("Failed to save schedule to API:", error);
+      setToastMessage(
+        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+      );
+      // 네트워크 에러 시 원래 상태로 롤백하고, 최신 데이터 전체를 다시 가져옴
+      setScheduleData((prevData) => ({ ...prevData, [dateStr]: originalData }));
+      fetchSchedules();
+      setTimeout(() => setToastMessage(""), 5000);
     }
   };
 
@@ -155,7 +207,7 @@ const Calendar = () => {
   };
 
   const renderDays = () => {
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     return (
       <div className={styles.calendarGrid}>
         {days.map((day) => (
@@ -211,7 +263,6 @@ const Calendar = () => {
           onClick={() => handleDateClick(dateStr)}
         >
           <div className={styles.dateNum}>{day}</div>
-          {/* 조건부 렌더링 수정 */}
           {isBreakDayWithoutReason ? (
             <div className={styles.breakMessage}>
               <span className={styles.breakReasonTitle}>휴방</span>
@@ -295,10 +346,42 @@ const Calendar = () => {
       {isModalOpen && (
         <ScheduleModal
           dateStr={selectedDate}
-          data={scheduleData[selectedDate] || { events: [], memo: "" }}
+          data={
+            scheduleData[selectedDate] || { events: [], memo: "", version: 0 }
+          }
           onClose={handleCloseModal}
           onSave={handleSaveSchedule}
         />
+      )}
+
+      {toastMessage && (
+        <div className={styles.toastContainer}>
+          <div className={styles.toastMessage}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>
+              {toastMessage.split("\n").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  {index < toastMessage.split("\n").length - 1 && <br />}
+                </span>
+              ))}
+            </span>
+          </div>
+        </div>
       )}
     </div>
   );

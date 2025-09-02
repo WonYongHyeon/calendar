@@ -1,4 +1,3 @@
-// /api/schedules/route.js
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
@@ -18,6 +17,7 @@ export async function GET(request) {
         events: row.events || [],
         memo: row.memo || "",
         isBreakDay: row.is_break_day || false,
+        version: row.version,
       };
       return acc;
     }, {});
@@ -34,37 +34,55 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { date, events, memo, isBreakDay } = await request.json();
+    const { date, events, memo, isBreakDay, version } = await request.json();
 
-    // 휴방 체크박스가 true일 때
-    if (isBreakDay) {
-      await sql`
-        INSERT INTO schedules (date, events, memo, is_break_day)
-        VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay})
-        ON CONFLICT (date) DO UPDATE SET
-        events = EXCLUDED.events,
-        memo = EXCLUDED.memo,
-        is_break_day = EXCLUDED.is_break_day;
-      `;
+    const { rows: currentData } =
+      await sql`SELECT version FROM schedules WHERE date = ${date};`;
+
+    if (currentData.length > 0 && currentData[0].version !== version) {
+      return NextResponse.json(
+        {
+          error:
+            "다른 사용자가 이미 수정하였습니다. 페이지를 새로고침합니다.\n최신 데이터를 확인 후 다시 시도해주세요.",
+        },
+        { status: 409 }
+      );
     }
-    // 일정이 비어있고 메모도 비어있을 때 (순수한 빈 날짜)
-    else if (events.length === 0 && !memo.trim()) {
+
+    let updatedSchedule = null;
+
+    if (isBreakDay && !memo.trim()) {
       await sql`DELETE FROM schedules WHERE date = ${date};`;
-    }
-    // 그 외 (일정이 있거나, 휴방 체크 없이 메모만 있을 때)
-    else {
-      await sql`
-        INSERT INTO schedules (date, events, memo, is_break_day)
-        VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay})
+    } else if (isBreakDay) {
+      const { rows } = await sql`
+        INSERT INTO schedules (date, events, memo, is_break_day, version)
+        VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay}, 1)
         ON CONFLICT (date) DO UPDATE SET
         events = EXCLUDED.events,
         memo = EXCLUDED.memo,
-        is_break_day = EXCLUDED.is_break_day;
+        is_break_day = EXCLUDED.is_break_day,
+        version = schedules.version + 1
+        RETURNING *;
       `;
+      updatedSchedule = rows[0];
+    } else if (events.length === 0 && !memo.trim()) {
+      await sql`DELETE FROM schedules WHERE date = ${date};`;
+    } else {
+      const { rows } = await sql`
+        INSERT INTO schedules (date, events, memo, is_break_day, version)
+        VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay}, 1)
+        ON CONFLICT (date) DO UPDATE SET
+        events = EXCLUDED.events,
+        memo = EXCLUDED.memo,
+        is_break_day = EXCLUDED.is_break_day,
+        version = schedules.version + 1
+        RETURNING *;
+      `;
+      updatedSchedule = rows[0];
     }
 
     return NextResponse.json(
-      { message: "Schedule saved successfully" },
+      { message: "Schedule saved successfully", schedule: updatedSchedule },
       { status: 200 }
     );
   } catch (error) {

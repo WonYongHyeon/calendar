@@ -607,3 +607,51 @@ input:checked + .slider:before {
     padding: 10px 15px;
   }
 }
+
+/* --- 토스트 알림 스타일 --- */
+.toastContainer {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100; /* 모달 위에 표시되도록 Z-index 설정 */
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toastMessage {
+  background-color: #e74c3c; /* 에러 메시지에 어울리는 빨간색 */
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  font-size: 1.2rem;
+  animation: fadeInOut 4s ease-in-out forwards;
+}
+
+/* 토스트 애니메이션 */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
