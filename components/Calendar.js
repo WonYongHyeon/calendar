@@ -1,6 +1,6 @@
 // Calendar.js
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 import SearchModal from "./SearchModal";
@@ -40,9 +40,23 @@ const SearchIcon = () => (
     width="24px"
     height="24px"
   >
-    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
   </svg>
 );
+
+// ✅ 디바운스 헬퍼 함수
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func.apply(this, args);
+    }, delay);
+  };
+};
+
+const EVENT_ITEM_HEIGHT = 36;
+const MORE_BUTTON_HEIGHT = 20;
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -52,14 +66,16 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const [highlightedDate, setHighlightedDate] = useState(null); // ✅ 강조할 날짜 상태 추가
+  const [highlightedDate, setHighlightedDate] = useState(null);
+
+  const [maxEventsToShow, setMaxEventsToShow] = useState({});
+
+  const calendarRef = useRef(null);
 
   const fetchSchedules = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`
-      );
+      const response = await fetch("/api/schedules");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -75,39 +91,77 @@ const Calendar = () => {
     fetchSchedules();
   }, []);
 
-  // ✅ highlightedDate가 변경되면 일정 시간 후 초기화
   useEffect(() => {
     if (highlightedDate) {
       const timer = setTimeout(() => {
         setHighlightedDate(null);
-      }, 3000); // 3초 후에 강조 해제
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [highlightedDate]);
+
+  // ✅ 디바운스 로직 적용
+  useLayoutEffect(() => {
+    const calculateMaxEvents = () => {
+      const newMaxEvents = {};
+      const dateCells = calendarRef.current?.querySelectorAll(
+        `.${styles.dateCell}`
+      );
+      if (!dateCells) return;
+
+      dateCells.forEach((cell) => {
+        const dateStr = cell.getAttribute("data-date");
+        if (!dateStr) return;
+
+        const dateNumHeight =
+          cell.querySelector(`.${styles.dateNum}`)?.offsetHeight || 0;
+        const style = getComputedStyle(cell);
+        const padding =
+          parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+        const cellHeight = cell.offsetHeight;
+
+        const availableHeight = cellHeight - dateNumHeight - padding;
+
+        const calculatedEvents = Math.max(
+          0,
+          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / EVENT_ITEM_HEIGHT)
+        );
+        newMaxEvents[dateStr] = calculatedEvents;
+      });
+
+      setMaxEventsToShow(newMaxEvents);
+    };
+
+    const debouncedCalculate = debounce(calculateMaxEvents, 250);
+
+    calculateMaxEvents(); // 첫 렌더링 시에는 즉시 실행
+    window.addEventListener("resize", debouncedCalculate);
+    return () => window.removeEventListener("resize", debouncedCalculate);
+  }, [currentDate, scheduleData]);
 
   const handlePrevMonth = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
     );
-    setHighlightedDate(null); // 월 이동 시 강조 해제
+    setHighlightedDate(null);
   };
 
   const handleNextMonth = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
     );
-    setHighlightedDate(null); // 월 이동 시 강조 해제
+    setHighlightedDate(null);
   };
 
   const handleGoToday = () => {
     setCurrentDate(new Date());
-    setHighlightedDate(null); // 오늘로 이동 시 강조 해제
+    setHighlightedDate(null);
   };
 
   const handleDateClick = (dateStr) => {
     setSelectedDate(dateStr);
     setIsModalOpen(true);
-    setHighlightedDate(null); // 날짜 클릭 시 강조 해제
+    setHighlightedDate(null);
   };
 
   const handleCloseModal = () => {
@@ -126,7 +180,7 @@ const Calendar = () => {
   const handleGoToDate = (dateStr) => {
     const [year, month, day] = dateStr.split("-").map(Number);
     setCurrentDate(new Date(year, month - 1, day));
-    setHighlightedDate(dateStr); // ✅ 검색 후 이동한 날짜 강조
+    setHighlightedDate(dateStr);
     setIsSearchModalOpen(false);
   };
 
@@ -169,22 +223,19 @@ const Calendar = () => {
     handleCloseModal();
 
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/schedules`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            date: dateStr,
-            events: newEvents,
-            memo: newMemo,
-            isBreakDay: isBreakDay,
-            version: originalData.version,
-          }),
-        }
-      );
+      const response = await fetch("/api/schedules", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          date: dateStr,
+          events: newEvents,
+          memo: newMemo,
+          isBreakDay: isBreakDay,
+          version: originalData.version,
+        }),
+      });
 
       if (!response.ok) {
         if (response.status === 409) {
@@ -299,19 +350,19 @@ const Calendar = () => {
       const isBreakDayWithReason = cellData?.isBreakDay && memo.trim();
       const isBreakDayWithoutReason = cellData?.isBreakDay && !memo.trim();
 
-      const maxEventsToShow = 6;
+      const maxEventsCount = maxEventsToShow[dateStr] || 0;
+      const visibleEvents = events.slice(0, maxEventsCount);
+      const remainingEventsCount = events.length - visibleEvents.length;
 
-      // ✅ highlightedDate와 일치하는지 확인
       const isHighlighted = highlightedDate === dateStr;
 
       cells.push(
         <div
           key={dateStr}
+          data-date={dateStr}
           className={`${styles.dateCell} ${isToday ? styles.today : ""} ${
             cellData?.isBreakDay === true ? styles.breakDay : ""
-          } ${
-            isHighlighted ? styles.highlightedCell : "" // ✅ 강조 클래스 추가
-          }`}
+          } ${isHighlighted ? styles.highlightedCell : ""}`}
           onClick={() => handleDateClick(dateStr)}
         >
           <div className={styles.dateNum}>{day}</div>
@@ -325,37 +376,22 @@ const Calendar = () => {
             </div>
           ) : (
             <div className={styles.eventsList}>
-              {events.length <= maxEventsToShow ? (
-                events.map((event, i) => (
-                  <div
-                    key={i}
-                    className={
-                      event.isImportant
-                        ? styles.eventItemImportant
-                        : styles.eventItem
-                    }
-                  >
-                    {event.text}
-                  </div>
-                ))
-              ) : (
-                <>
-                  {events.slice(0, maxEventsToShow).map((event, i) => (
-                    <div
-                      key={i}
-                      className={
-                        event.isImportant
-                          ? styles.eventItemImportant
-                          : styles.eventItem
-                      }
-                    >
-                      {event.text}
-                    </div>
-                  ))}
-                  <div className={styles.moreEvents}>
-                    +{events.length - maxEventsToShow}개 더보기
-                  </div>
-                </>
+              {visibleEvents.map((event, i) => (
+                <div
+                  key={i}
+                  className={
+                    event.isImportant
+                      ? styles.eventItemImportant
+                      : styles.eventItem
+                  }
+                >
+                  {event.text}
+                </div>
+              ))}
+              {remainingEventsCount > 0 && (
+                <div className={styles.moreEvents}>
+                  +{remainingEventsCount}개 더보기
+                </div>
               )}
             </div>
           )}
@@ -372,7 +408,11 @@ const Calendar = () => {
       );
     }
 
-    return <div className={styles.calendarGrid}>{cells}</div>;
+    return (
+      <div ref={calendarRef} className={styles.calendarGrid}>
+        {cells}
+      </div>
+    );
   };
 
   return (

@@ -69,7 +69,7 @@
 /* --- 요일 표시 --- */
 .calendarGrid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .dayName {
@@ -91,13 +91,15 @@
 /* --- 날짜 셀 --- */
 .dateCell {
   position: relative;
-  height: 300px;
-  width: 200px;
+  max-width: 200px;
+  max-height: 300px;
   border-right: 1px solid #e0e0e0;
   border-top: 1px solid #e0e0e0;
   padding: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  aspect-ratio: 1/1.5;
+  /* height: auto; */
 }
 
 .dateCell:nth-child(7n) {
@@ -145,7 +147,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  /* height: 100%; */
 }
 
 .breakReasonTitle {
@@ -160,7 +162,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  /* height: 100%; */
   padding: 10px;
   box-sizing: border-box;
 }
@@ -182,13 +184,14 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  height: 100%;
+  overflow: hidden;
+  overflow-y: hidden;
 }
 
 .eventItem {
   background-color: #02fdff;
   color: #333;
-  padding: 5px 8px;
+  padding: 3px 8px;
   margin: 4px 0;
   border-radius: 6px;
   font-weight: bold;
@@ -196,13 +199,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 고정된 높이 값 적용 */
+  /* height: 24px; */
   width: 100%;
 }
 
 .eventItemImportant {
   background-color: #faed7b;
   color: #333;
-  padding: 5px 8px;
+  padding: 3px 8px;
   margin: 4px 0;
   border-radius: 6px;
   font-weight: bold;
@@ -210,6 +215,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 고정된 높이 값 적용 */
   width: 100%;
 }
 
@@ -217,6 +223,9 @@
   font-weight: bold;
   color: #3498db;
   font-size: 0.8rem;
+  /* 고정된 높이 값 적용 */
+  height: 20px;
+  width: 100%;
 }
 
 /* --- 모달 --- */
@@ -514,11 +523,11 @@ input:checked + .slider:before {
   background-color: #ffb74d;
 }
 
-.importantCheckbox input:focus + .slider {
+input:focus + .slider {
   box-shadow: 0 0 1px #ffb74d;
 }
 
-.importantCheckbox input:checked + .slider:before {
+input:checked + .slider:before {
   transform: translateX(20px);
 }
 
@@ -715,5 +724,52 @@ input:checked + .slider:before {
     opacity: 1; /* 완전히 사라지지 않고 원래 상태로 돌아오게 함 */
     border-color: transparent; /* 테두리를 투명하게 하여 원래대로 보이게 함 */
     background-color: initial; /* 배경색도 원래대로 */
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .calendarContainer {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .dateCell {
+    padding: 2px;
+  }
+
+  .dateNum {
+    font-size: 0.8rem;
+  }
+
+  .eventItem,
+  .eventItemImportant {
+    font-size: 0.4em;
+    padding: 1px 4px;
+  }
+
+  .calendarHeader h2 {
+    font-size: 1.2rem;
+  }
+
+  .todayBtn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .moreEvents {
+    font-size: 0.4rem;
+  }
+
+  .breakMessage {
+    padding: 5px;
+  }
+
+  .breakReasonTitle {
+    font-size: 0.8rem;
+  }
+
+  .breakReasonText {
+    font-size: 0.5rem;
   }
 }
