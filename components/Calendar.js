@@ -1,6 +1,12 @@
 // Calendar.js
 
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useLayoutEffect,
+  useCallback,
+} from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 import SearchModal from "./SearchModal";
@@ -55,7 +61,7 @@ const debounce = (func, delay) => {
   };
 };
 
-const EVENT_ITEM_HEIGHT = 36;
+// 고정된 높이 상수 제거
 const MORE_BUTTON_HEIGHT = 20;
 
 const Calendar = () => {
@@ -71,6 +77,20 @@ const Calendar = () => {
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
 
   const calendarRef = useRef(null);
+  const eventItemRef = useRef(null); // ✅ 이벤트 아이템의 높이를 측정할 ref
+
+  // ✅ 이벤트 아이템의 높이를 가져오는 함수
+  const getEventItemHeight = () => {
+    if (eventItemRef.current) {
+      if (eventItemRef.current.offsetHeight === 20) {
+        return 26; // padding + margin 포함
+      } else {
+        return eventItemRef.current.offsetHeight + 3; // padding + margin 포함
+      }
+    }
+    console.log("Event item height: 36");
+    return 36; // fallback 값
+  };
 
   const fetchSchedules = async () => {
     setIsLoading(true);
@@ -109,6 +129,8 @@ const Calendar = () => {
       );
       if (!dateCells) return;
 
+      const eventItemHeight = getEventItemHeight(); // ✅ 동적으로 높이 가져오기
+
       dateCells.forEach((cell) => {
         const dateStr = cell.getAttribute("data-date");
         if (!dateStr) return;
@@ -120,11 +142,11 @@ const Calendar = () => {
           parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
         const cellHeight = cell.offsetHeight;
 
-        const availableHeight = cellHeight - dateNumHeight - padding;
+        const availableHeight = cellHeight - dateNumHeight - padding; // 4px은 여유 공간
 
         const calculatedEvents = Math.max(
           0,
-          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / EVENT_ITEM_HEIGHT)
+          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight)
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
@@ -384,6 +406,8 @@ const Calendar = () => {
                       ? styles.eventItemImportant
                       : styles.eventItem
                   }
+                  // ✅ 첫 번째 이벤트 아이템에만 ref를 연결하여 높이를 측정
+                  ref={i === 0 ? eventItemRef : null}
                 >
                   {event.text}
                 </div>

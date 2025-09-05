@@ -64,6 +64,10 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [isBreakDay, setIsBreakDay] = useState(false);
 
+  // ✅ 페이지네이션을 위한 새로운 상태 추가
+  const [currentPage, setCurrentPage] = useState(1);
+  const EVENTS_PER_PAGE = 4;
+
   const [originalData, setOriginalData] = useState({
     events: [],
     memo: "",
@@ -95,6 +99,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         isBreakDay: false,
       });
     }
+    // ✅ 모달이 열릴 때 항상 첫 페이지로 초기화
+    setCurrentPage(1);
   }, [data]);
 
   const handleAddEvent = (e) => {
@@ -107,6 +113,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         };
         setEvents([...events, newEventItem]);
         setNewEvent("");
+        // ✅ 새 일정이 추가되면 마지막 페이지로 이동
+        setCurrentPage(Math.ceil((events.length + 1) / EVENTS_PER_PAGE));
       }
     }
   };
@@ -199,6 +207,12 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   const date = new Date(dateStr);
 
+  // ✅ 현재 페이지에 보여줄 이벤트 목록 계산
+  const indexOfLastEvent = currentPage * EVENTS_PER_PAGE;
+  const indexOfFirstEvent = indexOfLastEvent - EVENTS_PER_PAGE;
+  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(events.length / EVENTS_PER_PAGE);
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -262,21 +276,48 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
               >
-                <SortableContext
-                  items={events.map((e) => e.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <ul className={styles.eventListModal}>
-                    {events.map((event) => (
-                      <SortableItem
-                        key={event.id}
-                        event={event}
-                        handleDeleteEvent={handleDeleteEvent}
-                      />
-                    ))}
-                  </ul>
-                </SortableContext>
+                {/* ✅ 높이를 고정할 새로운 div 추가 */}
+                <div className={styles.eventListContainer}>
+                  <SortableContext
+                    items={currentEvents.map((e) => e.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <ul className={styles.eventListModal}>
+                      {currentEvents.map((event) => (
+                        <SortableItem
+                          key={event.id}
+                          event={event}
+                          handleDeleteEvent={handleDeleteEvent}
+                        />
+                      ))}
+                    </ul>
+                  </SortableContext>
+                </div>
               </DndContext>
+              {/* ✅ 페이지네이션 버튼 추가 */}
+              {totalPages > 1 && (
+                <div className={styles.paginationControls}>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className={styles.pageBtn}
+                  >
+                    이전
+                  </button>
+                  <span>{`${currentPage} / ${totalPages}`}</span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className={styles.pageBtn}
+                  >
+                    다음
+                  </button>
+                </div>
+              )}
             </>
           )}
 
