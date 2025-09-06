@@ -1,6 +1,6 @@
 // ScheduleModal.js
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Calendar.module.css";
 import {
   DndContext,
@@ -16,8 +16,8 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { BREAK_DAY_IMAGES } from "./BreakDayImage";
 
-// SortableItem 컴포넌트는 변경 없음
 const SortableItem = ({ event, handleDeleteEvent }) => {
   const {
     attributes,
@@ -63,8 +63,9 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [isImportant, setIsImportant] = useState(false);
   const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [isBreakDay, setIsBreakDay] = useState(false);
+  const [selectedImageId, setSelectedImageId] = useState(null); // ✅ 추가
+  const [showImageOptions, setShowImageOptions] = useState(false); // ✅ 추가
 
-  // ✅ 페이지네이션을 위한 새로운 상태 추가
   const [currentPage, setCurrentPage] = useState(1);
   const EVENTS_PER_PAGE = 4;
 
@@ -72,6 +73,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     events: [],
     memo: "",
     isBreakDay: false,
+    breakDayImageId: null, // ✅ 추가
   });
 
   useEffect(() => {
@@ -83,23 +85,26 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       setEvents(eventsWithId);
       setMemo(data.memo || "");
       setIsBreakDay(data.isBreakDay || false);
+      setSelectedImageId(data.breakDayImageId || null); // ✅ 추가
 
       setOriginalData({
         events: data.events,
         memo: data.memo,
         isBreakDay: data.isBreakDay,
+        breakDayImageId: data.breakDayImageId || null, // ✅ 추가
       });
     } else {
       setEvents([]);
       setMemo("");
       setIsBreakDay(false);
+      setSelectedImageId(null); // ✅ 추가
       setOriginalData({
         events: [],
         memo: "",
         isBreakDay: false,
+        breakDayImageId: null, // ✅ 추가
       });
     }
-    // ✅ 모달이 열릴 때 항상 첫 페이지로 초기화
     setCurrentPage(1);
   }, [data]);
 
@@ -113,7 +118,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         };
         setEvents([...events, newEventItem]);
         setNewEvent("");
-        // ✅ 새 일정이 추가되면 마지막 페이지로 이동
         setCurrentPage(Math.ceil((events.length + 1) / EVENTS_PER_PAGE));
       }
     }
@@ -140,35 +144,37 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       finalEvents = [...events, { text: newEvent.trim(), isImportant }];
     }
     const eventsToSave = isBreakDay ? [] : finalEvents;
-    onSave(dateStr, eventsToSave, memo, isBreakDay);
+    onSave(dateStr, eventsToSave, memo, isBreakDay, selectedImageId); // ✅ selectedImageId 추가
   };
 
   const handleClose = () => {
     onClose();
   };
 
-  // ✅ 버튼 활성화 여부를 정확하게 판단하는 함수
   const showSaveButton = () => {
-    // 1. 초기 상태가 비어있고, 입력된 내용도 없다면 false 반환
     const isInitialEmpty =
       originalData.events.length === 0 &&
       originalData.memo === "" &&
-      !originalData.isBreakDay;
+      !originalData.isBreakDay &&
+      !originalData.breakDayImageId; // ✅ 추가
     const isCurrentEmpty =
       events.length === 0 &&
       memo.trim() === "" &&
       !isBreakDay &&
-      newEvent.trim() === "";
+      newEvent.trim() === "" &&
+      !selectedImageId; // ✅ 추가
     if (isInitialEmpty && isCurrentEmpty) {
       return false;
     }
 
-    // 2. 휴방 상태 변경
     if (isBreakDay !== originalData.isBreakDay) {
       return true;
     }
 
-    // 3. 이벤트 목록의 변경 확인 (순서 포함)
+    if (selectedImageId !== originalData.breakDayImageId) {
+      return true;
+    } // ✅ 추가
+
     const currentEvents = [...events];
     if (newEvent.trim()) {
       currentEvents.push({ text: newEvent.trim(), isImportant });
@@ -189,7 +195,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       }
     }
 
-    // 4. 메모 변경
     if (memo !== originalData.memo) {
       return true;
     }
@@ -207,7 +212,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   const date = new Date(dateStr);
 
-  // ✅ 현재 페이지에 보여줄 이벤트 목록 계산
   const indexOfLastEvent = currentPage * EVENTS_PER_PAGE;
   const indexOfFirstEvent = indexOfLastEvent - EVENTS_PER_PAGE;
   const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
@@ -230,6 +234,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                   setIsBreakDay(e.target.checked);
                   if (e.target.checked) {
                     setEvents([]);
+                    setNewEvent("");
                   }
                 }}
               />
@@ -276,7 +281,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
               >
-                {/* ✅ 높이를 고정할 새로운 div 추가 */}
                 <div className={styles.eventListContainer}>
                   <SortableContext
                     items={currentEvents.map((e) => e.id)}
@@ -294,7 +298,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                   </SortableContext>
                 </div>
               </DndContext>
-              {/* ✅ 페이지네이션 버튼 추가 */}
               {totalPages > 1 && (
                 <div className={styles.paginationControls}>
                   <button
@@ -341,6 +344,33 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               readOnly={!isMemoEditing}
             />
           </div>
+
+          {/* ✅ 이미지 선택 기능 추가 */}
+          {isBreakDay && (
+            <div className={styles.imageSelectionSection}>
+              <button
+                className={styles.imageSelectBtn}
+                onClick={() => setShowImageOptions(!showImageOptions)}
+              >
+                {showImageOptions ? "이미지 선택 닫기" : "이미지 선택하기"}
+              </button>
+              {showImageOptions && (
+                <div className={styles.imageOptionsContainer}>
+                  {BREAK_DAY_IMAGES.map((image) => (
+                    <div
+                      key={image.id}
+                      className={`${styles.imageOptionItem} ${
+                        selectedImageId === image.id ? styles.selectedImage : ""
+                      }`}
+                      onClick={() => setSelectedImageId(image.id)}
+                    >
+                      <img src={image.url} alt={`Option ${image.id}`} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div className={styles.modalFooter}>
           <button

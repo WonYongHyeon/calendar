@@ -1,15 +1,10 @@
 // Calendar.js
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useLayoutEffect,
-  useCallback,
-} from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 import SearchModal from "./SearchModal";
+import { BREAK_DAY_IMAGES } from "./BreakDayImage";
 
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
@@ -50,6 +45,18 @@ const SearchIcon = () => (
   </svg>
 );
 
+// ✅ ID로 이미지 URL을 찾는 헬퍼 함수
+const getImageUrlById = (id) => {
+  const image = BREAK_DAY_IMAGES.find((img) => img.id === id);
+  return image ? image.url : null;
+};
+
+// ✅ 이벤트 아이템의 높이를 가져오는 함수
+const getEventItemHeight = () => {
+  const isMobile = window.innerWidth <= 768;
+  return isMobile ? 18 : 26;
+};
+
 // ✅ 디바운스 헬퍼 함수
 const debounce = (func, delay) => {
   let timeoutId;
@@ -61,7 +68,7 @@ const debounce = (func, delay) => {
   };
 };
 
-// 고정된 높이 상수 제거
+// const EVENT_ITEM_HEIGHT = 36; // ✅ 삭제됨
 const MORE_BUTTON_HEIGHT = 20;
 
 const Calendar = () => {
@@ -77,13 +84,6 @@ const Calendar = () => {
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
 
   const calendarRef = useRef(null);
-  const eventItemRef = useRef(null); // ✅ 이벤트 아이템의 높이를 측정할 ref
-
-  // ✅ 이벤트 아이템의 높이를 가져오는 함수
-  const getEventItemHeight = () => {
-    const isMobile = window.innerWidth <= 768;
-    return isMobile ? 18 : 26;
-  };
 
   const fetchSchedules = async () => {
     setIsLoading(true);
@@ -122,7 +122,8 @@ const Calendar = () => {
       );
       if (!dateCells) return;
 
-      const eventItemHeight = getEventItemHeight(); // ✅ 동적으로 높이 가져오기
+      // ✅ 이벤트 아이템 높이를 함수로 가져오도록 변경
+      const eventItemHeight = getEventItemHeight();
 
       dateCells.forEach((cell) => {
         const dateStr = cell.getAttribute("data-date");
@@ -135,18 +136,11 @@ const Calendar = () => {
           parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
         const cellHeight = cell.offsetHeight;
 
-        const availableHeight = cellHeight - dateNumHeight - padding; // 4px은 여유 공간
-        console.log(
-          cellHeight,
-          dateNumHeight,
-          padding,
-          eventItemHeight,
-          availableHeight
-        );
+        const availableHeight = cellHeight - dateNumHeight - padding;
 
         const calculatedEvents = Math.max(
           0,
-          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight)
+          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight) // ✅ 변수 사용
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
@@ -206,17 +200,20 @@ const Calendar = () => {
     setIsSearchModalOpen(false);
   };
 
+  // ✅ onSave 함수에 breakDayImageId 매개변수 추가
   const handleSaveSchedule = async (
     dateStr,
     newEvents,
     newMemo,
-    isBreakDay
+    isBreakDay,
+    breakDayImageId
   ) => {
     const originalData = scheduleData[dateStr] || {
       events: [],
       memo: "",
       isBreakDay: false,
       version: 0,
+      breakDayImageId: null, // ✅ 추가
     };
 
     const optimisticData = { ...scheduleData };
@@ -227,6 +224,7 @@ const Calendar = () => {
         memo: newMemo,
         isBreakDay: true,
         version: (originalData.version || 0) + 1,
+        breakDayImageId: breakDayImageId, // ✅ 추가
       };
     } else {
       if (newEvents.length > 0 || newMemo.trim()) {
@@ -235,6 +233,7 @@ const Calendar = () => {
           memo: newMemo,
           isBreakDay: false,
           version: (originalData.version || 0) + 1,
+          breakDayImageId: null, // ✅ 추가
         };
       } else {
         delete optimisticData[dateStr];
@@ -256,6 +255,7 @@ const Calendar = () => {
           memo: newMemo,
           isBreakDay: isBreakDay,
           version: originalData.version,
+          breakDayImageId: breakDayImageId, // ✅ 추가
         }),
       });
 
@@ -281,6 +281,7 @@ const Calendar = () => {
               memo: schedule.memo,
               isBreakDay: schedule.is_break_day,
               version: schedule.version,
+              breakDayImageId: schedule.break_day_image_id, // ✅ 추가
             }
           : null;
 
@@ -327,7 +328,7 @@ const Calendar = () => {
   };
 
   const renderDays = () => {
-    const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
     return (
       <div className={styles.calendarGrid}>
         {days.map((day) => (
@@ -368,6 +369,7 @@ const Calendar = () => {
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
       const memo = cellData ? cellData.memo : "";
+      const breakDayImageId = cellData?.breakDayImageId; // ✅ 추가
 
       const isBreakDayWithReason = cellData?.isBreakDay && memo.trim();
       const isBreakDayWithoutReason = cellData?.isBreakDay && !memo.trim();
@@ -389,12 +391,32 @@ const Calendar = () => {
         >
           <div className={styles.dateNum}>{day}</div>
           {isBreakDayWithoutReason ? (
-            <div className={styles.breakMessage}>
+            <div className={styles.breakDayContent}>
               <span className={styles.breakReasonTitle}>휴방</span>
+              {/* ✅ 이미지 표시 */}
+              {breakDayImageId && (
+                <div className={styles.breakDayImageContainer}>
+                  <img
+                    src={getImageUrlById(breakDayImageId)}
+                    alt="휴방 이미지"
+                    className={styles.breakDayImage}
+                  />
+                </div>
+              )}
             </div>
           ) : isBreakDayWithReason ? (
-            <div className={styles.breakReasonOnly}>
+            <div className={styles.breakDayContent}>
               <p className={styles.breakReasonText}>{memo}</p>
+              {/* ✅ 이미지 표시 */}
+              {breakDayImageId && (
+                <div className={styles.breakDayImageContainer}>
+                  <img
+                    src={getImageUrlById(breakDayImageId)}
+                    alt="휴방 이미지"
+                    className={styles.breakDayImage}
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className={styles.eventsList}>
@@ -406,8 +428,6 @@ const Calendar = () => {
                       ? styles.eventItemImportant
                       : styles.eventItem
                   }
-                  // ✅ 첫 번째 이벤트 아이템에만 ref를 연결하여 높이를 측정
-                  ref={i === 0 ? eventItemRef : null}
                 >
                   {event.text}
                 </div>
