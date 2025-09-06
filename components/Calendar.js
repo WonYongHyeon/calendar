@@ -81,15 +81,8 @@ const Calendar = () => {
 
   // ✅ 이벤트 아이템의 높이를 가져오는 함수
   const getEventItemHeight = () => {
-    if (eventItemRef.current) {
-      if (eventItemRef.current.offsetHeight === 20) {
-        return 26; // padding + margin 포함
-      } else {
-        return eventItemRef.current.offsetHeight + 3; // padding + margin 포함
-      }
-    }
-    console.log("Event item height: 36");
-    return 36; // fallback 값
+    const isMobile = window.innerWidth <= 768;
+    return isMobile ? 18 : 26;
   };
 
   const fetchSchedules = async () => {
@@ -143,6 +136,13 @@ const Calendar = () => {
         const cellHeight = cell.offsetHeight;
 
         const availableHeight = cellHeight - dateNumHeight - padding; // 4px은 여유 공간
+        console.log(
+          cellHeight,
+          dateNumHeight,
+          padding,
+          eventItemHeight,
+          availableHeight
+        );
 
         const calculatedEvents = Math.max(
           0,
