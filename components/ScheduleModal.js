@@ -341,6 +341,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               }
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
               readOnly={!isMemoEditing}
             />
           </div>
