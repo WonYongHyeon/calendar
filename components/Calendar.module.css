@@ -334,7 +334,7 @@
 }
 
 .eventListContainer {
-  height: 160px;
+  height: 180px;
   overflow-y: auto;
   position: relative;
   margin-bottom: 10px;
