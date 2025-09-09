@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 import SearchModal from "./SearchModal";
-import { BREAK_DAY_IMAGES } from "./BreakDayImage";
+import { BREAK_DAY_IMAGES } from "./images";
 
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
@@ -45,19 +45,16 @@ const SearchIcon = () => (
   </svg>
 );
 
-// ✅ ID로 이미지 URL을 찾는 헬퍼 함수
 const getImageUrlById = (id) => {
   const image = BREAK_DAY_IMAGES.find((img) => img.id === id);
   return image ? image.url : null;
 };
 
-// ✅ 이벤트 아이템의 높이를 가져오는 함수
 const getEventItemHeight = () => {
   const isMobile = window.innerWidth <= 768;
-  return isMobile ? 18 : 26;
+  return isMobile ? 16 : 26;
 };
 
-// ✅ 디바운스 헬퍼 함수
 const debounce = (func, delay) => {
   let timeoutId;
   return (...args) => {
@@ -68,7 +65,6 @@ const debounce = (func, delay) => {
   };
 };
 
-// const EVENT_ITEM_HEIGHT = 36; // ✅ 삭제됨
 const MORE_BUTTON_HEIGHT = 20;
 
 const Calendar = () => {
@@ -113,7 +109,6 @@ const Calendar = () => {
     }
   }, [highlightedDate]);
 
-  // ✅ 디바운스 로직 적용
   useLayoutEffect(() => {
     const calculateMaxEvents = () => {
       const newMaxEvents = {};
@@ -122,7 +117,6 @@ const Calendar = () => {
       );
       if (!dateCells) return;
 
-      // ✅ 이벤트 아이템 높이를 함수로 가져오도록 변경
       const eventItemHeight = getEventItemHeight();
 
       dateCells.forEach((cell) => {
@@ -140,7 +134,7 @@ const Calendar = () => {
 
         const calculatedEvents = Math.max(
           0,
-          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight) // ✅ 변수 사용
+          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight)
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
@@ -150,7 +144,7 @@ const Calendar = () => {
 
     const debouncedCalculate = debounce(calculateMaxEvents, 250);
 
-    calculateMaxEvents(); // 첫 렌더링 시에는 즉시 실행
+    calculateMaxEvents();
     window.addEventListener("resize", debouncedCalculate);
     return () => window.removeEventListener("resize", debouncedCalculate);
   }, [currentDate, scheduleData]);
@@ -200,40 +194,79 @@ const Calendar = () => {
     setIsSearchModalOpen(false);
   };
 
-  // ✅ onSave 함수에 breakDayImageId 매개변수 추가
+  const handleBreakDayChange = async (
+    dateStr,
+    newIsBreakDay,
+    newMemo,
+    newBreakDayImageId
+  ) => {
+    const currentData = scheduleData[dateStr] || {
+      events: [],
+      memo: "",
+      isBreakDay: false,
+      version: 0,
+      breakDayImageId: null,
+    };
+
+    // 낙관적 업데이트: UI를 먼저 변경
+    setScheduleData((prevData) => ({
+      ...prevData,
+      [dateStr]: {
+        ...currentData,
+        events: newIsBreakDay ? [] : currentData.events,
+        isBreakDay: newIsBreakDay,
+        memo: newMemo,
+        breakDayImageId: newBreakDayImageId,
+      },
+    }));
+
+    // API 저장 로직 호출, 모달을 닫지 않음
+    await handleSaveSchedule(
+      dateStr,
+      newIsBreakDay ? [] : currentData.events,
+      newMemo,
+      newIsBreakDay,
+      newBreakDayImageId,
+      false
+    );
+  };
+
   const handleSaveSchedule = async (
     dateStr,
     newEvents,
     newMemo,
     isBreakDay,
-    breakDayImageId
+    breakDayImageId,
+    closeModal = true
   ) => {
     const originalData = scheduleData[dateStr] || {
       events: [],
       memo: "",
       isBreakDay: false,
       version: 0,
-      breakDayImageId: null, // ✅ 추가
+      breakDayImageId: null,
     };
 
     const optimisticData = { ...scheduleData };
 
     if (isBreakDay) {
       optimisticData[dateStr] = {
+        ...originalData,
         events: [],
         memo: newMemo,
         isBreakDay: true,
+        breakDayImageId: breakDayImageId,
         version: (originalData.version || 0) + 1,
-        breakDayImageId: breakDayImageId, // ✅ 추가
       };
     } else {
       if (newEvents.length > 0 || newMemo.trim()) {
         optimisticData[dateStr] = {
+          ...originalData,
           events: newEvents,
           memo: newMemo,
           isBreakDay: false,
+          breakDayImageId: null,
           version: (originalData.version || 0) + 1,
-          breakDayImageId: null, // ✅ 추가
         };
       } else {
         delete optimisticData[dateStr];
@@ -241,7 +274,9 @@ const Calendar = () => {
     }
 
     setScheduleData(optimisticData);
-    handleCloseModal();
+    if (closeModal) {
+      handleCloseModal();
+    }
 
     try {
       const response = await fetch("/api/schedules", {
@@ -255,7 +290,7 @@ const Calendar = () => {
           memo: newMemo,
           isBreakDay: isBreakDay,
           version: originalData.version,
-          breakDayImageId: breakDayImageId, // ✅ 추가
+          breakDayImageId: breakDayImageId,
         }),
       });
 
@@ -281,7 +316,7 @@ const Calendar = () => {
               memo: schedule.memo,
               isBreakDay: schedule.is_break_day,
               version: schedule.version,
-              breakDayImageId: schedule.break_day_image_id, // ✅ 추가
+              breakDayImageId: schedule.break_day_image_id,
             }
           : null;
 
@@ -369,7 +404,7 @@ const Calendar = () => {
       const cellData = scheduleData[dateStr];
       const events = cellData ? cellData.events : [];
       const memo = cellData ? cellData.memo : "";
-      const breakDayImageId = cellData?.breakDayImageId; // ✅ 추가
+      const breakDayImageId = cellData?.breakDayImageId;
 
       const isBreakDayWithReason = cellData?.isBreakDay && memo.trim();
       const isBreakDayWithoutReason = cellData?.isBreakDay && !memo.trim();
@@ -393,7 +428,6 @@ const Calendar = () => {
           {isBreakDayWithoutReason ? (
             <div className={styles.breakDayContent}>
               <span className={styles.breakReasonTitle}>휴방</span>
-              {/* ✅ 이미지 표시 */}
               {breakDayImageId && (
                 <div className={styles.breakDayImageContainer}>
                   <img
@@ -407,7 +441,6 @@ const Calendar = () => {
           ) : isBreakDayWithReason ? (
             <div className={styles.breakDayContent}>
               <p className={styles.breakReasonText}>{memo}</p>
-              {/* ✅ 이미지 표시 */}
               {breakDayImageId && (
                 <div className={styles.breakDayImageContainer}>
                   <img
@@ -487,6 +520,7 @@ const Calendar = () => {
           }
           onClose={handleCloseModal}
           onSave={handleSaveSchedule}
+          onBreakDayChange={handleBreakDayChange}
         />
       )}
 

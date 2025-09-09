@@ -811,7 +811,7 @@ input:checked + .slider:before {
   .eventItemImportant {
     font-size: 0.4em;
     padding: 1px 4px;
-    white-space: normal;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
