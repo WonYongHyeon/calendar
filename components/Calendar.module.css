@@ -110,11 +110,6 @@
   background-color: #e9ecef;
 }
 
-.dateNum {
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
 .dateCell.today {
   /* 기존 스타일을 아래 스타일로 대체 */
   border: 3px solid #f9bafc; /* ✅ 선명한 주황색 테두리 */
@@ -264,7 +259,7 @@
   align-items: center;
   border-bottom: 1px solid #e0e0e0;
   padding-bottom: 15px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
 }
 
 .modalHeader h3 {
@@ -343,7 +338,7 @@
 .eventListModal {
   list-style: none;
   padding: 0;
-  margin-bottom: 20px;
+  height: 180px;
 }
 
 .deleteEventBtn {
@@ -807,6 +802,15 @@ input:checked + .slider:before {
     font-size: 0.8rem;
   }
 
+  .timeDisplay {
+    font-size: 4px; /* 날짜보다 약간 작은 폰트 */
+    font-weight: bold;
+    color: #3498db;
+    white-space: nowrap; /* 시간이 길어져도 줄바꿈 방지 */
+    overflow: hidden; /* 영역을 벗어나면 숨김 */
+    text-overflow: ellipsis; /* 내용이 길면 ...으로 표시 */
+  }
+
   .eventItem,
   .eventItemImportant {
     font-size: 0.4em;
@@ -831,4 +835,96 @@ input:checked + .slider:before {
   .breakReasonText {
     font-size: 0.5rem;
   }
+
+  .moreButton {
+    font-size: 0.2rem;
+    /* padding: 2px 4px; */
+  }
+}
+
+/* --- 모달 내 시간 입력 필드 스타일 --- */
+.eventTimeSection {
+  margin-top: 10px;
+}
+
+.eventTimeSection h4 {
+  margin-bottom: 5px;
+}
+
+.timeInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
+/* --- 캘린더 셀 내 시간 표시 스타일 --- */
+.liveTime {
+  font-weight: bold;
+  color: #3498db;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* ✅ 캘린더 셀 내 시간 표시를 좌우로 분할하기 위한 새로운 스타일 */
+.timeSection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.timeSection .liveTime {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.timeSection .liveTime:first-child {
+  justify-content: flex-start;
+}
+
+.timeSection .liveTime:last-child {
+  justify-content: flex-end;
+}
+
+.moreButton {
+  color: #cb94ff;
+  padding: 3px 6px;
+  font-weight: bold;
+  font-size: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ✅ 캘린더 셀 헤더 (날짜 + 시간) 스타일 */
+.dateHeader {
+  display: flex;
+  justify-content: space-between; /* 날짜와 시간을 양쪽 끝으로 분리 */
+  align-items: center; /* 세로 중앙 정렬 */
+  width: 100%;
+  margin-bottom: 4px; /* 헤더와 일정 목록 사이 간격 */
+}
+
+/* ✅ 날짜 번호 스타일 (기존 스타일에서 변경이 필요할 수 있음) */
+.dateNum {
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex-shrink: 0; /* 공간이 부족할 때 숫자가 줄어들지 않도록 설정 */
+}
+
+/* ✅ 시간 표시 스타일 */
+.timeDisplay {
+  font-size: 0.8rem; /* 날짜보다 약간 작은 폰트 */
+  font-weight: bold;
+  color: #3498db;
+  white-space: nowrap; /* 시간이 길어져도 줄바꿈 방지 */
+  overflow: hidden; /* 영역을 벗어나면 숨김 */
+  text-overflow: ellipsis; /* 내용이 길면 ...으로 표시 */
 }

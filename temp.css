@@ -1,0 +1,897 @@
+/* --- 캘린더 기본 레이아웃 --- */
+.calendarContainer {
+  font-family: "Poor Story", system-ui, sans-serif;
+  width: 100%;
+  max-width: 1400px;
+  margin: auto;
+  background-color: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin: 1rem auto;
+}
+
+/* --- 캘린더 헤더 --- */
+.calendarHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between; /* 양쪽 끝에 배치 */
+  align-items: center;
+  padding: 20px 25px;
+  background-color: #3498db;
+  color: white;
+}
+
+.navButtons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.calendarHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navBtn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.navBtn svg {
+  fill: currentColor;
+}
+
+.todayBtn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.todayBtn:hover {
+  background-color: #c0392b;
+}
+
+/* --- 캘린더 그리드 및 날짜 셀 --- */
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #e0e0e0;
+  border-left: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  min-height: 500px;
+}
+
+.dayName {
+  background-color: #f7f9fc;
+  text-align: center;
+  padding: 15px 0;
+  font-weight: bold;
+  color: #555;
+  border-right: 1px solid #e0e0e0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.dateCell {
+  position: relative;
+  min-height: 120px;
+  background-color: white;
+  border-top: 1px solid #e0e0e0;
+  border-right: 1px solid #e0e0e0;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+
+.dateCell:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.dateCell.otherMonth {
+  background-color: #f0f0f0;
+  color: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+
+.dateNum {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+  text-align: right;
+  padding-bottom: 5px;
+}
+
+.dateCell.today {
+  border: 2px solid #3498db;
+  box-shadow: inset 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.dateCell.breakDay {
+  background-color: #fde6e8;
+  color: #e74c3c;
+  border: 2px dashed #e74c3c;
+}
+
+.breakDayContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 10px;
+  text-align: center;
+}
+
+.breakReasonTitle {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #e74c3c;
+  margin-bottom: 5px;
+}
+
+.breakReasonText {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-height: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.breakDayImageContainer {
+  margin-top: 10px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.breakDayImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.eventsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.timeSection {
+  margin-bottom: 5px;
+}
+
+.liveTime {
+  font-size: 0.8rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 3px;
+  color: #2c3e50;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventItem {
+  font-size: 0.8rem;
+  padding: 2px 5px;
+  background-color: #ecf0f1;
+  border-left: 3px solid #3498db;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.eventItemImportant {
+  font-size: 0.8rem;
+  padding: 2px 5px;
+  background-color: #f9e3d9;
+  border-left: 3px solid #e74c3c;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+.moreEvents {
+  font-size: 0.7rem;
+  color: #888;
+  text-align: center;
+  padding-top: 5px;
+}
+
+/* --- 모달 레이아웃 --- */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modalContent {
+  background-color: #f7f9fc;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.modalHeader {
+  padding: 20px;
+  background-color: #34495e;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.modalOptions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.breakDayToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.modalBody {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modalFooter {
+  padding: 15px 20px;
+  background-color: #ecf0f1;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  text-align: right;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #e74c3c;
+}
+
+.saveBtn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.saveBtn:hover {
+  background-color: #2980b9;
+}
+
+/* --- 모달 내부 섹션 --- */
+.timeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.eventTimeSection {
+  background-color: #e8f5fd;
+  border: 1px solid #d4eaf7;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.eventTimeSection h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.timeInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.timeInput:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.eventTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.importantCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.addEventRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.eventInput {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.eventInput:focus {
+  border-color: #3498db;
+}
+
+.addEventBtn {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.addEventBtn:hover {
+  background-color: #27ae60;
+}
+
+.eventListContainer {
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.eventListModal {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.eventListItem {
+  position: relative;
+  padding: 8px 30px 8px 12px;
+  background-color: #f8f8f8;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  cursor: grab;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: box-shadow 0.2s;
+}
+
+.importantEventListItem {
+  position: relative;
+  padding: 8px 30px 8px 12px;
+  background-color: #ffe8d4;
+  border: 1px solid #f99052;
+  border-left: 5px solid #e74c3c;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  cursor: grab;
+  font-weight: bold;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: box-shadow 0.2s;
+}
+
+.eventListItem:active,
+.importantEventListItem:active {
+  cursor: grabbing;
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+}
+
+.deleteEventBtn {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.deleteEventBtn:hover {
+  opacity: 1;
+}
+
+.memoSection {
+  background-color: #f7f9fc;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+}
+
+.memoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.memoHeader h4 {
+  margin: 0;
+}
+
+.editMemoBtn {
+  background-color: #bdc3c7;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background-color 0.2s;
+}
+
+.editMemoBtn:hover {
+  background-color: #95a5a6;
+}
+
+.memoInput {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: none;
+  box-sizing: border-box;
+  background-color: white;
+  transition: background-color 0.2s;
+}
+
+.memoInput:read-only {
+  background-color: #f7f9fc;
+}
+
+.memoInput:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* --- 토글 스위치 --- */
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+}
+
+.toggleSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2ecc71;
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+/* ✅ 휴방 이미지 선택 섹션 스타일 */
+.imageSelectionSection {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageSelectBtn {
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  margin-bottom: 15px;
+}
+
+.imageSelectBtn:hover {
+  background-color: #8e44ad;
+}
+
+.imageOptionsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.imageOptionItem {
+  width: 50px;
+  height: 50px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+
+.imageOptionItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageOptionItem.selectedImage {
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
+
+/* ✅ 검색 버튼 */
+.searchFloatingBtn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.searchFloatingBtn:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
+.searchFloatingBtn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* ✅ 검색 모달 스타일 */
+.searchContainer {
+  display: flex;
+  gap: 10px;
+}
+
+.searchInput {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.searchButton {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.searchResultsContainer {
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.searchResultItem {
+  padding: 12px;
+  background-color: #f7f9fc;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.searchResultItem:hover {
+  background-color: #e8f5fd;
+}
+
+.searchResultDate {
+  font-weight: bold;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.searchResultText {
+  margin: 5px 0 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.noResults {
+  text-align: center;
+  color: #888;
+  padding: 20px;
+}
+
+/* ✅ 토스트 메시지 스타일 */
+.toastContainer {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1001;
+  animation: slideInFromBottom 0.5s ease-out forwards;
+}
+
+.toastMessage {
+  background-color: #2c3e50;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 500;
+  opacity: 0;
+  animation: fadeInOut 5s forwards;
+}
+
+.toastMessage svg {
+  fill: none;
+  stroke: #e74c3c;
+  min-width: 24px;
+}
+
+@keyframes slideInFromBottom {
+  from {
+    transform: translate(-50%, 50px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ✅ 셀 하이라이트 */
+.highlightedCell {
+  animation: highlightAnimation 3s ease-in-out;
+}
+
+@keyframes highlightAnimation {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    border-color: #ffaa00;
+    background-color: #fff9e6;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+    border-color: #ffaa00;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    border-color: transparent;
+    background-color: initial;
+  }
+}
+
+/* ✅ 휴방 이미지 선택 섹션 스타일 */
+.imageSelectionSection {
+  margin-top: 20px;
+}
+
+.imageSelectBtn {
+  background-color: #9b59b6;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  margin-bottom: 15px;
+}
+
+.imageSelectBtn:hover {
+  background-color: #8e44ad;
+}
+
+.imageOptionsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.imageOptionItem {
+  width: 50px;
+  height: 50px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  overflow: hidden;
+}
+
+.imageOptionItem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageOptionItem.selectedImage {
+  border-color: #3498db;
+  box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
+
+.paginationControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.pageBtn {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.pageBtn:hover {
+  background-color: #2980b9;
+}
+
+.pageBtn:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}

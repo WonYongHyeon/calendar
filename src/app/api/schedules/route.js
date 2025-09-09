@@ -20,7 +20,9 @@ export async function GET(request) {
         memo: row.memo || "",
         isBreakDay: row.is_break_day || false,
         version: row.version,
-        breakDayImageId: row.break_day_image_id, // ✅ DB에서 이미지 ID를 불러옵니다.
+        breakDayImageId: row.break_day_image_id,
+        morningTime: row.morning_time || "",
+        afternoonTime: row.afternoon_time || "",
       };
       return acc;
     }, {});
@@ -43,52 +45,55 @@ export async function POST(request) {
       memo,
       isBreakDay,
       version,
-      breakDayImageId, // ✅ 클라이언트에서 보낸 이미지 ID를 받습니다.
+      breakDayImageId,
+      morningTime,
+      afternoonTime,
     } = await request.json();
 
-    const { rows: currentData } =
-      await sql`SELECT version FROM schedules WHERE date = ${date};`;
-
-    if (currentData.length > 0 && currentData[0].version !== version) {
-      return NextResponse.json(
-        {
-          error: `일정 정보가 이미 수정되었습니다.\n페이지를 새로고침하여 최신 데이터를 확인 후 다시 시도해주세요.`,
-        },
-        { status: 409 }
-      );
-    }
-
-    let updatedSchedule = null;
-
+    let updatedSchedule;
     if (isBreakDay) {
       const { rows } = await sql`
-        INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id)
+        INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id, morning_time, afternoon_time)
         VALUES (${date}, ${JSON.stringify(
         events
-      )}, ${memo}, ${isBreakDay}, 1, ${breakDayImageId})
+      )}, ${memo}, ${isBreakDay}, 1, ${breakDayImageId}, ${morningTime}, ${afternoonTime})
         ON CONFLICT (date) DO UPDATE SET
         events = EXCLUDED.events,
         memo = EXCLUDED.memo,
         is_break_day = EXCLUDED.is_break_day,
         version = schedules.version + 1,
-        break_day_image_id = EXCLUDED.break_day_image_id
+        break_day_image_id = EXCLUDED.break_day_image_id,
+        morning_time = EXCLUDED.morning_time,
+        afternoon_time = EXCLUDED.afternoon_time
         RETURNING *;
       `;
       updatedSchedule = rows[0];
-    } else if (events.length === 0 && !memo.trim()) {
-      await sql`DELETE FROM schedules WHERE date = ${date};`;
     } else {
-      const { rows } = await sql`
-        INSERT INTO schedules (date, events, memo, is_break_day, version)
-        VALUES (${date}, ${JSON.stringify(events)}, ${memo}, ${isBreakDay}, 1)
-        ON CONFLICT (date) DO UPDATE SET
-        events = EXCLUDED.events,
-        memo = EXCLUDED.memo,
-        is_break_day = EXCLUDED.is_break_day,
-        version = schedules.version + 1
-        RETURNING *;
-      `;
-      updatedSchedule = rows[0];
+      if (
+        events.length === 0 &&
+        !memo.trim() &&
+        !morningTime.trim() &&
+        !afternoonTime.trim()
+      ) {
+        await sql`DELETE FROM schedules WHERE date = ${date};`;
+      } else {
+        const { rows } = await sql`
+          INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id, morning_time, afternoon_time)
+          VALUES (${date}, ${JSON.stringify(
+          events
+        )}, ${memo}, ${isBreakDay}, 1, null, ${morningTime}, ${afternoonTime})
+          ON CONFLICT (date) DO UPDATE SET
+          events = EXCLUDED.events,
+          memo = EXCLUDED.memo,
+          is_break_day = EXCLUDED.is_break_day,
+          version = schedules.version + 1,
+          break_day_image_id = null,
+          morning_time = EXCLUDED.morning_time,
+          afternoon_time = EXCLUDED.afternoon_time
+          RETURNING *;
+        `;
+        updatedSchedule = rows[0];
+      }
     }
 
     return NextResponse.json(
@@ -96,7 +101,7 @@ export async function POST(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Failed to save schedule to DB:", error);
+    console.error("Failed to save schedule:", error);
     return NextResponse.json(
       { error: "Failed to save schedule" },
       { status: 500 }

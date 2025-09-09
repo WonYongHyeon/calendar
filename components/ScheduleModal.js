@@ -74,8 +74,8 @@ const ScheduleModal = ({
   const [isImportant, setIsImportant] = useState(false);
   const [isMemoEditing, setIsMemoEditing] = useState(false);
 
-  // ✅ 누락된 상태 추가
-  const [showImageSelector, setShowImageSelector] = useState(false);
+  const [morningTime, setMorningTime] = useState("");
+  const [afternoonTime, setAfternoonTime] = useState("");
 
   const isBreakDay = data?.isBreakDay || false;
   const selectedImageId = data?.breakDayImageId || null;
@@ -85,7 +85,26 @@ const ScheduleModal = ({
     memo: "",
     isBreakDay: false,
     breakDayImageId: null,
+    morningTime: "",
+    afternoonTime: "",
   });
+
+  const [showImageSelector, setShowImageSelector] = useState(false);
+  const [imagePage, setImagePage] = useState(1);
+  const imagesPerPage = 4;
+  const totalImagePages = Math.ceil(BREAK_DAY_IMAGES.length / imagesPerPage);
+  const paginatedImages = BREAK_DAY_IMAGES.slice(
+    (imagePage - 1) * imagesPerPage,
+    imagePage * imagesPerPage
+  );
+
+  const [eventPage, setEventPage] = useState(1);
+  const eventsPerPage = 4;
+  const totalEventPages = Math.ceil(events.length / eventsPerPage);
+  const paginatedEvents = events.slice(
+    (eventPage - 1) * eventsPerPage,
+    eventPage * eventsPerPage
+  );
 
   useEffect(() => {
     if (data) {
@@ -95,21 +114,31 @@ const ScheduleModal = ({
       }));
       setEvents(eventsWithId);
       setMemo(data.memo || "");
+      setMorningTime(data.morningTime || "");
+      setAfternoonTime(data.afternoonTime || "");
       setOriginalData({
         events: data.events,
         memo: data.memo,
         isBreakDay: data.isBreakDay,
         breakDayImageId: data.breakDayImageId,
+        morningTime: data.morningTime || "",
+        afternoonTime: data.afternoonTime || "",
       });
+      setEventPage(1);
     } else {
       setEvents([]);
       setMemo("");
+      setMorningTime("");
+      setAfternoonTime("");
       setOriginalData({
         events: [],
         memo: "",
         isBreakDay: false,
         breakDayImageId: null,
+        morningTime: "",
+        afternoonTime: "",
       });
+      setEventPage(1);
     }
   }, [data]);
 
@@ -121,14 +150,22 @@ const ScheduleModal = ({
           text: newEvent.trim(),
           isImportant: isImportant,
         };
-        setEvents([...events, newEventItem]);
+        const updatedEvents = [...events, newEventItem];
+        setEvents(updatedEvents);
         setNewEvent("");
+        const newTotalPages = Math.ceil(updatedEvents.length / eventsPerPage);
+        setEventPage(newTotalPages);
       }
     }
   };
 
   const handleDeleteEvent = (idToDelete) => {
-    setEvents(events.filter((event) => event.id !== idToDelete));
+    const updatedEvents = events.filter((event) => event.id !== idToDelete);
+    setEvents(updatedEvents);
+    const newTotalPages = Math.ceil(updatedEvents.length / eventsPerPage);
+    if (eventPage > newTotalPages) {
+      setEventPage(Math.max(1, newTotalPages));
+    }
   };
 
   const handleDragEnd = (event) => {
@@ -150,31 +187,42 @@ const ScheduleModal = ({
         { text: newEvent.trim(), isImportant, id: `event-${Date.now()}` },
       ];
     }
-    const eventsToSave = isBreakDay ? [] : finalEvents;
-    onSave(dateStr, eventsToSave, memo, isBreakDay, selectedImageId);
-  };
-
-  const handleClose = () => {
-    onClose();
+    // 이 줄을 삭제하여 휴방일에도 이벤트를 빈 배열로 만들지 않습니다.
+    // const eventsToSave = isBreakDay ? [] : finalEvents;
+    onSave(
+      dateStr,
+      finalEvents, // eventsToSave 대신 finalEvents를 직접 전달
+      memo,
+      isBreakDay,
+      selectedImageId,
+      morningTime,
+      afternoonTime
+    );
   };
 
   const showSaveButton = () => {
     const isInitialEmpty =
       originalData.events.length === 0 &&
       originalData.memo === "" &&
-      !originalData.isBreakDay;
+      !originalData.isBreakDay &&
+      !originalData.morningTime &&
+      !originalData.afternoonTime;
     const isCurrentEmpty =
       events.length === 0 &&
       memo.trim() === "" &&
       !isBreakDay &&
-      newEvent.trim() === "";
+      newEvent.trim() === "" &&
+      !morningTime &&
+      !afternoonTime;
     if (isInitialEmpty && isCurrentEmpty) {
       return false;
     }
 
     if (
       isBreakDay !== originalData.isBreakDay ||
-      selectedImageId !== originalData.breakDayImageId
+      selectedImageId !== originalData.breakDayImageId ||
+      morningTime !== originalData.morningTime ||
+      afternoonTime !== originalData.afternoonTime
     ) {
       return true;
     }
@@ -221,7 +269,7 @@ const ScheduleModal = ({
   const date = new Date(dateStr);
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose}>
+    <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>{`${date.getFullYear()}년 ${
@@ -245,13 +293,39 @@ const ScheduleModal = ({
               <span className={styles.slider}></span>
             </label>
           </div>
-          <button className={styles.closeBtn} onClick={handleClose}>
+          <button className={styles.closeBtn} onClick={onClose}>
             &times;
           </button>
         </div>
         <div className={styles.modalBody}>
           {!isBreakDay && (
             <>
+              <div className={styles.timeSection}>
+                {/* ✅ 오전 뱅온 시간 입력 필드 */}
+                <div className={styles.eventTimeSection}>
+                  <h4>☀️ 오전 뱅온 시간</h4>
+                  <input
+                    type="text"
+                    className={styles.timeInput}
+                    placeholder="예: 7:10"
+                    value={morningTime}
+                    onChange={(e) => setMorningTime(e.target.value)}
+                  />
+                </div>
+
+                {/* ✅ 오후 뱅온 시간 입력 필드 */}
+                <div className={styles.eventTimeSection}>
+                  <h4>🌙 오후 뱅온 시간</h4>
+                  <input
+                    type="text"
+                    className={styles.timeInput}
+                    placeholder="예: 19:00"
+                    value={afternoonTime}
+                    onChange={(e) => setAfternoonTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
               <div className={styles.eventTitleRow}>
                 <h4>🗓️ 일정 추가</h4>
                 <div className={styles.importantCheckbox}>
@@ -286,11 +360,11 @@ const ScheduleModal = ({
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={events.map((e) => e.id)}
+                  items={paginatedEvents.map((e) => e.id)}
                   strategy={verticalListSortingStrategy}
                 >
                   <ul className={styles.eventListModal}>
-                    {events.map((event) => (
+                    {paginatedEvents.map((event) => (
                       <SortableItem
                         key={event.id}
                         event={event}
@@ -300,6 +374,31 @@ const ScheduleModal = ({
                   </ul>
                 </SortableContext>
               </DndContext>
+              {totalEventPages > 1 && (
+                <div className={styles.paginationControls}>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() =>
+                      setEventPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={eventPage === 1}
+                  >
+                    이전
+                  </button>
+                  <span>{`${eventPage} / ${totalEventPages}`}</span>
+                  <button
+                    className={styles.pageBtn}
+                    onClick={() =>
+                      setEventPage((prev) =>
+                        Math.min(prev + 1, totalEventPages)
+                      )
+                    }
+                    disabled={eventPage === totalEventPages}
+                  >
+                    다음
+                  </button>
+                </div>
+              )}
             </>
           )}
 
@@ -331,24 +430,27 @@ const ScheduleModal = ({
                   휴방 이미지 선택
                 </button>
               )}
-
               {showImageSelector && (
-                <div className={styles.imageOptionsContainer}>
-                  {BREAK_DAY_IMAGES.map((image) => (
-                    <div
-                      key={image.id}
-                      className={`${styles.imageOptionItem} ${
-                        selectedImageId === image.id ? styles.selectedImage : ""
-                      }`}
-                      onClick={() => {
-                        onBreakDayChange(dateStr, true, memo, image.id);
-                        setShowImageSelector(false);
-                      }}
-                    >
-                      <img src={getImageUrlById(image.id)} alt={image.id} />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <div className={styles.imageOptionsContainer}>
+                    {BREAK_DAY_IMAGES.map((image) => (
+                      <div
+                        key={image.id}
+                        className={`${styles.imageOptionItem} ${
+                          selectedImageId === image.id
+                            ? styles.selectedImage
+                            : ""
+                        }`}
+                        onClick={() => {
+                          onBreakDayChange(dateStr, true, memo, image.id);
+                          setShowImageSelector(false);
+                        }}
+                      >
+                        <img src={getImageUrlById(image.id)} alt={image.id} />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -380,7 +482,7 @@ const ScheduleModal = ({
         <div className={styles.modalFooter}>
           <button
             className={styles.saveBtn}
-            onClick={showSaveButton() ? handleSave : handleClose}
+            onClick={showSaveButton() ? handleSave : onClose}
           >
             {showSaveButton() ? "저장하고 닫기" : "닫기"}
           </button>

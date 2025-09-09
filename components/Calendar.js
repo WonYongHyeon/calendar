@@ -52,7 +52,7 @@ const getImageUrlById = (id) => {
 
 const getEventItemHeight = () => {
   const isMobile = window.innerWidth <= 768;
-  return isMobile ? 16 : 26;
+  return isMobile ? 22 : 26;
 };
 
 const debounce = (func, delay) => {
@@ -65,8 +65,6 @@ const debounce = (func, delay) => {
   };
 };
 
-const MORE_BUTTON_HEIGHT = 20;
-
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduleData, setScheduleData] = useState({});
@@ -74,12 +72,22 @@ const Calendar = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModal] = useState(false);
   const [highlightedDate, setHighlightedDate] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
 
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
 
   const calendarRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 800);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchSchedules = async () => {
     setIsLoading(true);
@@ -134,7 +142,7 @@ const Calendar = () => {
 
         const calculatedEvents = Math.max(
           0,
-          Math.floor((availableHeight - MORE_BUTTON_HEIGHT) / eventItemHeight)
+          Math.floor((availableHeight - 16) / eventItemHeight)
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
@@ -180,18 +188,18 @@ const Calendar = () => {
   };
 
   const handleOpenSearchModal = () => {
-    setIsSearchModalOpen(true);
+    setIsSearchModal(true);
   };
 
   const handleCloseSearchModal = () => {
-    setIsSearchModalOpen(false);
+    setIsSearchModal(false);
   };
 
   const handleGoToDate = (dateStr) => {
     const [year, month, day] = dateStr.split("-").map(Number);
     setCurrentDate(new Date(year, month - 1, day));
     setHighlightedDate(dateStr);
-    setIsSearchModalOpen(false);
+    setIsSearchModal(false);
   };
 
   const handleBreakDayChange = async (
@@ -206,27 +214,29 @@ const Calendar = () => {
       isBreakDay: false,
       version: 0,
       breakDayImageId: null,
+      morningTime: "",
+      afternoonTime: "",
     };
 
-    // 낙관적 업데이트: UI를 먼저 변경
     setScheduleData((prevData) => ({
       ...prevData,
       [dateStr]: {
         ...currentData,
-        events: newIsBreakDay ? [] : currentData.events,
+        events: currentData.events,
         isBreakDay: newIsBreakDay,
         memo: newMemo,
         breakDayImageId: newBreakDayImageId,
       },
     }));
 
-    // API 저장 로직 호출, 모달을 닫지 않음
     await handleSaveSchedule(
       dateStr,
-      newIsBreakDay ? [] : currentData.events,
+      currentData.events,
       newMemo,
       newIsBreakDay,
       newBreakDayImageId,
+      currentData.morningTime,
+      currentData.afternoonTime,
       false
     );
   };
@@ -237,7 +247,9 @@ const Calendar = () => {
     newMemo,
     isBreakDay,
     breakDayImageId,
-    closeModal = true
+    morningTime,
+    afternoonTime,
+    shouldCloseModal = true
   ) => {
     const originalData = scheduleData[dateStr] || {
       events: [],
@@ -245,6 +257,8 @@ const Calendar = () => {
       isBreakDay: false,
       version: 0,
       breakDayImageId: null,
+      morningTime: "",
+      afternoonTime: "",
     };
 
     const optimisticData = { ...scheduleData };
@@ -252,14 +266,21 @@ const Calendar = () => {
     if (isBreakDay) {
       optimisticData[dateStr] = {
         ...originalData,
-        events: [],
+        events: newEvents,
         memo: newMemo,
         isBreakDay: true,
         breakDayImageId: breakDayImageId,
         version: (originalData.version || 0) + 1,
+        morningTime: "",
+        afternoonTime: "",
       };
     } else {
-      if (newEvents.length > 0 || newMemo.trim()) {
+      if (
+        newEvents.length > 0 ||
+        newMemo.trim() ||
+        morningTime.trim() ||
+        afternoonTime.trim()
+      ) {
         optimisticData[dateStr] = {
           ...originalData,
           events: newEvents,
@@ -267,6 +288,8 @@ const Calendar = () => {
           isBreakDay: false,
           breakDayImageId: null,
           version: (originalData.version || 0) + 1,
+          morningTime: morningTime,
+          afternoonTime: afternoonTime,
         };
       } else {
         delete optimisticData[dateStr];
@@ -274,7 +297,7 @@ const Calendar = () => {
     }
 
     setScheduleData(optimisticData);
-    if (closeModal) {
+    if (shouldCloseModal) {
       handleCloseModal();
     }
 
@@ -291,6 +314,8 @@ const Calendar = () => {
           isBreakDay: isBreakDay,
           version: originalData.version,
           breakDayImageId: breakDayImageId,
+          morningTime: morningTime,
+          afternoonTime: afternoonTime,
         }),
       });
 
@@ -317,6 +342,8 @@ const Calendar = () => {
               isBreakDay: schedule.is_break_day,
               version: schedule.version,
               breakDayImageId: schedule.break_day_image_id,
+              morningTime: schedule.morning_time,
+              afternoonTime: schedule.afternoon_time,
             }
           : null;
 
@@ -396,22 +423,32 @@ const Calendar = () => {
       const dateStr = `${date.getFullYear()}-${String(
         date.getMonth() + 1
       ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
       const today = new Date();
       const isToday =
         day === today.getDate() &&
         month === today.getMonth() &&
         year === today.getFullYear();
-      const cellData = scheduleData[dateStr];
-      const events = cellData ? cellData.events : [];
-      const memo = cellData ? cellData.memo : "";
-      const breakDayImageId = cellData?.breakDayImageId;
 
-      const isBreakDayWithReason = cellData?.isBreakDay && memo.trim();
-      const isBreakDayWithoutReason = cellData?.isBreakDay && !memo.trim();
+      const cellData = scheduleData[dateStr];
+      const events = cellData?.events || [];
+      const memo = cellData?.memo || "";
+      const breakDayImageId = cellData?.breakDayImageId || null;
+      const morningTime = cellData?.morningTime || "";
+      const afternoonTime = cellData?.afternoonTime || "";
+
+      // 이 부분을 수정했습니다. events 배열을 직접 사용합니다.
+      const combinedEvents = events;
 
       const maxEventsCount = maxEventsToShow[dateStr] || 0;
-      const visibleEvents = events.slice(0, maxEventsCount);
-      const remainingEventsCount = events.length - visibleEvents.length;
+      const visibleEvents = combinedEvents.slice(0, maxEventsCount);
+      const remainingEventsCount =
+        combinedEvents.length > maxEventsCount
+          ? combinedEvents.length - maxEventsCount
+          : 0;
+
+      const isBreakDay = cellData?.isBreakDay === true;
+      const isBreakDayWithReason = isBreakDay && memo.trim();
 
       const isHighlighted = highlightedDate === dateStr;
 
@@ -420,68 +457,67 @@ const Calendar = () => {
           key={dateStr}
           data-date={dateStr}
           className={`${styles.dateCell} ${isToday ? styles.today : ""} ${
-            cellData?.isBreakDay === true ? styles.breakDay : ""
+            isBreakDay ? styles.breakDay : ""
           } ${isHighlighted ? styles.highlightedCell : ""}`}
           onClick={() => handleDateClick(dateStr)}
         >
-          <div className={styles.dateNum}>{day}</div>
-          {isBreakDayWithoutReason ? (
+          {/* ✅ 날짜와 시간을 묶는 새로운 헤더 */}
+          <div className={styles.dateHeader}>
+            <div className={styles.dateNum}>{day}</div>
+            {!isBreakDay && (morningTime || afternoonTime) && (
+              <div className={styles.timeDisplay}>
+                {morningTime && <span>☀️{isMobile ? "" : morningTime}</span>}
+                {/* 오전과 오후 시간 사이에 구분자 추가 */}
+                {morningTime && afternoonTime && <span> / </span>}
+                {afternoonTime && (
+                  <span>🌙{isMobile ? "" : afternoonTime}</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {isBreakDay && (
             <div className={styles.breakDayContent}>
-              <span className={styles.breakReasonTitle}>휴방</span>
+              {isBreakDayWithReason ? (
+                <div className={styles.memoPreview}>{memo}</div>
+              ) : (
+                <span className={styles.breakReasonTitle}>휴방</span>
+              )}
               {breakDayImageId && (
                 <div className={styles.breakDayImageContainer}>
                   <img
+                    className={styles.breakDayImage}
                     src={getImageUrlById(breakDayImageId)}
                     alt="휴방 이미지"
-                    className={styles.breakDayImage}
                   />
-                </div>
-              )}
-            </div>
-          ) : isBreakDayWithReason ? (
-            <div className={styles.breakDayContent}>
-              <p className={styles.breakReasonText}>{memo}</p>
-              {breakDayImageId && (
-                <div className={styles.breakDayImageContainer}>
-                  <img
-                    src={getImageUrlById(breakDayImageId)}
-                    alt="휴방 이미지"
-                    className={styles.breakDayImage}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className={styles.eventsList}>
-              {visibleEvents.map((event, i) => (
-                <div
-                  key={i}
-                  className={
-                    event.isImportant
-                      ? styles.eventItemImportant
-                      : styles.eventItem
-                  }
-                >
-                  {event.text}
-                </div>
-              ))}
-              {remainingEventsCount > 0 && (
-                <div className={styles.moreEvents}>
-                  +{remainingEventsCount}개 더보기
                 </div>
               )}
             </div>
           )}
-        </div>
-      );
-    }
 
-    while (cells.length % 7 !== 0) {
-      cells.push(
-        <div
-          key={`next-${cells.length}`}
-          className={`${styles.dateCell} ${styles.otherMonth}`}
-        ></div>
+          {!isBreakDay && (
+            <>
+              <ul className={styles.eventList}>
+                {visibleEvents.map((evt, idx) => {
+                  return !evt.isImportant ? (
+                    <li key={idx} className={styles.eventItem}>
+                      {evt.text}
+                    </li>
+                  ) : (
+                    <li key={idx} className={styles.eventItemImportant}>
+                      {evt.text}
+                    </li>
+                  );
+                })}
+              </ul>
+              {remainingEventsCount > 0 && (
+                <div className={styles.moreButton}>
+                  +{remainingEventsCount}개 더보기
+                </div>
+              )}
+            </>
+          )}
+        </div>
       );
     }
 
@@ -516,7 +552,15 @@ const Calendar = () => {
         <ScheduleModal
           dateStr={selectedDate}
           data={
-            scheduleData[selectedDate] || { events: [], memo: "", version: 0 }
+            scheduleData[selectedDate] || {
+              events: [],
+              memo: "",
+              version: 0,
+              isBreakDay: false,
+              breakDayImageId: null,
+              morningTime: "",
+              afternoonTime: "",
+            }
           }
           onClose={handleCloseModal}
           onSave={handleSaveSchedule}
