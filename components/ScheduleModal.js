@@ -329,7 +329,7 @@ const ScheduleModal = ({
               <div className={styles.eventTitleRow}>
                 <h4>🗓️ 일정 추가</h4>
                 <div className={styles.importantCheckbox}>
-                  <span className={styles.toggleLabel}>아침</span>
+                  <span className={styles.toggleLabel}>오전</span>
                   <label className={styles.toggleSwitch}>
                     <input
                       type="checkbox"
@@ -338,7 +338,7 @@ const ScheduleModal = ({
                     />
                     <span className={styles.slider}></span>
                   </label>
-                  <span className={styles.toggleLabel}>저녁</span>
+                  <span className={styles.toggleLabel}>오후</span>
                 </div>
               </div>
               <div className={styles.addEventRow}>
