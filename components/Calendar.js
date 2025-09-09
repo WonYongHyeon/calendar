@@ -481,7 +481,7 @@ const Calendar = () => {
           {isBreakDay && (
             <div className={styles.breakDayContent}>
               {isBreakDayWithReason ? (
-                <div className={styles.memoPreview}>{memo}</div>
+                <div className={styles.breakReasonText}>{memo}</div>
               ) : (
                 <span className={styles.breakReasonTitle}>휴방</span>
               )}
