@@ -74,7 +74,7 @@ const Calendar = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [isSearchModalOpen, setIsSearchModal] = useState(false);
   const [highlightedDate, setHighlightedDate] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 800);
+  const [isMobile, setIsMobile] = useState(true);
 
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
 
@@ -84,6 +84,8 @@ const Calendar = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 800);
     };
+
+    handleResize(); // 초기 실행
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
