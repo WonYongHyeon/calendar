@@ -523,6 +523,21 @@ const Calendar = () => {
       );
     }
 
+    // ✅ 동적으로 남은 칸 채우기
+    const totalDaysInGrid = firstDayOfMonth + lastDateOfMonth;
+    const requiredCells = Math.ceil(totalDaysInGrid / 7) * 7;
+    const remainingCells = requiredCells - cells.length;
+
+    for (let i = 0; i < remainingCells; i++) {
+      cells.push(
+        <div
+          key={`next-${i}`}
+          className={`${styles.dateCell} ${styles.otherMonth}`}
+          onClick={null}
+        ></div>
+      );
+    }
+
     return (
       <div ref={calendarRef} className={styles.calendarGrid}>
         {cells}
