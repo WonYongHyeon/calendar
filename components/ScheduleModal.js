@@ -1,6 +1,6 @@
 // ScheduleModal.js
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Calendar.module.css";
 import {
   DndContext,
@@ -8,6 +8,8 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
+  useDroppable,
+  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -16,6 +18,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { createPortal } from "react-dom";
 import { BREAK_DAY_IMAGES } from "./images";
 
 const getImageUrlById = (id) => {
@@ -37,6 +40,7 @@ const SortableItem = ({ event, handleDeleteEvent }) => {
     transform: CSS.Transform.toString(transform),
     transition,
     cursor: "grab",
+    opacity: isDragging ? 0 : 1,
   };
 
   return (
@@ -61,6 +65,50 @@ const SortableItem = ({ event, handleDeleteEvent }) => {
   );
 };
 
+const DroppablePrevButton = ({ onClick, disabled }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: "prev-page-droppable",
+    data: { direction: "prev" },
+  });
+  const buttonStyle = isOver
+    ? { backgroundColor: "rgba(52, 152, 219, 0.5)" }
+    : {};
+
+  return (
+    <button
+      ref={setNodeRef}
+      className={styles.pageBtn}
+      onClick={onClick}
+      disabled={disabled}
+      style={buttonStyle}
+    >
+      이전
+    </button>
+  );
+};
+
+const DroppableNextButton = ({ onClick, disabled }) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: "next-page-droppable",
+    data: { direction: "next" },
+  });
+  const buttonStyle = isOver
+    ? { backgroundColor: "rgba(52, 152, 219, 0.5)" }
+    : {};
+
+  return (
+    <button
+      ref={setNodeRef}
+      className={styles.pageBtn}
+      onClick={onClick}
+      disabled={disabled}
+      style={buttonStyle}
+    >
+      다음
+    </button>
+  );
+};
+
 const ScheduleModal = ({
   dateStr,
   data,
@@ -73,6 +121,7 @@ const ScheduleModal = ({
   const [newEvent, setNewEvent] = useState("");
   const [isImportant, setIsImportant] = useState(false);
   const [isMemoEditing, setIsMemoEditing] = useState(false);
+  const [activeId, setActiveId] = useState(null);
 
   const [morningTime, setMorningTime] = useState("");
   const [afternoonTime, setAfternoonTime] = useState("");
@@ -105,6 +154,9 @@ const ScheduleModal = ({
     (eventPage - 1) * eventsPerPage,
     eventPage * eventsPerPage
   );
+
+  const pageChangeTimerRef = useRef(null);
+  const isDraggingOverPaginationRef = useRef(null);
 
   useEffect(() => {
     if (data) {
@@ -168,14 +220,63 @@ const ScheduleModal = ({
     }
   };
 
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    if (active.id !== over.id) {
-      setEvents((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+    const isOverDroppable = over?.id && over.data.current?.direction;
+    const activeIndex = events.findIndex((item) => item.id === active.id);
+
+    if (!over || isOverDroppable) {
+      if (pageChangeTimerRef.current) {
+        clearTimeout(pageChangeTimerRef.current);
+      }
+      isDraggingOverPaginationRef.current = null;
+      setActiveId(null);
+      return;
+    }
+
+    if (over.id && active.id !== over.id) {
+      const overIndex = events.findIndex((item) => item.id === over.id);
+      const newEvents = arrayMove(events, activeIndex, overIndex);
+      setEvents(newEvents);
+    }
+
+    if (pageChangeTimerRef.current) {
+      clearTimeout(pageChangeTimerRef.current);
+    }
+    isDraggingOverPaginationRef.current = null;
+    setActiveId(null);
+  };
+
+  const handleDragOver = (event) => {
+    const { over } = event;
+
+    if (!over || !over.data.current || !over.data.current.direction) {
+      if (pageChangeTimerRef.current) {
+        clearTimeout(pageChangeTimerRef.current);
+      }
+      isDraggingOverPaginationRef.current = null;
+      return;
+    }
+
+    const { direction } = over.data.current;
+
+    if (isDraggingOverPaginationRef.current !== direction) {
+      if (pageChangeTimerRef.current) {
+        clearTimeout(pageChangeTimerRef.current);
+      }
+      isDraggingOverPaginationRef.current = direction;
+
+      pageChangeTimerRef.current = setTimeout(() => {
+        if (direction === "prev" && eventPage > 1) {
+          setEventPage((prev) => prev - 1);
+        } else if (direction === "next" && eventPage < totalEventPages) {
+          setEventPage((prev) => prev + 1);
+        }
+      }, 1000);
     }
   };
 
@@ -187,11 +288,9 @@ const ScheduleModal = ({
         { text: newEvent.trim(), isImportant, id: `event-${Date.now()}` },
       ];
     }
-    // 이 줄을 삭제하여 휴방일에도 이벤트를 빈 배열로 만들지 않습니다.
-    // const eventsToSave = isBreakDay ? [] : finalEvents;
     onSave(
       dateStr,
-      finalEvents, // eventsToSave 대신 finalEvents를 직접 전달
+      finalEvents,
       memo,
       isBreakDay,
       selectedImageId,
@@ -267,6 +366,7 @@ const ScheduleModal = ({
   );
 
   const date = new Date(dateStr);
+  const activeEvent = events.find((event) => event.id === activeId);
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -301,7 +401,6 @@ const ScheduleModal = ({
           {!isBreakDay && (
             <>
               <div className={styles.timeSection}>
-                {/* ✅ 오전 뱅온 시간 입력 필드 */}
                 <div className={styles.eventTimeSection}>
                   <h4>☀️ 오전 뱅온 시간</h4>
                   <input
@@ -312,8 +411,6 @@ const ScheduleModal = ({
                     onChange={(e) => setMorningTime(e.target.value)}
                   />
                 </div>
-
-                {/* ✅ 오후 뱅온 시간 입력 필드 */}
                 <div className={styles.eventTimeSection}>
                   <h4>🌙 오후 뱅온 시간</h4>
                   <input
@@ -325,7 +422,6 @@ const ScheduleModal = ({
                   />
                 </div>
               </div>
-
               <div className={styles.eventTitleRow}>
                 <h4>🗓️ 일정 추가</h4>
                 <div className={styles.importantCheckbox}>
@@ -357,7 +453,9 @@ const ScheduleModal = ({
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
               >
                 <SortableContext
                   items={paginatedEvents.map((e) => e.id)}
@@ -373,32 +471,44 @@ const ScheduleModal = ({
                     ))}
                   </ul>
                 </SortableContext>
+                {totalEventPages > 1 && (
+                  <div className={styles.paginationControls}>
+                    <DroppablePrevButton
+                      onClick={() =>
+                        setEventPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={eventPage === 1}
+                    />
+                    <span>{`${eventPage} / ${totalEventPages}`}</span>
+                    <DroppableNextButton
+                      onClick={() =>
+                        setEventPage((prev) =>
+                          Math.min(prev + 1, totalEventPages)
+                        )
+                      }
+                      disabled={eventPage === totalEventPages}
+                    />
+                  </div>
+                )}
+                {/* z-index를 높여 모달 위에 표시되도록 수정 */}
+                {createPortal(
+                  <DragOverlay zIndex={9999}>
+                    {activeEvent ? (
+                      <li
+                        className={
+                          activeEvent.isImportant
+                            ? styles.importantEventListItem
+                            : styles.eventListItem
+                        }
+                        style={{ cursor: "grabbing" }}
+                      >
+                        {activeEvent.text}
+                      </li>
+                    ) : null}
+                  </DragOverlay>,
+                  document.body
+                )}
               </DndContext>
-              {totalEventPages > 1 && (
-                <div className={styles.paginationControls}>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() =>
-                      setEventPage((prev) => Math.max(prev - 1, 1))
-                    }
-                    disabled={eventPage === 1}
-                  >
-                    이전
-                  </button>
-                  <span>{`${eventPage} / ${totalEventPages}`}</span>
-                  <button
-                    className={styles.pageBtn}
-                    onClick={() =>
-                      setEventPage((prev) =>
-                        Math.min(prev + 1, totalEventPages)
-                      )
-                    }
-                    disabled={eventPage === totalEventPages}
-                  >
-                    다음
-                  </button>
-                </div>
-              )}
             </>
           )}
 
