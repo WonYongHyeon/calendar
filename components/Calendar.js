@@ -5,6 +5,7 @@ import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
 import SearchModal from "./SearchModal";
 import { BREAK_DAY_IMAGES } from "./images";
+import Swal from "sweetalert2";
 
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
@@ -36,12 +37,58 @@ const NextArrow = () => (
 const SearchIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
     viewBox="0 0 24 24"
-    fill="currentColor"
-    width="24px"
-    height="24px"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
   >
-    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+const HelpIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <circle cx="12" cy="12" r="8"></circle>
+    <text
+      x="50%"
+      y="50%"
+      font-size="10"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      fill="currentColor"
+    >
+      ?
+    </text>
+  </svg>
+);
+
+const HamburgerMenu = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    width="24"
+    height="24"
+  >
+    <path d="M3 12h18M3 6h18M3 18h18" />
   </svg>
 );
 
@@ -77,8 +124,24 @@ const Calendar = () => {
   const [isMobile, setIsMobile] = useState(true);
 
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // ✅ 메뉴 상태 추가
+  const menuRef = useRef(null); // ✅ 메뉴 DOM 참조를 위한 ref 추가
 
   const calendarRef = useRef(null);
+
+  // ✅ 메뉴 외부 클릭 감지 로직 추가
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -104,6 +167,57 @@ const Calendar = () => {
       console.error("Failed to fetch schedules from API:", error);
     }
     setIsLoading(false);
+  };
+  // ✅ SweetAlert2를 사용한 백업 및 복원 함수
+  const handleActionWithPassword = async (action) => {
+    const title = action === "backup" ? "데이터 백업" : "데이터 복원";
+    const html =
+      action === "backup"
+        ? "현재 일정표를 백업합니다.<br>기존 백업 데이터는 덮어쓰여집니다."
+        : "<b>경고:</b> 백업된 데이터로 현재 일정표를 덮어쓰시겠습니까?";
+    const confirmButtonText = action === "backup" ? "백업" : "복원";
+
+    Swal.fire({
+      title,
+      html,
+      input: "password", // ✅ 비밀번호 입력 필드
+      inputPlaceholder: "비밀번호를 입력하세요",
+      showCancelButton: true,
+      confirmButtonText,
+      cancelButtonText: "취소",
+      showLoaderOnConfirm: true, // ✅ 확인 버튼 클릭 시 로딩 스피너 표시
+      preConfirm: async (password) => {
+        try {
+          const response = await fetch(`/api/backup-restore?action=${action}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `${title}에 실패했습니다.`);
+          }
+          return response.json();
+        } catch (error) {
+          Swal.showValidationMessage(`요청 실패: ${error.message}`);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "완료!",
+          text: `일정표 ${
+            action === "backup" ? "백업" : "복원"
+          }이 성공적으로 완료되었습니다.`,
+        });
+        if (action === "restore") {
+          fetchSchedules(); // 복원 후 데이터 새로고침
+        }
+      }
+    });
   };
 
   useEffect(() => {
@@ -593,12 +707,37 @@ const Calendar = () => {
         />
       )}
 
-      <button
-        className={styles.searchFloatingBtn}
-        onClick={handleOpenSearchModal}
-      >
-        <SearchIcon />
-      </button>
+      {/* ✅ 플로팅 버튼 및 메뉴 UI 수정 */}
+      <div className={styles.floatingMenuContainer} ref={menuRef}>
+        {isMenuOpen && (
+          <div className={styles.floatingMenu}>
+            <ul>
+              <li
+                onClick={() => {
+                  handleOpenSearchModal();
+                  setIsMenuOpen(false); // 메뉴 아이템 클릭 시 메뉴 닫기
+                }}
+              >
+                <SearchIcon />
+                <span>일정 검색</span>
+              </li>
+              {/* 다른 메뉴 아이템을 여기에 추가할 수 있습니다. */}
+              <li onClick={() => handleActionWithPassword("backup")}>
+                데이터 백업
+              </li>
+              <li onClick={() => handleActionWithPassword("restore")}>
+                데이터 복원
+              </li>
+            </ul>
+          </div>
+        )}
+        <button
+          className={styles.searchFloatingBtn}
+          onClick={() => setIsMenuOpen((prev) => !prev)} // 클릭 시 메뉴 토글
+        >
+          <HamburgerMenu />
+        </button>
+      </div>
 
       {toastMessage && (
         <div className={styles.toastContainer}>
