@@ -48,31 +48,6 @@ const SearchIcon = () => (
     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
   </svg>
 );
-const HelpIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="8"></circle>
-    <text
-      x="50%"
-      y="50%"
-      fontSize="10"
-      textAnchor="middle"
-      dominantBaseline="middle"
-      fill="currentColor"
-    >
-      ?
-    </text>
-  </svg>
-);
 
 const HamburgerMenu = () => (
   <svg
@@ -109,7 +84,7 @@ const Calendar = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [isSearchModalOpen, setIsSearchModal] = useState(false);
   const [highlightedDate, setHighlightedDate] = useState(null);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 800);
+  const [isMobile, setIsMobile] = useState(false);
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -132,6 +107,7 @@ const Calendar = () => {
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 800);
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
