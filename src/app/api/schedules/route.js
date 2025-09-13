@@ -5,7 +5,24 @@ import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
-    const { rows } = await sql`SELECT * FROM schedules;`;
+    const { searchParams } = new URL(request.url);
+    const year = searchParams.get("year");
+    const month = searchParams.get("month");
+
+    if (!year || !month) {
+      return NextResponse.json(
+        { error: "Year and month parameters are required." },
+        { status: 400 }
+      );
+    }
+
+    const formattedMonth = String(month).padStart(2, "0");
+
+    // ✅ 올바른 SQL 쿼리 구문으로 수정
+    const { rows } = await sql`
+      SELECT * FROM schedules 
+      WHERE date::text LIKE ${`${year}-${formattedMonth}-%`};
+    `;
 
     const scheduleData = rows.reduce((acc, row) => {
       const formattedDate =
@@ -38,6 +55,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  // ✅ POST 함수는 기존 코드 그대로 사용
   try {
     const {
       date,

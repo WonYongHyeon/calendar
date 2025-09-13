@@ -109,13 +109,8 @@ const DroppableNextButton = ({ onClick, disabled }) => {
   );
 };
 
-const ScheduleModal = ({
-  dateStr,
-  data,
-  onClose,
-  onSave,
-  onBreakDayChange,
-}) => {
+// onBreakDayChange prop 제거
+const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
   const [memo, setMemo] = useState("");
   const [newEvent, setNewEvent] = useState("");
@@ -126,8 +121,11 @@ const ScheduleModal = ({
   const [morningTime, setMorningTime] = useState("");
   const [afternoonTime, setAfternoonTime] = useState("");
 
-  const isBreakDay = data?.isBreakDay || false;
-  const selectedImageId = data?.breakDayImageId || null;
+  // isBreakDay와 breakDayImageId 상태를 컴포넌트 내부에서 관리
+  const [isBreakDay, setIsBreakDay] = useState(data?.isBreakDay || false);
+  const [selectedImageId, setSelectedImageId] = useState(
+    data?.breakDayImageId || null
+  );
 
   const [originalData, setOriginalData] = useState({
     events: [],
@@ -139,8 +137,8 @@ const ScheduleModal = ({
   });
 
   const [showImageSelector, setShowImageSelector] = useState(false);
-  const [imagePage, setImagePage] = useState(1);
   const imagesPerPage = 4;
+  const [imagePage, setImagePage] = useState(1);
   const totalImagePages = Math.ceil(BREAK_DAY_IMAGES.length / imagesPerPage);
   const paginatedImages = BREAK_DAY_IMAGES.slice(
     (imagePage - 1) * imagesPerPage,
@@ -168,6 +166,9 @@ const ScheduleModal = ({
       setMemo(data.memo || "");
       setMorningTime(data.morningTime || "");
       setAfternoonTime(data.afternoonTime || "");
+      setIsBreakDay(data.isBreakDay || false);
+      setSelectedImageId(data.breakDayImageId || null);
+
       setOriginalData({
         events: data.events,
         memo: data.memo,
@@ -182,6 +183,9 @@ const ScheduleModal = ({
       setMemo("");
       setMorningTime("");
       setAfternoonTime("");
+      setIsBreakDay(false);
+      setSelectedImageId(null);
+
       setOriginalData({
         events: [],
         memo: "",
@@ -193,6 +197,61 @@ const ScheduleModal = ({
       setEventPage(1);
     }
   }, [data]);
+
+  // onBreakDayChange 함수를 onSave로 대체
+  const handleBreakDayToggle = (e) => {
+    const newIsBreakDay = e.target.checked;
+    setIsBreakDay(newIsBreakDay);
+    if (newIsBreakDay) {
+      // 휴방일로 전환 시
+      setSelectedImageId(null); // 이미지 초기화
+      setEvents([]); // 이벤트 초기화
+      setMorningTime(""); // 시간 초기화
+      setAfternoonTime(""); // 시간 초기화
+    }
+    // onSave 함수를 호출하여 상태를 저장 (isBreakDay 상태만 변경)
+    onSave(
+      dateStr,
+      [], // 이벤트는 비움
+      memo,
+      newIsBreakDay,
+      selectedImageId,
+      "", // 시간 비움
+      "", // 시간 비움
+      false // 모달 닫지 않음
+    );
+  };
+
+  // 이미지 선택 시 onSave 호출
+  const handleImageSelect = (imageId) => {
+    setSelectedImageId(imageId);
+    setShowImageSelector(false);
+    onSave(
+      dateStr,
+      [],
+      memo,
+      true, // 휴방일은 true
+      imageId,
+      "",
+      "",
+      false
+    );
+  };
+
+  // 이미지 삭제 시 onSave 호출
+  const handleImageRemove = () => {
+    setSelectedImageId(null);
+    onSave(
+      dateStr,
+      [],
+      memo,
+      true,
+      null, // 이미지 ID를 null로
+      "",
+      "",
+      false
+    );
+  };
 
   const handleAddEvent = (e) => {
     if (e.key === "Enter" || e.type === "click") {
@@ -381,14 +440,7 @@ const ScheduleModal = ({
               <input
                 type="checkbox"
                 checked={isBreakDay}
-                onChange={(e) => {
-                  onBreakDayChange(
-                    dateStr,
-                    e.target.checked,
-                    memo,
-                    selectedImageId
-                  );
-                }}
+                onChange={handleBreakDayToggle}
               />
               <span className={styles.slider}></span>
             </label>
@@ -525,9 +577,7 @@ const ScheduleModal = ({
                   </div>
                   <button
                     className={styles.imageSelectBtn}
-                    onClick={() => {
-                      onBreakDayChange(dateStr, true, memo, null);
-                    }}
+                    onClick={handleImageRemove}
                   >
                     이미지 삭제
                   </button>
@@ -551,10 +601,7 @@ const ScheduleModal = ({
                             ? styles.selectedImage
                             : ""
                         }`}
-                        onClick={() => {
-                          onBreakDayChange(dateStr, true, memo, image.id);
-                          setShowImageSelector(false);
-                        }}
+                        onClick={() => handleImageSelect(image.id)}
                       >
                         <img src={getImageUrlById(image.id)} alt={image.id} />
                       </div>

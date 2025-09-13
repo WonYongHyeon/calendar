@@ -1,5 +1,3 @@
-// Calendar.js
-
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
@@ -42,9 +40,9 @@ const SearchIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <circle cx="11" cy="11" r="8"></circle>
     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -58,17 +56,17 @@ const HelpIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <circle cx="12" cy="12" r="8"></circle>
     <text
       x="50%"
       y="50%"
-      font-size="10"
-      text-anchor="middle"
-      dominant-baseline="middle"
+      fontSize="10"
+      textAnchor="middle"
+      dominantBaseline="middle"
       fill="currentColor"
     >
       ?
@@ -102,16 +100,6 @@ const getEventItemHeight = () => {
   return isMobile ? 22 : 26;
 };
 
-const debounce = (func, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-};
-
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [scheduleData, setScheduleData] = useState({});
@@ -121,35 +109,29 @@ const Calendar = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [isSearchModalOpen, setIsSearchModal] = useState(false);
   const [highlightedDate, setHighlightedDate] = useState(null);
-  const [isMobile, setIsMobile] = useState(true);
-
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 800);
   const [maxEventsToShow, setMaxEventsToShow] = useState({});
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // ✅ 메뉴 상태 추가
-  const menuRef = useRef(null); // ✅ 메뉴 DOM 참조를 위한 ref 추가
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const calendarRef = useRef(null);
 
-  // ✅ 메뉴 외부 클릭 감지 로직 추가
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(""), 5000);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 800);
-    };
-
-    handleResize(); // 초기 실행
-
+    const handleResize = () => setIsMobile(window.innerWidth < 800);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -157,7 +139,13 @@ const Calendar = () => {
   const fetchSchedules = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/schedules");
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth() + 1;
+      // ✅ 현재 연도와 월을 쿼리 파라미터로 추가
+      const response = await fetch(
+        `/api/schedules?year=${year}&month=${month}`
+      );
+
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -168,61 +156,10 @@ const Calendar = () => {
     }
     setIsLoading(false);
   };
-  // ✅ SweetAlert2를 사용한 백업 및 복원 함수
-  const handleActionWithPassword = async (action) => {
-    const title = action === "backup" ? "데이터 백업" : "데이터 복원";
-    const html =
-      action === "backup"
-        ? "현재 일정표를 백업합니다.<br>기존 백업 데이터는 덮어쓰여집니다."
-        : "<b>경고:</b> 백업된 데이터로 현재 일정표를 덮어쓰시겠습니까?";
-    const confirmButtonText = action === "backup" ? "백업" : "복원";
-
-    Swal.fire({
-      title,
-      html,
-      input: "password", // ✅ 비밀번호 입력 필드
-      inputPlaceholder: "비밀번호를 입력하세요",
-      showCancelButton: true,
-      confirmButtonText,
-      cancelButtonText: "취소",
-      showLoaderOnConfirm: true, // ✅ 확인 버튼 클릭 시 로딩 스피너 표시
-      preConfirm: async (password) => {
-        try {
-          const response = await fetch(`/api/backup-restore?action=${action}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ password }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `${title}에 실패했습니다.`);
-          }
-          return response.json();
-        } catch (error) {
-          Swal.showValidationMessage(`요청 실패: ${error.message}`);
-        }
-      },
-      allowOutsideClick: () => !Swal.isLoading(),
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          icon: "success",
-          title: "완료!",
-          text: `일정표 ${
-            action === "backup" ? "백업" : "복원"
-          }이 성공적으로 완료되었습니다.`,
-        });
-        if (action === "restore") {
-          fetchSchedules(); // 복원 후 데이터 새로고침
-        }
-      }
-    });
-  };
 
   useEffect(() => {
     fetchSchedules();
-  }, []);
+  }, [currentDate]);
 
   useEffect(() => {
     if (highlightedDate) {
@@ -240,37 +177,26 @@ const Calendar = () => {
         `.${styles.dateCell}`
       );
       if (!dateCells) return;
-
       const eventItemHeight = getEventItemHeight();
-
       dateCells.forEach((cell) => {
         const dateStr = cell.getAttribute("data-date");
         if (!dateStr) return;
-
         const dateNumHeight =
           cell.querySelector(`.${styles.dateNum}`)?.offsetHeight || 0;
         const style = getComputedStyle(cell);
         const padding =
           parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
         const cellHeight = cell.offsetHeight;
-
         const availableHeight = cellHeight - dateNumHeight - padding;
-
         const calculatedEvents = Math.max(
           0,
           Math.floor((availableHeight - 16) / eventItemHeight)
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
-
       setMaxEventsToShow(newMaxEvents);
     };
-
-    const debouncedCalculate = debounce(calculateMaxEvents, 250);
-
     calculateMaxEvents();
-    window.addEventListener("resize", debouncedCalculate);
-    return () => window.removeEventListener("resize", debouncedCalculate);
   }, [currentDate, scheduleData]);
 
   const handlePrevMonth = () => {
@@ -305,6 +231,7 @@ const Calendar = () => {
 
   const handleOpenSearchModal = () => {
     setIsSearchModal(true);
+    setIsMenuOpen(false);
   };
 
   const handleCloseSearchModal = () => {
@@ -318,43 +245,54 @@ const Calendar = () => {
     setIsSearchModal(false);
   };
 
-  const handleBreakDayChange = async (
-    dateStr,
-    newIsBreakDay,
-    newMemo,
-    newBreakDayImageId
-  ) => {
-    const currentData = scheduleData[dateStr] || {
-      events: [],
-      memo: "",
-      isBreakDay: false,
-      version: 0,
-      breakDayImageId: null,
-      morningTime: "",
-      afternoonTime: "",
-    };
-
-    setScheduleData((prevData) => ({
-      ...prevData,
-      [dateStr]: {
-        ...currentData,
-        events: currentData.events,
-        isBreakDay: newIsBreakDay,
-        memo: newMemo,
-        breakDayImageId: newBreakDayImageId,
+  const handleActionWithPassword = async (action) => {
+    // ... (기존 SweetAlert2 코드 동일)
+    const title = action === "backup" ? "데이터 백업" : "데이터 복원";
+    const html =
+      action === "backup"
+        ? "현재 일정표를 백업합니다.<br>기존 백업 데이터는 덮어쓰여집니다."
+        : "<b>경고:</b> 백업된 데이터로 현재 일정표를 덮어쓰시겠습니까?";
+    const confirmButtonText = action === "backup" ? "백업" : "복원";
+    Swal.fire({
+      title,
+      html,
+      input: "password",
+      inputPlaceholder: "비밀번호를 입력하세요",
+      showCancelButton: true,
+      confirmButtonText,
+      cancelButtonText: "취소",
+      showLoaderOnConfirm: true,
+      preConfirm: async (password) => {
+        try {
+          const response = await fetch(`/api/backup-restore?action=${action}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ password }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `${title}에 실패했습니다.`);
+          }
+          return response.json();
+        } catch (error) {
+          Swal.showValidationMessage(`요청 실패: ${error.message}`);
+        }
       },
-    }));
-
-    await handleSaveSchedule(
-      dateStr,
-      currentData.events,
-      newMemo,
-      newIsBreakDay,
-      newBreakDayImageId,
-      currentData.morningTime,
-      currentData.afternoonTime,
-      false
-    );
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "완료!",
+          text: `일정표 ${
+            action === "backup" ? "백업" : "복원"
+          }이 성공적으로 완료되었습니다.`,
+        });
+        if (action === "restore") {
+          fetchSchedules();
+        }
+      }
+    });
   };
 
   const handleSaveSchedule = async (
@@ -379,37 +317,25 @@ const Calendar = () => {
 
     const optimisticData = { ...scheduleData };
 
-    if (isBreakDay) {
+    if (
+      newEvents.length > 0 ||
+      newMemo.trim() ||
+      morningTime.trim() ||
+      afternoonTime.trim() ||
+      isBreakDay
+    ) {
       optimisticData[dateStr] = {
         ...originalData,
         events: newEvents,
         memo: newMemo,
-        isBreakDay: true,
-        breakDayImageId: breakDayImageId,
+        isBreakDay: isBreakDay,
+        breakDayImageId: isBreakDay ? breakDayImageId : null,
         version: (originalData.version || 0) + 1,
-        morningTime: "",
-        afternoonTime: "",
+        morningTime: isBreakDay ? "" : morningTime,
+        afternoonTime: isBreakDay ? "" : afternoonTime,
       };
     } else {
-      if (
-        newEvents.length > 0 ||
-        newMemo.trim() ||
-        morningTime.trim() ||
-        afternoonTime.trim()
-      ) {
-        optimisticData[dateStr] = {
-          ...originalData,
-          events: newEvents,
-          memo: newMemo,
-          isBreakDay: false,
-          breakDayImageId: null,
-          version: (originalData.version || 0) + 1,
-          morningTime: morningTime,
-          afternoonTime: afternoonTime,
-        };
-      } else {
-        delete optimisticData[dateStr];
-      }
+      delete optimisticData[dateStr];
     }
 
     setScheduleData(optimisticData);
@@ -429,28 +355,24 @@ const Calendar = () => {
           memo: newMemo,
           isBreakDay: isBreakDay,
           version: originalData.version,
-          breakDayImageId: breakDayImageId,
-          morningTime: morningTime,
-          afternoonTime: afternoonTime,
+          breakDayImageId: isBreakDay ? breakDayImageId : null,
+          morningTime: isBreakDay ? "" : morningTime,
+          afternoonTime: isBreakDay ? "" : afternoonTime,
         }),
       });
 
       if (!response.ok) {
-        if (response.status === 409) {
-          const errorData = await response.json();
-          setToastMessage(errorData.error);
-        } else {
-          setToastMessage("일정 저장에 실패했습니다. 다시 시도해 주세요.");
-        }
+        const errorData = await response.json();
+        showToast(
+          errorData.error || "일정 저장에 실패했습니다. 다시 시도해 주세요."
+        );
         setScheduleData((prevData) => ({
           ...prevData,
           [dateStr]: originalData,
         }));
         fetchSchedules();
-        setTimeout(() => setToastMessage(""), 5000);
       } else {
         const { schedule } = await response.json();
-
         const formattedSchedule = schedule
           ? {
               events: schedule.events,
@@ -475,17 +397,130 @@ const Calendar = () => {
       }
     } catch (error) {
       console.error("Failed to save schedule to API:", error);
-      setToastMessage(
-        "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
-      );
+      showToast("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
       setScheduleData((prevData) => ({ ...prevData, [dateStr]: originalData }));
       fetchSchedules();
-      setTimeout(() => setToastMessage(""), 5000);
     }
   };
 
-  const renderHeader = () => {
-    return (
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
+  const cells = [];
+
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    cells.push(
+      <div
+        key={`prev-${i}`}
+        className={`${styles.dateCell} ${styles.otherMonth}`}
+      ></div>
+    );
+  }
+
+  for (let day = 1; day <= lastDateOfMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const today = new Date();
+    const isToday =
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear();
+    const cellData = scheduleData[dateStr];
+    const events = cellData?.events || [];
+    const memo = cellData?.memo || "";
+    const breakDayImageId = cellData?.breakDayImageId || null;
+    const morningTime = cellData?.morningTime || "";
+    const afternoonTime = cellData?.afternoonTime || "";
+    const maxEventsCount = maxEventsToShow[dateStr] || 0;
+    const visibleEvents = events.slice(0, maxEventsCount);
+    const remainingEventsCount =
+      events.length > maxEventsCount ? events.length - maxEventsCount : 0;
+    const isBreakDay = cellData?.isBreakDay === true;
+    const isBreakDayWithReason = isBreakDay && memo.trim();
+    const isHighlighted = highlightedDate === dateStr;
+
+    cells.push(
+      <div
+        key={dateStr}
+        data-date={dateStr}
+        className={`${styles.dateCell} ${isToday ? styles.today : ""} ${
+          isBreakDay ? styles.breakDay : ""
+        } ${isHighlighted ? styles.highlightedCell : ""}`}
+        onClick={() => handleDateClick(dateStr)}
+      >
+        <div className={styles.dateHeader}>
+          <div className={styles.dateNum}>{day}</div>
+          {!isBreakDay && (morningTime || afternoonTime) && (
+            <div className={styles.timeDisplay}>
+              {morningTime && <span>☀️{isMobile ? "" : morningTime}</span>}
+              {morningTime && afternoonTime && <span> / </span>}
+              {afternoonTime && <span>🌙{isMobile ? "" : afternoonTime}</span>}
+            </div>
+          )}
+        </div>
+        {isBreakDay && (
+          <div className={styles.breakDayContent}>
+            {isBreakDayWithReason ? (
+              <div className={styles.breakReasonText}>{memo}</div>
+            ) : (
+              <span className={styles.breakReasonTitle}>휴방</span>
+            )}
+            {breakDayImageId && (
+              <div className={styles.breakDayImageContainer}>
+                <img
+                  className={styles.breakDayImage}
+                  src={getImageUrlById(breakDayImageId)}
+                  alt="휴방 이미지"
+                />
+              </div>
+            )}
+          </div>
+        )}
+        {!isBreakDay && (
+          <>
+            <ul className={styles.eventList}>
+              {visibleEvents.map((evt, idx) => {
+                return !evt.isImportant ? (
+                  <li key={idx} className={styles.eventItem}>
+                    {evt.text}
+                  </li>
+                ) : (
+                  <li key={idx} className={styles.eventItemImportant}>
+                    {evt.text}
+                  </li>
+                );
+              })}
+            </ul>
+            {remainingEventsCount > 0 && (
+              <div className={styles.moreButton}>
+                +{remainingEventsCount}개 더보기
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
+
+  const totalDaysInGrid = firstDayOfMonth + lastDateOfMonth;
+  const requiredCells = Math.ceil(totalDaysInGrid / 7) * 7;
+  const remainingCells = requiredCells - cells.length;
+  for (let i = 0; i < remainingCells; i++) {
+    cells.push(
+      <div
+        key={`next-${i}`}
+        className={`${styles.dateCell} ${styles.otherMonth}`}
+        onClick={null}
+      ></div>
+    );
+  }
+
+  return (
+    <div className={styles.calendarContainer}>
       <div className={styles.calendarHeader}>
         <h2 className={styles.currentMonth}>
           {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
@@ -502,12 +537,6 @@ const Calendar = () => {
           </button>
         </div>
       </div>
-    );
-  };
-
-  const renderDays = () => {
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    return (
       <div className={styles.calendarGrid}>
         {days.map((day) => (
           <div key={day} className={styles.dayName}>
@@ -515,154 +544,6 @@ const Calendar = () => {
           </div>
         ))}
       </div>
-    );
-  };
-
-  const renderCells = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
-    const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
-
-    const cells = [];
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      cells.push(
-        <div
-          key={`prev-${i}`}
-          className={`${styles.dateCell} ${styles.otherMonth}`}
-        ></div>
-      );
-    }
-
-    for (let day = 1; day <= lastDateOfMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateStr = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-      const today = new Date();
-      const isToday =
-        day === today.getDate() &&
-        month === today.getMonth() &&
-        year === today.getFullYear();
-
-      const cellData = scheduleData[dateStr];
-      const events = cellData?.events || [];
-      const memo = cellData?.memo || "";
-      const breakDayImageId = cellData?.breakDayImageId || null;
-      const morningTime = cellData?.morningTime || "";
-      const afternoonTime = cellData?.afternoonTime || "";
-
-      // 이 부분을 수정했습니다. events 배열을 직접 사용합니다.
-      const combinedEvents = events;
-
-      const maxEventsCount = maxEventsToShow[dateStr] || 0;
-      const visibleEvents = combinedEvents.slice(0, maxEventsCount);
-      const remainingEventsCount =
-        combinedEvents.length > maxEventsCount
-          ? combinedEvents.length - maxEventsCount
-          : 0;
-
-      const isBreakDay = cellData?.isBreakDay === true;
-      const isBreakDayWithReason = isBreakDay && memo.trim();
-
-      const isHighlighted = highlightedDate === dateStr;
-
-      cells.push(
-        <div
-          key={dateStr}
-          data-date={dateStr}
-          className={`${styles.dateCell} ${isToday ? styles.today : ""} ${
-            isBreakDay ? styles.breakDay : ""
-          } ${isHighlighted ? styles.highlightedCell : ""}`}
-          onClick={() => handleDateClick(dateStr)}
-        >
-          {/* ✅ 날짜와 시간을 묶는 새로운 헤더 */}
-          <div className={styles.dateHeader}>
-            <div className={styles.dateNum}>{day}</div>
-            {!isBreakDay && (morningTime || afternoonTime) && (
-              <div className={styles.timeDisplay}>
-                {morningTime && <span>☀️{isMobile ? "" : morningTime}</span>}
-                {/* 오전과 오후 시간 사이에 구분자 추가 */}
-                {morningTime && afternoonTime && <span> / </span>}
-                {afternoonTime && (
-                  <span>🌙{isMobile ? "" : afternoonTime}</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {isBreakDay && (
-            <div className={styles.breakDayContent}>
-              {isBreakDayWithReason ? (
-                <div className={styles.breakReasonText}>{memo}</div>
-              ) : (
-                <span className={styles.breakReasonTitle}>휴방</span>
-              )}
-              {breakDayImageId && (
-                <div className={styles.breakDayImageContainer}>
-                  <img
-                    className={styles.breakDayImage}
-                    src={getImageUrlById(breakDayImageId)}
-                    alt="휴방 이미지"
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {!isBreakDay && (
-            <>
-              <ul className={styles.eventList}>
-                {visibleEvents.map((evt, idx) => {
-                  return !evt.isImportant ? (
-                    <li key={idx} className={styles.eventItem}>
-                      {evt.text}
-                    </li>
-                  ) : (
-                    <li key={idx} className={styles.eventItemImportant}>
-                      {evt.text}
-                    </li>
-                  );
-                })}
-              </ul>
-              {remainingEventsCount > 0 && (
-                <div className={styles.moreButton}>
-                  +{remainingEventsCount}개 더보기
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      );
-    }
-
-    // ✅ 동적으로 남은 칸 채우기
-    const totalDaysInGrid = firstDayOfMonth + lastDateOfMonth;
-    const requiredCells = Math.ceil(totalDaysInGrid / 7) * 7;
-    const remainingCells = requiredCells - cells.length;
-
-    for (let i = 0; i < remainingCells; i++) {
-      cells.push(
-        <div
-          key={`next-${i}`}
-          className={`${styles.dateCell} ${styles.otherMonth}`}
-          onClick={null}
-        ></div>
-      );
-    }
-
-    return (
-      <div ref={calendarRef} className={styles.calendarGrid}>
-        {cells}
-      </div>
-    );
-  };
-
-  return (
-    <div className={styles.calendarContainer}>
-      {renderHeader()}
-      {renderDays()}
       {isLoading ? (
         <div
           className={styles.calendarGrid}
@@ -676,7 +557,9 @@ const Calendar = () => {
           <p>🗓️ 일정 데이터를 불러오는 중...</p>
         </div>
       ) : (
-        renderCells()
+        <div ref={calendarRef} className={styles.calendarGrid}>
+          {cells}
+        </div>
       )}
 
       {isModalOpen && (
@@ -695,7 +578,6 @@ const Calendar = () => {
           }
           onClose={handleCloseModal}
           onSave={handleSaveSchedule}
-          onBreakDayChange={handleBreakDayChange}
         />
       )}
 
@@ -707,21 +589,14 @@ const Calendar = () => {
         />
       )}
 
-      {/* ✅ 플로팅 버튼 및 메뉴 UI 수정 */}
       <div className={styles.floatingMenuContainer} ref={menuRef}>
         {isMenuOpen && (
           <div className={styles.floatingMenu}>
             <ul>
-              <li
-                onClick={() => {
-                  handleOpenSearchModal();
-                  setIsMenuOpen(false); // 메뉴 아이템 클릭 시 메뉴 닫기
-                }}
-              >
+              <li onClick={handleOpenSearchModal}>
                 <SearchIcon />
                 <span>일정 검색</span>
               </li>
-              {/* 다른 메뉴 아이템을 여기에 추가할 수 있습니다. */}
               <li onClick={() => handleActionWithPassword("backup")}>
                 데이터 백업
               </li>
@@ -733,7 +608,7 @@ const Calendar = () => {
         )}
         <button
           className={styles.searchFloatingBtn}
-          onClick={() => setIsMenuOpen((prev) => !prev)} // 클릭 시 메뉴 토글
+          onClick={() => setIsMenuOpen((prev) => !prev)}
         >
           <HamburgerMenu />
         </button>
