@@ -21,7 +21,8 @@ export async function GET(request) {
     // ✅ 올바른 SQL 쿼리 구문으로 수정
     const { rows } = await sql`
       SELECT * FROM schedules 
-      WHERE date::text LIKE ${`${year}-${formattedMonth}-%`};
+      WHERE date::text LIKE ${`${year}-${formattedMonth}-%`}
+      ORDER BY date ASC;
     `;
 
     const scheduleData = rows.reduce((acc, row) => {

@@ -559,7 +559,6 @@ const Calendar = () => {
 
       {isSearchModalOpen && (
         <SearchModal
-          scheduleData={scheduleData}
           onClose={handleCloseSearchModal}
           onSelectDate={handleGoToDate}
         />

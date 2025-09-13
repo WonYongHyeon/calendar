@@ -1015,4 +1015,10 @@ input:checked + .slider:before {
   }
 }
 
-/* --- (기존 나머지 CSS 코드) --- */
+.monthHeader {
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 15px 10px 10px 10px;
+  margin-bottom: 10px;
+  /* border-top: 1px solid #e0e0e0; */
+}
