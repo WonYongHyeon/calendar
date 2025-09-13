@@ -64,62 +64,45 @@ export async function POST(request) {
       );
     }
 
-    const isScheduleEmpty =
-      events.length === 0 &&
-      !memo.trim() &&
-      !morningTime.trim() &&
-      !afternoonTime.trim();
-
-    if (isScheduleEmpty) {
-      if (existingVersion !== null) {
-        // 기존 일정이 있을 때만 삭제
-        await sql`DELETE FROM schedules WHERE date = ${date};`;
-      }
+    if (existingVersion !== null) {
+      // 기존 일정이 있는 경우, 업데이트
+      const { rows } = await sql`
+        UPDATE schedules
+        SET
+          events = ${JSON.stringify(events)},
+          memo = ${memo},
+          is_break_day = ${isBreakDay},
+          version = schedules.version + 1,
+          break_day_image_id = ${isBreakDay ? breakDayImageId : null},
+          morning_time = ${morningTime},
+          afternoon_time = ${afternoonTime}
+        WHERE date = ${date}
+        RETURNING *;
+      `;
       return NextResponse.json(
-        { message: "Schedule deleted successfully" },
+        { message: "Schedule updated successfully", schedule: rows[0] },
         { status: 200 }
       );
     } else {
-      if (existingVersion !== null) {
-        // 기존 일정이 있는 경우, 업데이트
-        const { rows } = await sql`
-          UPDATE schedules
-          SET
-            events = ${JSON.stringify(events)},
-            memo = ${memo},
-            is_break_day = ${isBreakDay},
-            version = schedules.version + 1,
-            break_day_image_id = ${isBreakDay ? breakDayImageId : null},
-            morning_time = ${morningTime},
-            afternoon_time = ${afternoonTime}
-          WHERE date = ${date}
-          RETURNING *;
-        `;
-        return NextResponse.json(
-          { message: "Schedule updated successfully", schedule: rows[0] },
-          { status: 200 }
-        );
-      } else {
-        // 기존 일정이 없는 경우, 새로 생성 (version = 1)
-        const { rows } = await sql`
-          INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id, morning_time, afternoon_time)
-          VALUES (
-            ${date},
-            ${JSON.stringify(events)},
-            ${memo},
-            ${isBreakDay},
-            1,
-            ${isBreakDay ? breakDayImageId : null},
-            ${morningTime},
-            ${afternoonTime}
-          )
-          RETURNING *;
-        `;
-        return NextResponse.json(
-          { message: "Schedule created successfully", schedule: rows[0] },
-          { status: 200 }
-        );
-      }
+      // 기존 일정이 없는 경우, 새로 생성 (version = 1)
+      const { rows } = await sql`
+        INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id, morning_time, afternoon_time)
+        VALUES (
+          ${date},
+          ${JSON.stringify(events)},
+          ${memo},
+          ${isBreakDay},
+          1,
+          ${isBreakDay ? breakDayImageId : null},
+          ${morningTime},
+          ${afternoonTime}
+        )
+        RETURNING *;
+      `;
+      return NextResponse.json(
+        { message: "Schedule created successfully", schedule: rows[0] },
+        { status: 200 }
+      );
     }
   } catch (error) {
     console.error("Failed to save schedule:", error);
