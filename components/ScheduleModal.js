@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./Calendar.module.css";
+import Swal from "sweetalert2";
+
 import {
   DndContext,
   closestCenter,
@@ -20,6 +22,25 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { createPortal } from "react-dom";
 import { BREAK_DAY_IMAGES } from "./images";
+
+const VodLink = () => (
+  <svg width="25" height="25" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M10.59 13.41a2 2 0 0 1 0-2.82l3.18-3.18a2 2 0 1 1 2.83 2.83l-1.06 1.06"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    ></path>
+    <path
+      d="M13.41 10.59a2 2 0 0 1 0 2.82l-3.18 3.18a2 2 0 1 1-2.83-2.83l1.06-1.06"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    ></path>
+  </svg>
+);
 
 const getImageUrlById = (id) => {
   const image = BREAK_DAY_IMAGES.find((img) => img.id === id);
@@ -109,7 +130,6 @@ const DroppableNextButton = ({ onClick, disabled }) => {
   );
 };
 
-// onBreakDayChange prop 제거
 const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
   const [memo, setMemo] = useState("");
@@ -120,6 +140,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   const [morningTime, setMorningTime] = useState("");
   const [afternoonTime, setAfternoonTime] = useState("");
+  const [vodLink, setVodLink] = useState("");
 
   // isBreakDay와 breakDayImageId 상태를 컴포넌트 내부에서 관리
   const [isBreakDay, setIsBreakDay] = useState(data?.isBreakDay || false);
@@ -134,16 +155,10 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     breakDayImageId: null,
     morningTime: "",
     afternoonTime: "",
+    vodLink: "",
   });
 
   const [showImageSelector, setShowImageSelector] = useState(false);
-  const imagesPerPage = 4;
-  const [imagePage, setImagePage] = useState(1);
-  const totalImagePages = Math.ceil(BREAK_DAY_IMAGES.length / imagesPerPage);
-  const paginatedImages = BREAK_DAY_IMAGES.slice(
-    (imagePage - 1) * imagesPerPage,
-    imagePage * imagesPerPage
-  );
 
   const [eventPage, setEventPage] = useState(1);
   const eventsPerPage = 4;
@@ -176,6 +191,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         breakDayImageId: data.breakDayImageId,
         morningTime: data.morningTime || "",
         afternoonTime: data.afternoonTime || "",
+        vodLink: data.vodLink || "",
       });
       setEventPage(1);
     } else {
@@ -185,6 +201,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       setAfternoonTime("");
       setIsBreakDay(false);
       setSelectedImageId(null);
+      setVodLink("");
 
       setOriginalData({
         events: [],
@@ -193,6 +210,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         breakDayImageId: null,
         morningTime: "",
         afternoonTime: "",
+        vodLink: "",
       });
       setEventPage(1);
     }
@@ -424,6 +442,32 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     })
   );
 
+  const onClickVodLink = () => {
+    console.log("VOD 링크 클릭됨", vodLink);
+    const title = "VOD 링크 등록";
+    const html = `VOD 링크를`;
+    if (vodLink.trim() == "") {
+      Swal.fire({
+        title: "두 개의 입력 필드",
+        html:
+          '<input type="text" id="swal-input1" class="swal2-input" placeholder="VOD 링크를 입력해주세요.">' +
+          '<input type="password" id="swal-input2" class="swal2-input" placeholder="DB 비밀번호를 입력해주세요.">',
+        preConfirm: () => {
+          return [
+            document.getElementById("swal-input1").value,
+            document.getElementById("swal-input2").value,
+          ];
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const [value1, value2] = result.value;
+          console.log("첫 번째 입력:", value1);
+          console.log("두 번째 입력:", value2);
+        }
+      });
+    }
+  };
+
   const date = new Date(dateStr);
   const activeEvent = events.find((event) => event.id === activeId);
 
@@ -431,9 +475,15 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>{`${date.getFullYear()}년 ${
-            date.getMonth() + 1
-          }월 ${date.getDate()}일`}</h3>
+          <h3>
+            {`${date.getFullYear()}년 ${
+              date.getMonth() + 1
+            }월 ${date.getDate()}일`}{" "}
+            <span className={styles.vodLinkIcon} onClick={onClickVodLink}>
+              <VodLink />
+            </span>
+          </h3>
+
           <div className={styles.breakDayToggle}>
             <span className={styles.toggleLabel}>휴방</span>
             <label className={styles.toggleSwitch}>

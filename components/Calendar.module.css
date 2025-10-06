@@ -162,6 +162,7 @@
   color: #6c757d;
   margin: 0;
   word-break: break-word;
+  white-space: pre-wrap;
   text-align: center;
 }
 
@@ -265,6 +266,8 @@
   font-size: 1.4rem;
   flex-grow: 1;
   margin: 0;
+  display: flex;
+  align-items: center;
 }
 
 .closeBtn {
@@ -1021,4 +1024,12 @@ input:checked + .slider:before {
   padding: 15px 10px 10px 10px;
   margin-bottom: 10px;
   /* border-top: 1px solid #e0e0e0; */
+}
+
+.vodLinkIcon {
+  width: 25px;
+  height: 25px;
+  /* scale: 5; */
+  fill: #3498db;
+  cursor: pointer;
 }
