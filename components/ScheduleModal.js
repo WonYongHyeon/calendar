@@ -480,7 +480,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               date.getMonth() + 1
             }월 ${date.getDate()}일`}{" "}
             <span className={styles.vodLinkIcon} onClick={onClickVodLink}>
-              <VodLink />
+              {/* <VodLink /> */}
             </span>
           </h3>
 
