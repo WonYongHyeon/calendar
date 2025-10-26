@@ -117,7 +117,7 @@ const Calendar = () => {
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      // ✅ 현재 연도와 월을 쿼리 파라미터로 추가
+      // 현재 연도와 월을 쿼리 파라미터로 추가
       const response = await fetch(
         `/api/schedules?year=${year}&month=${month}`
       );
@@ -222,7 +222,6 @@ const Calendar = () => {
   };
 
   const handleActionWithPassword = async (action) => {
-    // ... (기존 SweetAlert2 코드 동일)
     const title = action === "backup" ? "데이터 백업" : "데이터 복원";
     const html =
       action === "backup"

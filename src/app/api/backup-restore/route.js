@@ -3,7 +3,6 @@
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
-// ✅ 사용자의 비밀번호로 변경하세요.
 const AUTH_PASSWORD = "pigvelyn";
 
 export async function POST(request) {
@@ -12,7 +11,7 @@ export async function POST(request) {
     const action = searchParams.get("action");
     const { password } = await request.json();
 
-    // ✅ 비밀번호 인증
+    // 비밀번호 인증
     if (password !== AUTH_PASSWORD) {
       return NextResponse.json(
         { error: "비밀번호가 올바르지 않습니다." },

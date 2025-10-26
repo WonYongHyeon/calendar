@@ -50,10 +50,10 @@ const SearchModal = ({ onClose, onSelectDate }) => {
       }
     }
 
-    // ✅ 검색 결과를 날짜 기준으로 오름차순 정렬합니다.
+    // 검색 결과를 날짜 기준으로 오름차순 정렬
     filteredResults.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // ✅ 정렬된 결과를 월별로 그룹화합니다.
+    // 정렬된 결과를 월별로 그룹화
     const groupedResults = filteredResults.reduce((acc, result) => {
       const date = new Date(result.date);
       const year = date.getFullYear();
@@ -67,7 +67,7 @@ const SearchModal = ({ onClose, onSelectDate }) => {
       return acc;
     }, {});
 
-    setSearchResults(groupedResults); // ✅ 그룹화된 객체로 상태를 업데이트합니다.
+    setSearchResults(groupedResults);
   };
 
   const handleKeyPress = (e) => {
@@ -104,12 +104,12 @@ const SearchModal = ({ onClose, onSelectDate }) => {
             <p className={styles.loadingMessage}>
               🗓️ 일정 데이터를 불러오는 중...
             </p>
-          ) : searchResults && Object.keys(searchResults).length > 0 ? ( // ✅ 검색 결과가 객체인지 확인
+          ) : searchResults && Object.keys(searchResults).length > 0 ? ( // 검색 결과가 객체인지 확인
             <div className={styles.searchResultsContainer}>
               {Object.keys(searchResults).map((monthKey, index) => (
                 <div key={index}>
                   <h4 className={styles.monthHeader}>{monthKey}</h4>{" "}
-                  {/* ✅ 월 헤더 */}
+                  {/* 월 헤더 */}
                   {searchResults[monthKey].map((result, resultIndex) => (
                     <div
                       key={resultIndex}

@@ -1,5 +1,4 @@
 // pages/api/schedules/all/route.js
-// 새로운 라우트 파일을 생성하세요.
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 

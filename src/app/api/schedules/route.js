@@ -18,7 +18,6 @@ export async function GET(request) {
 
     const formattedMonth = String(month).padStart(2, "0");
 
-    // ✅ 올바른 SQL 쿼리 구문으로 수정
     const { rows } = await sql`
       SELECT * FROM schedules 
       WHERE date::text LIKE ${`${year}-${formattedMonth}-%`}
@@ -56,7 +55,6 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  // ✅ POST 함수는 기존 코드 그대로 사용
   try {
     const {
       date,
@@ -103,7 +101,7 @@ export async function POST(request) {
         { status: 200 }
       );
     } else {
-      // 기존 일정이 없는 경우, 새로 생성 (version = 1)
+      // 기존 일정이 없는 경우, 새로 생성
       const { rows } = await sql`
         INSERT INTO schedules (date, events, memo, is_break_day, version, break_day_image_id, morning_time, afternoon_time)
         VALUES (
