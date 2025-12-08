@@ -12,15 +12,23 @@ export const BREAK_DAY_IMAGES = [
     url: "https://i.imgur.com/6lC3XiF.png",
   },
   {
-    id: "디그단_으흐흐",
-    url: "https://i.imgur.com/khXsmCV.png",
-  },
-  {
     id: "디그단_Zzz",
     url: "https://i.imgur.com/sFNvhn3.png",
   },
   {
     id: "디그단_음흉티콘",
     url: "https://i.imgur.com/TkLcdnP.png",
+  },
+  {
+    id: "디그단_시위",
+    url: "https://imgur.com/ED9tcK1.png",
+  },
+  {
+    id: "디그단_으흐흐",
+    url: "https://imgur.com/AIY1mdc.png",
+  },
+  {
+    id: "디그단_ㅇㅈㅉㅇ",
+    url: "https://imgur.com/rhuSBec.png",
   },
 ];

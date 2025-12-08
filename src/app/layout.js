@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
-        {/* ✅ 여기에 폰트 링크를 추가합니다. */}
+        {/* 여기에 폰트 링크를 추가합니다. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"

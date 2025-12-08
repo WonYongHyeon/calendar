@@ -171,6 +171,8 @@
 .breakDayImage {
   max-width: 80%;
   max-height: 80%;
+  min-width: 50px;
+  min-height: 50px;
   height: auto;
   object-fit: contain;
   border-radius: 8px;
