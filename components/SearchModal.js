@@ -17,6 +17,8 @@ const SearchModal = ({ onClose, onSelectDate }) => {
           throw new Error("Failed to fetch all schedules");
         }
         const data = await response.json();
+        console.log("Fetched all schedules:", data);
+        console.log("Number of schedule entries:", Object.keys(data).length);
         setAllSchedules(data);
       } catch (error) {
         console.error("Error fetching all schedules:", error);
