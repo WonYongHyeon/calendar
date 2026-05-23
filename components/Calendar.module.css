@@ -190,32 +190,66 @@
   overflow-y: hidden;
 }
 
-.eventItem {
-  background-color: #d6eaff;
-  color: #333;
+.eventItemMorning,
+.eventItemEvening,
+.eventItemPersonal {
+  display: flex;
+  /* justify-content: space-between; */
+  /* align-items: center; */
   padding: 3px 6px;
   margin: 3px 0;
   border-radius: 6px;
   font-weight: bold;
   font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   width: 100%;
+  word-break: break-all;
+  white-space: normal;
 }
 
-.eventItemImportant {
+.eventItemMorning {
+  background-color: #d6eaff;
+  color: #333;
+}
+
+.eventItemEvening {
   background-color: #ffcccc;
   color: #333;
-  padding: 3px 6px;
-  margin: 3px 0;
+}
+
+.eventItemPersonal {
+  background-color: #d4ff00;
+  color: #333;
+}
+
+.eventModalItemMorning,
+.eventModalItemEvening,
+.eventModalItemPersonal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
   border-radius: 6px;
+  margin-bottom: 8px;
   font-weight: bold;
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   width: 100%;
+  font-size: 1rem;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.eventModalItemMorning {
+  background-color: #d6eaff;
+  color: #333;
+}
+
+.eventModalItemEvening {
+  background-color: #ffcccc;
+  color: #333;
+}
+
+.eventModalItemPersonal {
+  background-color: #d4ff00;
+  color: #333;
 }
 
 .moreEvents {
@@ -285,10 +319,40 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .eventTitleRow h4 {
   margin: 0;
+}
+
+.eventTypeGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.eventTypeBtn {
+  background-color: #f2f3f5;
+  color: #333;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.eventTypeBtn:hover {
+  border: 1px solid #7f8997;
+}
+
+.activeTypeBtn {
+  background-color: #3498db;
+  color: #fff;
+  border-color: #2980b9;
 }
 
 .addEventRow {
@@ -633,7 +697,9 @@ input:checked + .slider:before {
   z-index: 1000;
   color: white;
   border: none;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .searchFloatingBtn:hover {
@@ -929,7 +995,9 @@ input:checked + .slider:before {
   z-index: 1001;
   color: white;
   border: none;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .searchFloatingBtn:hover {

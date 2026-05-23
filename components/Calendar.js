@@ -119,7 +119,7 @@ const Calendar = () => {
       const month = currentDate.getMonth() + 1;
       // 현재 연도와 월을 쿼리 파라미터로 추가
       const response = await fetch(
-        `/api/schedules?year=${year}&month=${month}`
+        `/api/schedules?year=${year}&month=${month}`,
       );
 
       if (!response.ok) {
@@ -150,7 +150,7 @@ const Calendar = () => {
     const calculateMaxEvents = () => {
       const newMaxEvents = {};
       const dateCells = calendarRef.current?.querySelectorAll(
-        `.${styles.dateCell}`
+        `.${styles.dateCell}`,
       );
       if (!dateCells) return;
       const eventItemHeight = getEventItemHeight();
@@ -166,7 +166,7 @@ const Calendar = () => {
         const availableHeight = cellHeight - dateNumHeight - padding;
         const calculatedEvents = Math.max(
           0,
-          Math.floor((availableHeight - 16) / eventItemHeight)
+          Math.floor((availableHeight - 16) / eventItemHeight),
         );
         newMaxEvents[dateStr] = calculatedEvents;
       });
@@ -177,14 +177,14 @@ const Calendar = () => {
 
   const handlePrevMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
     setHighlightedDate(null);
   };
 
   const handleNextMonth = () => {
     setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
     setHighlightedDate(null);
   };
@@ -278,7 +278,7 @@ const Calendar = () => {
     breakDayImageId,
     morningTime,
     afternoonTime,
-    shouldCloseModal = true
+    shouldCloseModal = true,
   ) => {
     const originalData = scheduleData[dateStr] || {
       events: [],
@@ -339,7 +339,7 @@ const Calendar = () => {
       if (!response.ok) {
         const errorData = await response.json();
         showToast(
-          errorData.error || "일정 저장에 실패했습니다. 다시 시도해 주세요."
+          errorData.error || "일정 저장에 실패했습니다. 다시 시도해 주세요.",
         );
         setScheduleData((prevData) => ({
           ...prevData,
@@ -390,14 +390,14 @@ const Calendar = () => {
       <div
         key={`prev-${i}`}
         className={`${styles.dateCell} ${styles.otherMonth}`}
-      ></div>
+      ></div>,
     );
   }
 
   for (let day = 1; day <= lastDateOfMonth; day++) {
     const date = new Date(year, month, day);
     const dateStr = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
+      date.getMonth() + 1,
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const today = new Date();
     const isToday =
@@ -459,15 +459,34 @@ const Calendar = () => {
           <>
             <ul className={styles.eventList}>
               {visibleEvents.map((evt, idx) => {
-                return !evt.isImportant ? (
-                  <li key={idx} className={styles.eventItem}>
-                    {evt.text}
-                  </li>
-                ) : (
-                  <li key={idx} className={styles.eventItemImportant}>
-                    {evt.text}
-                  </li>
-                );
+                if (evt.scheduleType === "morning") {
+                  return (
+                    <li key={idx} className={styles.eventItemMorning}>
+                      {evt.text}
+                    </li>
+                  );
+                } else if (evt.scheduleType === "evening") {
+                  return (
+                    <li key={idx} className={styles.eventItemEvening}>
+                      {evt.text}
+                    </li>
+                  );
+                } else {
+                  return (
+                    <li key={idx} className={styles.eventItemPersonal}>
+                      {evt.text}
+                    </li>
+                  );
+                }
+                // return evt.scheduleType ? (
+                //   <li key={idx} className={styles.eventItem}>
+                //     {evt.text}
+                //   </li>
+                // ) : (
+                //   <li key={idx} className={styles.eventItemImportant}>
+                //     {evt.text}
+                //   </li>
+                // );
               })}
             </ul>
             {remainingEventsCount > 0 && (
@@ -477,7 +496,7 @@ const Calendar = () => {
             )}
           </>
         )}
-      </div>
+      </div>,
     );
   }
 
@@ -490,7 +509,7 @@ const Calendar = () => {
         key={`next-${i}`}
         className={`${styles.dateCell} ${styles.otherMonth}`}
         onClick={null}
-      ></div>
+      ></div>,
     );
   }
 

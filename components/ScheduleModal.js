@@ -28,6 +28,12 @@ const getImageUrlById = (id) => {
   return image ? image.url : null;
 };
 
+const getEventItemClassName = (event) => {
+  if (event.scheduleType === "evening") return styles.eventModalItemEvening;
+  if (event.scheduleType === "personal") return styles.eventModalItemPersonal;
+  return styles.eventModalItemMorning;
+};
+
 const SortableItem = ({ event, handleDeleteEvent }) => {
   const {
     attributes,
@@ -51,9 +57,7 @@ const SortableItem = ({ event, handleDeleteEvent }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className={
-        event.isImportant ? styles.importantEventListItem : styles.eventListItem
-      }
+      className={getEventItemClassName(event)}
       data-is-dragging={isDragging}
     >
       {event.text}
@@ -115,7 +119,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
   const [memo, setMemo] = useState("");
   const [newEvent, setNewEvent] = useState("");
-  const [isImportant, setIsImportant] = useState(false);
+  const [eventType, setEventType] = useState("morning");
   const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [activeId, setActiveId] = useState(null);
 
@@ -126,7 +130,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   // isBreakDay와 breakDayImageId 상태를 컴포넌트 내부에서 관리
   const [isBreakDay, setIsBreakDay] = useState(data?.isBreakDay || false);
   const [selectedImageId, setSelectedImageId] = useState(
-    data?.breakDayImageId || null
+    data?.breakDayImageId || null,
   );
 
   const [originalData, setOriginalData] = useState({
@@ -141,12 +145,18 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   const [showImageSelector, setShowImageSelector] = useState(false);
 
+  const eventTypeOptions = [
+    { value: "morning", label: "오전" },
+    { value: "evening", label: "오후" },
+    { value: "personal", label: "개인" },
+  ];
+
   const [eventPage, setEventPage] = useState(1);
   const eventsPerPage = 4;
   const totalEventPages = Math.ceil(events.length / eventsPerPage);
   const paginatedEvents = events.slice(
     (eventPage - 1) * eventsPerPage,
-    eventPage * eventsPerPage
+    eventPage * eventsPerPage,
   );
 
   const pageChangeTimerRef = useRef(null);
@@ -157,6 +167,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       const eventsWithId = data.events.map((event, index) => ({
         ...event,
         id: event.id || `event-${Date.now()}-${index}`,
+        scheduleType:
+          event.scheduleType || (event.isImportant ? "evening" : "morning"),
       }));
       setEvents(eventsWithId);
       setMemo(data.memo || "");
@@ -165,8 +177,13 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       setIsBreakDay(data.isBreakDay || false);
       setSelectedImageId(data.breakDayImageId || null);
 
+      const normalizedEvents = data.events.map((event) => ({
+        ...event,
+        scheduleType:
+          event.scheduleType || (event.isImportant ? "evening" : "morning"),
+      }));
       setOriginalData({
-        events: data.events,
+        events: normalizedEvents,
         memo: data.memo,
         isBreakDay: data.isBreakDay,
         breakDayImageId: data.breakDayImageId,
@@ -218,7 +235,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       selectedImageId,
       "", // 시간 비움
       "", // 시간 비움
-      false // 모달 닫지 않음
+      false, // 모달 닫지 않음
     );
   };
 
@@ -234,7 +251,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       imageId,
       "",
       "",
-      false
+      false,
     );
   };
 
@@ -249,7 +266,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       null, // 이미지 ID를 null로
       "",
       "",
-      false
+      false,
     );
   };
 
@@ -259,7 +276,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         const newEventItem = {
           id: `event-${Date.now()}`,
           text: newEvent.trim(),
-          isImportant: isImportant,
+          scheduleType: eventType,
         };
         const updatedEvents = [...events, newEventItem];
         setEvents(updatedEvents);
@@ -344,7 +361,11 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     if (newEvent.trim()) {
       finalEvents = [
         ...events,
-        { text: newEvent.trim(), isImportant, id: `event-${Date.now()}` },
+        {
+          text: newEvent.trim(),
+          scheduleType: eventType,
+          id: `event-${Date.now()}`,
+        },
       ];
     }
     onSave(
@@ -354,7 +375,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       isBreakDay,
       selectedImageId,
       morningTime,
-      afternoonTime
+      afternoonTime,
     );
   };
 
@@ -389,15 +410,15 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     if (newEvent.trim()) {
       currentEvents.push({
         text: newEvent.trim(),
-        isImportant,
+        scheduleType: eventType,
         id: "temp-new-event",
       });
     }
     const currentEventTexts = currentEvents.map((e) =>
-      JSON.stringify({ text: e.text, isImportant: e.isImportant })
+      JSON.stringify({ text: e.text, scheduleType: e.scheduleType }),
     );
     const originalEventTexts = originalData.events.map((e) =>
-      JSON.stringify({ text: e.text, isImportant: e.isImportant })
+      JSON.stringify({ text: e.text, scheduleType: e.scheduleType }),
     );
 
     if (currentEventTexts.length !== originalEventTexts.length) {
@@ -421,7 +442,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   const date = new Date(dateStr);
@@ -479,17 +500,19 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
               </div>
               <div className={styles.eventTitleRow}>
                 <h4>🗓️ 일정 추가</h4>
-                <div className={styles.importantCheckbox}>
-                  <span className={styles.toggleLabel}>오전</span>
-                  <label className={styles.toggleSwitch}>
-                    <input
-                      type="checkbox"
-                      checked={isImportant}
-                      onChange={(e) => setIsImportant(e.target.checked)}
-                    />
-                    <span className={styles.slider}></span>
-                  </label>
-                  <span className={styles.toggleLabel}>오후</span>
+                <div className={styles.eventTypeGroup}>
+                  {eventTypeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={`${styles.eventTypeBtn} ${
+                        eventType === option.value ? styles.activeTypeBtn : ""
+                      }`}
+                      onClick={() => setEventType(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               </div>
               <div className={styles.addEventRow}>
@@ -538,7 +561,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                     <DroppableNextButton
                       onClick={() =>
                         setEventPage((prev) =>
-                          Math.min(prev + 1, totalEventPages)
+                          Math.min(prev + 1, totalEventPages),
                         )
                       }
                       disabled={eventPage === totalEventPages}
@@ -550,18 +573,14 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                   <DragOverlay zIndex={9999}>
                     {activeEvent ? (
                       <li
-                        className={
-                          activeEvent.isImportant
-                            ? styles.importantEventListItem
-                            : styles.eventListItem
-                        }
+                        className={getEventItemClassName(activeEvent)}
                         style={{ cursor: "grabbing" }}
                       >
                         {activeEvent.text}
                       </li>
                     ) : null}
                   </DragOverlay>,
-                  document.body
+                  document.body,
                 )}
               </DndContext>
             </>
