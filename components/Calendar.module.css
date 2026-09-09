@@ -870,13 +870,32 @@ input:checked + .slider:before {
     text-overflow: ellipsis;
   }
 
-  .eventItem,
-  .eventItemImportant {
-    font-size: 0.4em;
-    padding: 1px 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  @media screen and (max-width: 768px) {
+    .eventItemMorning,
+    .eventItemEvening,
+    .eventItemPersonal {
+      font-size: 9px;
+      line-height: 1.15;
+
+      padding: 2px 3px;
+      margin: 2px 0;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      display: block;
+    }
+
+    .moreButton {
+      font-size: 8px;
+      line-height: 1;
+      padding: 2px 2px;
+
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 
   .moreEvents {
@@ -1074,4 +1093,249 @@ input:checked + .slider:before {
   height: 25px;
   fill: #3498db;
   cursor: pointer;
+}
+
+/* =========================
+   달력 UI 디테일 개선
+   ========================= */
+
+/* 년/월 선택 버튼 */
+.currentMonth {
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 9px;
+  cursor: pointer;
+  user-select: none;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  transition:
+    background-color 0.16s ease,
+    transform 0.12s ease;
+}
+
+.currentMonth:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+.currentMonth:active {
+  transform: scale(0.97);
+}
+
+/* 이전/다음 버튼 */
+.navBtn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  transition:
+    background-color 0.16s ease,
+    transform 0.12s ease;
+}
+
+.navBtn:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.navBtn:active {
+  transform: scale(0.92);
+}
+
+/* 오늘 버튼 */
+.todayBtn {
+  min-height: 36px;
+  padding: 7px 15px;
+
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+
+  transition:
+    background-color 0.16s ease,
+    transform 0.12s ease,
+    box-shadow 0.16s ease;
+}
+
+.todayBtn:hover {
+  background-color: #c0392b;
+  box-shadow: 0 4px 9px rgba(0, 0, 0, 0.13);
+}
+
+.todayBtn:active {
+  transform: scale(0.96);
+}
+
+/* 요일 영역을 본문과 조금 더 분리 */
+.dayName {
+  background-color: #fafbfc;
+  padding: 11px 0;
+  font-size: 0.9rem;
+
+  border-bottom: 1px solid #e8eaed;
+}
+
+/* 달력 날짜 셀 */
+.dateCell {
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dateCell:hover:not(.otherMonth) {
+  background-color: #f5f9fc;
+  box-shadow: inset 0 0 0 1px rgba(52, 152, 219, 0.12);
+}
+
+/* 다른 달 날짜는 hover를 너무 강하게 하지 않음 */
+.dateCell.otherMonth:hover {
+  background-color: #f1f1f1;
+}
+
+/* 오늘 날짜 셀 */
+.dateCell.today {
+  border: 2px solid #f2aef6;
+  box-shadow:
+    inset 0 0 0 1px rgba(249, 186, 252, 0.3),
+    0 0 7px rgba(231, 206, 223, 0.3);
+}
+
+/* 일정 pill 약간 더 정돈 */
+.eventItemMorning,
+.eventItemEvening,
+.eventItemPersonal {
+  border-radius: 7px;
+
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+.eventItemMorning:hover,
+.eventItemEvening:hover,
+.eventItemPersonal:hover {
+  filter: brightness(0.97);
+}
+
+/* 검색 플로팅 버튼 그림자 조금 자연스럽게 */
+.searchFloatingBtn {
+  box-shadow: 0 5px 14px rgba(52, 152, 219, 0.28);
+}
+
+.searchFloatingBtn:hover {
+  box-shadow: 0 7px 18px rgba(52, 152, 219, 0.35);
+}
+
+/* =========================
+   모바일
+   ========================= */
+
+@media screen and (max-width: 768px) {
+  .calendarHeader {
+    padding: 13px 10px;
+    gap: 8px;
+  }
+
+  .calendarHeader h2 {
+    font-size: 1.15rem;
+  }
+
+  .currentMonth {
+    padding: 6px 7px;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .navButtons {
+    gap: 4px;
+  }
+
+  .navBtn {
+    width: 31px;
+    height: 31px;
+  }
+
+  .todayBtn {
+    min-height: 31px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+
+  .dayName {
+    padding: 8px 0;
+    font-size: 0.75rem;
+  }
+
+  .dateCell:hover:not(.otherMonth) {
+    box-shadow: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dateCell {
+    padding: 2px;
+  }
+
+  .dateHeader {
+    margin-bottom: 2px;
+  }
+
+  .dateNum {
+    font-size: 11px;
+  }
+
+  .eventItemMorning,
+  .eventItemEvening,
+  .eventItemPersonal {
+    font-size: 8px;
+    line-height: 1.1;
+
+    padding: 2px;
+    margin: 1px 0;
+
+    border-radius: 4px;
+  }
+
+  .moreButton {
+    font-size: 7px;
+    padding: 1px 2px;
+    color: #a76bd7;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dateCell {
+    aspect-ratio: 1 / 1.7;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dateCell {
+    aspect-ratio: 1 / 1.85;
+  }
+}
+
+/* 모든 일정은 항상 한 줄 */
+.eventItemMorning,
+.eventItemEvening,
+.eventItemPersonal {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  line-height: 1.2;
+}
+
+/* 일정 내부 텍스트도 한 줄 */
+.eventItemMorning > span,
+.eventItemEvening > span,
+.eventItemPersonal > span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

@@ -5,6 +5,12 @@ import SearchModal from "./SearchModal";
 import { BREAK_DAY_IMAGES } from "./images";
 import Swal from "sweetalert2";
 
+import Popover from "@mui/material/Popover";
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ko } from "date-fns/locale/ko";
+
 // 왼쪽 화살표 SVG 컴포넌트
 const PrevArrow = () => (
   <svg
@@ -70,13 +76,10 @@ const getImageUrlById = (id) => {
   return image ? image.url : null;
 };
 
-const getEventItemHeight = () => {
-  const isMobile = window.innerWidth <= 768;
-  return isMobile ? 22 : 26;
-};
-
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [datePickerAnchor, setDatePickerAnchor] = useState(null);
+  const [pickerDate, setPickerDate] = useState(currentDate);
   const [scheduleData, setScheduleData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,33 +151,110 @@ const Calendar = () => {
 
   useLayoutEffect(() => {
     const calculateMaxEvents = () => {
+      const calendar = calendarRef.current;
+      if (!calendar) return;
+
       const newMaxEvents = {};
-      const dateCells = calendarRef.current?.querySelectorAll(
-        `.${styles.dateCell}`,
-      );
-      if (!dateCells) return;
-      const eventItemHeight = getEventItemHeight();
+
+      const dateCells = calendar.querySelectorAll(`.${styles.dateCell}`);
+
       dateCells.forEach((cell) => {
         const dateStr = cell.getAttribute("data-date");
         if (!dateStr) return;
-        const dateNumHeight =
-          cell.querySelector(`.${styles.dateNum}`)?.offsetHeight || 0;
-        const style = getComputedStyle(cell);
-        const padding =
-          parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
-        const cellHeight = cell.offsetHeight;
-        const availableHeight = cellHeight - dateNumHeight - padding;
-        const calculatedEvents = Math.max(
+
+        const dateHeader = cell.querySelector(`.${styles.dateHeader}`);
+
+        const eventList = cell.querySelector(`.${styles.eventList}`);
+
+        const cellHeight = cell.clientHeight;
+
+        const cellStyle = window.getComputedStyle(cell);
+
+        const paddingTop = parseFloat(cellStyle.paddingTop) || 0;
+
+        const paddingBottom = parseFloat(cellStyle.paddingBottom) || 0;
+
+        const headerHeight = dateHeader?.getBoundingClientRect().height || 0;
+
+        /*
+         * +n개 더보기 버튼이 들어갈 공간을 미리 확보
+         */
+        const moreButtonSpace =
+          window.innerWidth <= 480 ? 15 : window.innerWidth <= 768 ? 18 : 22;
+
+        const availableHeight =
+          cellHeight -
+          paddingTop -
+          paddingBottom -
+          headerHeight -
+          moreButtonSpace;
+
+        /*
+         * 실제 일정 아이템 하나의 높이를 측정
+         */
+        const firstEvent = eventList?.querySelector("li");
+
+        let eventHeight;
+
+        if (firstEvent) {
+          const rect = firstEvent.getBoundingClientRect();
+
+          const eventStyle = window.getComputedStyle(firstEvent);
+
+          const marginTop = parseFloat(eventStyle.marginTop) || 0;
+
+          const marginBottom = parseFloat(eventStyle.marginBottom) || 0;
+
+          eventHeight = rect.height + marginTop + marginBottom;
+        } else {
+          /*
+           * 일정이 없는 셀에서도 계산이 필요하므로
+           * 화면 너비별 fallback
+           */
+          if (window.innerWidth <= 480) {
+            eventHeight = 18;
+          } else if (window.innerWidth <= 768) {
+            eventHeight = 20;
+          } else {
+            eventHeight = 26;
+          }
+        }
+
+        const maxEvents = Math.max(
           0,
-          Math.floor((availableHeight - 16) / eventItemHeight),
+          Math.floor(availableHeight / eventHeight),
         );
-        newMaxEvents[dateStr] = calculatedEvents;
+
+        newMaxEvents[dateStr] = maxEvents;
       });
+
       setMaxEventsToShow(newMaxEvents);
     };
-    calculateMaxEvents();
-  }, [currentDate, scheduleData]);
 
+    /*
+     * DOM/CSS 적용이 끝난 다음 계산
+     */
+    const frame = requestAnimationFrame(calculateMaxEvents);
+
+    /*
+     * 화면 크기가 바뀌면 다시 계산
+     */
+    const resizeObserver = new ResizeObserver(calculateMaxEvents);
+
+    if (calendarRef.current) {
+      resizeObserver.observe(calendarRef.current);
+    }
+
+    window.addEventListener("resize", calculateMaxEvents);
+
+    return () => {
+      cancelAnimationFrame(frame);
+
+      resizeObserver.disconnect();
+
+      window.removeEventListener("resize", calculateMaxEvents);
+    };
+  }, [currentDate, scheduleData]);
   const handlePrevMonth = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
@@ -516,9 +596,120 @@ const Calendar = () => {
   return (
     <div className={styles.calendarContainer}>
       <div className={styles.calendarHeader}>
-        <h2 className={styles.currentMonth}>
-          {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
-        </h2>
+        <>
+          <h2
+            className={styles.currentMonth}
+            onClick={(event) => {
+              setPickerDate(currentDate);
+              setDatePickerAnchor(event.currentTarget);
+            }}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              userSelect: "none",
+            }}
+          >
+            {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
+            <span
+              style={{
+                fontSize: "11px",
+                opacity: 0.8,
+              }}
+            >
+              ▼
+            </span>
+          </h2>
+
+          <Popover
+            open={Boolean(datePickerAnchor)}
+            anchorEl={datePickerAnchor}
+            onClose={() => {
+              // 월까지 선택하지 않고 팝업을 닫으면
+              // 임시 선택값을 원래 날짜로 되돌림
+              setPickerDate(currentDate);
+              setDatePickerAnchor(null);
+            }}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  borderRadius: "16px",
+                  boxShadow: "0 8px 30px rgba(0, 0, 0, 0.18)",
+                  overflow: "hidden",
+                },
+              },
+            }}
+          >
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={ko}
+            >
+              <DateCalendar
+                // 실제 달력 날짜(currentDate)가 아니라
+                // 팝업에서만 사용하는 임시 날짜
+                value={pickerDate}
+                // 연도 → 월 순서로 선택
+                views={["year", "month"]}
+                openTo="year"
+                onChange={(newDate, selectionState) => {
+                  if (!newDate) return;
+
+                  // 팝업 내부 날짜만 먼저 변경
+                  setPickerDate(newDate);
+
+                  // 연도 → 월 선택이 모두 끝난 경우에만
+                  // 실제 뒤쪽 달력을 변경
+                  if (selectionState === "finish") {
+                    const finalDate = new Date(
+                      newDate.getFullYear(),
+                      newDate.getMonth(),
+                      1,
+                    );
+
+                    setCurrentDate(finalDate);
+                    setHighlightedDate(null);
+
+                    // 팝업 닫기
+                    setDatePickerAnchor(null);
+                  }
+                }}
+                // "9월 2026" → "2026년 9월"
+                slotProps={{
+                  calendarHeader: {
+                    format: "yyyy년 M월",
+                  },
+                }}
+                sx={{
+                  "& .MuiPickersMonth-monthButton.Mui-selected": {
+                    backgroundColor: "#4a90e2",
+                  },
+
+                  "& .MuiPickersMonth-monthButton.Mui-selected:hover": {
+                    backgroundColor: "#357abd",
+                  },
+
+                  "& .MuiYearCalendar-button.Mui-selected": {
+                    backgroundColor: "#4a90e2",
+                  },
+
+                  "& .MuiYearCalendar-button.Mui-selected:hover": {
+                    backgroundColor: "#357abd",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </Popover>
+        </>
         <div className={styles.navButtons}>
           <button className={styles.navBtn} onClick={handlePrevMonth}>
             <PrevArrow />
