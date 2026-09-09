@@ -661,6 +661,7 @@ const Calendar = () => {
                 // 연도 → 월 순서로 선택
                 views={["year", "month"]}
                 openTo="year"
+                minDate={new Date(2025, 0, 1)}
                 onChange={(newDate, selectionState) => {
                   if (!newDate) return;
 
