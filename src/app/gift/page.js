@@ -6,7 +6,8 @@ export default function GiftPage() {
   const [copied, setCopied] = useState(false);
 
   const name = "해블린";
-  const address = "(04387) 서울특별시 용산구 서빙고로 17, 센트럴파크타워 29층";
+  const address =
+    "(04387) 서울특별시 용산구 서빙고로 17, 센트럴파크타워 29층 샌드박스네트워크";
 
   const copyInfo = async () => {
     const text = `받는 사람: ${name}
