@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -22,9 +23,11 @@
     "npm": "^11.5.2",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "sweetalert2": "^11.23.0"
+    "sweetalert2": "^11.23.0",
+    "@opennextjs/cloudflare": "1.20.12"
   },
   "devDependencies": {
-    "vercel": "^35.0.0"
+    "vercel": "^35.0.0",
+    "wrangler": "4.151.0"
   }
 }
