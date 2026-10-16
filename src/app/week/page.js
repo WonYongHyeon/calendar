@@ -648,10 +648,6 @@ function LatestVideos() {
                 loading="lazy"
               />
             </div>
-
-            <div className="youtube-current-info">
-              <h3>{selectedVideo.title}</h3>
-            </div>
           </div>
 
           {/* 오른쪽 영상 목록 */}

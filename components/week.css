@@ -1784,3 +1784,41 @@ button {
     font-size: 13px;
   }
 }
+
+/* ========================================
+   유튜브 플레이어 크기 확장
+======================================== */
+
+/* 플레이어 영역 */
+.youtube-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* 기존 16:9 비율 해제 */
+.youtube-player {
+  width: 100%;
+
+  aspect-ratio: auto;
+  height: 310px;
+
+  border-radius: 13px;
+  overflow: hidden;
+
+  background: #111;
+}
+
+/* 유튜브 영상 */
+.youtube-player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* 모바일 */
+@media (max-width: 650px) {
+  .youtube-player {
+    height: 300px;
+  }
+}
