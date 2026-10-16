@@ -538,41 +538,14 @@ function QuickLinks() {
 }
 
 /* ========================================
-   유튜브 최신 영상
+   유튜브 영상 플레이어 + 목록
 ======================================== */
-
-function VideoCard({ video, featured = false }) {
-  return (
-    <a
-      href={`https://www.youtube.com/watch?v=${video.id}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`video-card ${featured ? "featured" : ""}`}
-    >
-      <div className="video-thumbnail">
-        {video.thumbnail && (
-          <img src={video.thumbnail} alt={video.title} loading="lazy" />
-        )}
-
-        <div className="video-play">▶</div>
-      </div>
-
-      <div className="video-info">
-        <h3>{video.title}</h3>
-
-        <p>
-          {new Date(video.publishedAt).toLocaleDateString("ko-KR", {
-            timeZone: "Asia/Seoul",
-          })}
-        </p>
-      </div>
-    </a>
-  );
-}
 
 function LatestVideos() {
   const [videos, setVideos] = useState([]);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const youtubeLink =
     LINKS.find((link) => link.className === "youtube")?.url || "";
@@ -590,11 +563,21 @@ function LatestVideos() {
 
         const data = await response.json();
 
-        if (active) {
-          setVideos(data.videos || []);
+        if (!active) return;
+
+        const videoList = data.videos || [];
+
+        setVideos(videoList);
+
+        if (videoList.length > 0) {
+          setSelectedVideoId(videoList[0].id);
         }
       } catch (error) {
         console.error(error);
+
+        if (active) {
+          setError(true);
+        }
       } finally {
         if (active) {
           setLoading(false);
@@ -609,15 +592,24 @@ function LatestVideos() {
     };
   }, []);
 
+  const selectedVideo =
+    videos.find((video) => video.id === selectedVideoId) || videos[0];
+
+  function selectVideo(videoId) {
+    setSelectedVideoId(videoId);
+  }
+
   return (
-    <section className="cafe-section">
+    <section className="cafe-section youtube-section">
+      {/* 유튜브 헤더 */}
+
       <div className="section-header">
         <div className="section-title">
           <span className="title-icon youtube-icon">▶</span>
 
-          <h2>유튜브 최신 영상</h2>
+          <h2>유튜브</h2>
 
-          <span className="english-title">LATEST VIDEOS</span>
+          <span className="english-title">YOUTUBE VIDEOS</span>
         </div>
 
         {youtubeLink && (
@@ -632,23 +624,75 @@ function LatestVideos() {
         )}
       </div>
 
-      {loading ? (
-        <div className="video-empty">최신 영상을 불러오는 중...</div>
-      ) : videos.length === 0 ? (
-        <div className="video-empty">
-          유튜브 채널을 연결하면 최신 영상이 표시됩니다.
-        </div>
-      ) : (
-        <div className="videos-layout">
-          <VideoCard video={videos[0]} featured />
+      {/* 로딩 */}
 
-          {videos.length > 1 && (
-            <div className="secondary-videos">
-              {videos.slice(1, 3).map((video) => (
-                <VideoCard key={video.id} video={video} />
-              ))}
+      {loading ? (
+        <div className="video-empty">영상을 불러오는 중...</div>
+      ) : error ? (
+        <div className="video-empty">영상을 불러오지 못했습니다.</div>
+      ) : videos.length === 0 ? (
+        <div className="video-empty">등록된 영상이 없습니다.</div>
+      ) : (
+        <div className="youtube-layout">
+          {/* 왼쪽 플레이어 */}
+
+          <div className="youtube-main">
+            <div className="youtube-player">
+              <iframe
+                key={selectedVideo.id}
+                src={`https://www.youtube-nocookie.com/embed/${selectedVideo.id}?rel=0&playsinline=1`}
+                title={selectedVideo.title}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                loading="lazy"
+              />
             </div>
-          )}
+
+            <div className="youtube-current-info">
+              <h3>{selectedVideo.title}</h3>
+            </div>
+          </div>
+
+          {/* 오른쪽 영상 목록 */}
+
+          <div className="youtube-sidebar">
+            <div className="youtube-list-header">
+              <span>📺 영상 목록</span>
+
+              <span className="youtube-count">{videos.length}개</span>
+            </div>
+
+            <div className="youtube-video-list">
+              {videos.map((video) => {
+                const isSelected = video.id === selectedVideo.id;
+
+                return (
+                  <button
+                    type="button"
+                    key={video.id}
+                    className={`youtube-list-item ${
+                      isSelected ? "selected" : ""
+                    }`}
+                    onClick={() => selectVideo(video.id)}
+                    aria-pressed={isSelected}
+                  >
+                    <div className="youtube-list-thumbnail">
+                      {video.thumbnail && (
+                        <img src={video.thumbnail} alt="" loading="lazy" />
+                      )}
+
+                      {isSelected && <span className="youtube-playing">▶</span>}
+                    </div>
+
+                    <div className="youtube-list-info">
+                      <span className="youtube-list-title">{video.title}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
     </section>
