@@ -29,5 +29,8 @@
   "devDependencies": {
     "vercel": "^35.0.0",
     "wrangler": "4.151.0"
+  },
+  "overrides": {
+    "esbuild": "^0.25.5"
   }
 }
