@@ -1,0 +1,407 @@
+.page {
+  min-height: 100vh;
+  padding: 40px 20px;
+
+  background: linear-gradient(135deg, #e8f4ff, #f8f9fa, #fceeff);
+
+  color: #333;
+}
+
+.container {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+/* 상단 */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 25px;
+  gap: 15px;
+}
+
+.header h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 13px;
+  color: #777;
+}
+
+.backButton {
+  padding: 10px 16px;
+
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  color: #555;
+  text-decoration: none;
+
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 카드 */
+
+.card {
+  background: white;
+
+  padding: 30px;
+  margin-bottom: 25px;
+
+  border-radius: 18px;
+
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  font-size: 19px;
+  margin-bottom: 20px;
+}
+
+.count {
+  margin-left: 10px;
+
+  font-size: 13px;
+  color: #999;
+}
+
+/* 관리자 목록 */
+
+.adminList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adminItem {
+  padding: 18px;
+
+  border: 1px solid #eee;
+  border-radius: 12px;
+
+  background: #fafafa;
+}
+
+.adminTitle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.adminTitle strong {
+  font-size: 15px;
+}
+
+.adminDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  font-size: 12px;
+  color: #888;
+}
+
+/* 권한 표시 */
+
+.superBadge,
+.adminBadge,
+.activeBadge,
+.inactiveBadge {
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.superBadge {
+  background: #e8f4ff;
+  color: #2980b9;
+}
+
+.adminBadge {
+  background: #f0eaff;
+  color: #8e44ad;
+}
+
+.activeBadge {
+  background: #e5f8ed;
+  color: #27ae60;
+}
+
+.inactiveBadge {
+  background: #fce8e8;
+  color: #e74c3c;
+}
+
+/* 관리자 생성 */
+
+.description {
+  margin-bottom: 25px;
+
+  font-size: 13px;
+  color: #888;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.inputGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.inputGroup input {
+  width: 100%;
+  height: 46px;
+
+  padding: 0 14px;
+
+  border: 1px solid #ddd;
+  border-radius: 9px;
+
+  font-size: 14px;
+  outline: none;
+}
+
+.inputGroup input:focus {
+  border-color: #3498db;
+
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* 버튼 */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 46px;
+
+  background: #3498db;
+
+  border: none;
+  border-radius: 9px;
+
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #2980b9;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backLink {
+  display: block;
+
+  margin-top: 20px;
+
+  text-align: center;
+  color: #888;
+
+  font-size: 13px;
+  text-decoration: none;
+}
+
+/* 메시지 */
+
+.error,
+.success {
+  padding: 12px;
+
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.error {
+  background: #fff0f0;
+  color: #e74c3c;
+}
+
+.success {
+  background: #e9f9ef;
+  color: #27ae60;
+}
+
+/* 모바일 */
+
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 12px;
+  }
+
+  .header h1 {
+    font-size: 21px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .adminItem {
+    padding: 14px;
+  }
+}
+
+/* 관리자 계정 관리 버튼 */
+
+.accountActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  margin-top: 16px;
+}
+
+/* 일반 버튼 */
+
+.secondaryButton {
+  padding: 9px 14px;
+
+  background: white;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  color: #555;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.secondaryButton:hover {
+  background: #f0f7ff;
+  border-color: #3498db;
+  color: #3498db;
+}
+
+/* 비활성화 버튼 */
+
+.dangerButton {
+  padding: 9px 14px;
+
+  background: #fff0f0;
+
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+
+  color: #e74c3c;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.dangerButton:hover {
+  background: #ffe0e0;
+}
+
+.secondaryButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 비밀번호 초기화 */
+
+.resetForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  margin-top: 18px;
+  padding: 18px;
+
+  background: white;
+
+  border: 1px solid #eee;
+  border-radius: 10px;
+}
+
+.resetForm h4 {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.resetForm input {
+  width: 100%;
+  height: 44px;
+
+  padding: 0 12px;
+
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  font-size: 13px;
+  outline: none;
+}
+
+.resetForm input:focus {
+  border-color: #3498db;
+}
+
+.resetForm .button {
+  margin-top: 5px;
+}
+
+/* 모바일 */
+
+@media (max-width: 600px) {
+  .accountActions {
+    flex-direction: column;
+  }
+
+  .accountActions button {
+    width: 100%;
+  }
+}
+
+/* 관리자 페이지 상단 버튼 */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styles from "./Calendar.module.css";
 import ScheduleModal from "./ScheduleModal";
+import ScheduleReadOnlyModal from "./ScheduleReadOnlyModal";
 import SearchModal from "./SearchModal";
 import { BREAK_DAY_IMAGES } from "./images";
 import Swal from "sweetalert2";
@@ -92,7 +93,7 @@ const EVENT_COLORS = {
   personal: "#d4ff00",
 };
 
-const Calendar = () => {
+const Calendar = ({ isAdmin = false }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [datePickerAnchor, setDatePickerAnchor] = useState(null);
   const [pickerDate, setPickerDate] = useState(currentDate);
@@ -797,23 +798,38 @@ const Calendar = () => {
         </div>
       )}
 
-      {isModalOpen && (
-        <ScheduleModal
-          dateStr={selectedDate}
-          data={
-            scheduleData[selectedDate] || {
-              events: [],
-              memo: "",
-              version: 0,
-              isBreakDay: false,
-              breakDayImageId: null,
-              broadcastTimes: [],
+      {isModalOpen &&
+        (isAdmin ? (
+          <ScheduleModal
+            dateStr={selectedDate}
+            data={
+              scheduleData[selectedDate] || {
+                events: [],
+                memo: "",
+                version: 0,
+                isBreakDay: false,
+                breakDayImageId: null,
+                broadcastTimes: [],
+              }
             }
-          }
-          onClose={handleCloseModal}
-          onSave={handleSaveSchedule}
-        />
-      )}
+            onClose={handleCloseModal}
+            onSave={handleSaveSchedule}
+          />
+        ) : (
+          <ScheduleReadOnlyModal
+            dateStr={selectedDate}
+            data={
+              scheduleData[selectedDate] || {
+                events: [],
+                memo: "",
+                isBreakDay: false,
+                breakDayImageId: null,
+                broadcastTimes: [],
+              }
+            }
+            onClose={handleCloseModal}
+          />
+        ))}
 
       {isSearchModalOpen && (
         <SearchModal
