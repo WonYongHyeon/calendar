@@ -53,7 +53,16 @@ export async function GET(request) {
 
     return NextResponse.json(scheduleData, { status: 200 });
   } catch (error) {
-    console.error("Failed to fetch schedules:", error);
+    console.error(
+    "SCHEDULE_DB_DEBUG:",
+    JSON.stringify({
+      postgresUrlExists: !!process.env.POSTGRES_URL,
+      errorName: error?.name ?? null,
+      errorCode: error?.code ?? null,
+      errorMessage: error?.message ?? null,
+      causeCode: error?.cause?.code ?? null,
+    })
+  );
     return NextResponse.json(
       { error: "Failed to fetch schedules" },
       { status: 500 },

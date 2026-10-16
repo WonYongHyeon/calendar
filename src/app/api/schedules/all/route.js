@@ -28,7 +28,11 @@ export async function GET() {
 
     return NextResponse.json(scheduleData, { status: 200 });
   } catch (error) {
-    console.error("Failed to fetch all schedules:", error);
+    console.error("DB 연결 오류 확인:", {
+      postgresUrlExists: !!process.env.POSTGRES_URL,
+      errorName: error?.name,
+      errorCode: error?.code,
+    });
     return NextResponse.json(
       { error: "Failed to fetch all schedules" },
       { status: 500 }

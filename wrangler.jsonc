@@ -1,0 +1,32 @@
+
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "calendar",
+  "main": ".open-next/worker.js",
+  "keep_vars": true,
+  "compatibility_date": "2026-10-12",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": true
+    },
+    "traces": {
+      "enabled": false,
+      "head_sampling_rate": 1,
+      "persist": true
+    },
+    "issue_detection": {
+      "enabled": false
+    }
+  }
+}
