@@ -118,16 +118,6 @@ export default function Home() {
               해블린의 방송 일정을 한눈에 확인해 보세요.
             </p>
           </div>
-
-          {/* 월간 / 주간 이동 */}
-
-          <nav className={styles.viewNavigation} aria-label="일정표 보기 방식">
-            <span className={styles.activeView}>📅 월간 일정표</span>
-
-            <Link href="/week" className={styles.viewButton}>
-              주간 일정표 ↗
-            </Link>
-          </nav>
         </header>
 
         {/* =====================================
