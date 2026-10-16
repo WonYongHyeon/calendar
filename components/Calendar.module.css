@@ -1688,3 +1688,1620 @@
     font-size: 7px;
   }
 }
+
+/* =========================================
+   해블린 월간 일정표 리디자인 V1
+   /week 디자인 스타일 통일
+========================================= */
+
+/* =========================================
+   1. 달력 전체
+========================================= */
+
+.calendarContainer {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  background: #ffffff;
+
+  border: 1px solid #e0e4f5;
+  border-radius: 20px;
+
+  box-shadow: 0 8px 32px rgba(95, 108, 180, 0.08);
+
+  overflow: hidden;
+
+  color: #343853;
+
+  font-family:
+    "Pretendard",
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* =========================================
+   2. 달력 상단 헤더
+========================================= */
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+  padding: 22px 24px;
+
+  background: #ffffff;
+  color: #343853;
+
+  border-bottom: 1px solid #edf0fa;
+}
+
+/* 년도 / 월 선택 */
+
+.currentMonth {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+  margin: 0;
+  padding: 10px 16px;
+
+  background: #f2f3ff;
+
+  border: 1px solid #dde1fa;
+  border-radius: 12px;
+
+  color: #454b70;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.currentMonth:hover {
+  background: #e9ebff;
+}
+
+.currentMonth:active {
+  transform: scale(0.98);
+}
+
+/* =========================================
+   3. 월 이동 버튼
+========================================= */
+
+.navButtons {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+/* 이전 / 다음 */
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  padding: 0;
+
+  background: #6875c4;
+
+  border: 1px solid #6875c4;
+  border-radius: 11px;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.navBtn:hover {
+  background: #5967b4;
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.2);
+
+  transform: translateY(-1px);
+}
+
+/* 오늘 버튼 */
+
+.todayBtn {
+  min-height: 40px;
+
+  padding: 0 18px;
+
+  background: #f2f3ff;
+
+  border: 1px solid #dde1fa;
+  border-radius: 11px;
+
+  color: #5967b4;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  box-shadow: none;
+
+  cursor: pointer;
+}
+
+.todayBtn:hover {
+  background: #e9ebff;
+
+  box-shadow: none;
+}
+
+/* =========================================
+   4. 달력 그리드
+========================================= */
+
+.calendarGrid {
+  display: grid;
+
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+
+  gap: 7px;
+
+  padding: 0 18px 18px;
+}
+
+/* =========================================
+   5. 요일
+========================================= */
+
+.dayName {
+  padding: 17px 0 13px;
+
+  background: transparent;
+
+  border: none;
+
+  color: #858ba9;
+
+  text-align: center;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* 일요일 */
+
+.dayName:first-child {
+  color: #df819e;
+}
+
+/* 토요일 */
+
+.dayName:last-child {
+  color: #6875c4;
+}
+
+/* =========================================
+   6. 날짜 카드
+========================================= */
+
+.dateCell {
+  position: relative;
+
+  width: 100%;
+  max-width: none;
+  max-height: none;
+
+  min-width: 0;
+
+  padding: 10px;
+
+  aspect-ratio: 1 / 1.35;
+
+  background: #ffffff;
+
+  border: 1px solid #e3e6f5;
+  border-radius: 12px;
+
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+/* 기존 마지막 열 테두리 제거 규칙 덮어쓰기 */
+
+.dateCell:nth-child(7n) {
+  border-right: 1px solid #e3e6f5;
+}
+
+/* 마우스 hover */
+
+.dateCell:hover:not(.otherMonth):not(.breakDay) {
+  background: #f9f9ff;
+
+  border-color: #c9cff1;
+
+  box-shadow: 0 3px 12px rgba(104, 117, 196, 0.08);
+}
+
+/* =========================================
+   7. 오늘 날짜
+========================================= */
+
+.dateCell.today {
+  background: #f7f7ff;
+
+  border: 2px solid #8793d8;
+
+  box-shadow: 0 0 0 3px rgba(135, 147, 216, 0.08);
+}
+
+.dateCell.today .dateNum {
+  color: #5967b4;
+  font-weight: 900;
+}
+
+/* =========================================
+   8. 다른 달 날짜
+========================================= */
+
+.dateCell.otherMonth {
+  background: #f8f9fc;
+
+  border: 1px solid #f0f1f7;
+
+  color: #c4c8d9;
+
+  cursor: default;
+}
+
+.dateCell.otherMonth:hover {
+  background: #f8f9fc;
+}
+
+/* =========================================
+   9. 날짜 / 방송 시간
+========================================= */
+
+.dateHeader {
+  display: grid;
+
+  grid-template-columns: auto minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 9px;
+}
+
+/* 날짜 숫자 */
+
+.dateNum {
+  color: #454b70;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* 방송 시간 */
+
+.timeDisplay {
+  color: #6875c4;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-align: right;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   10. 일정 목록
+========================================= */
+
+.eventsList {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  margin: 3px 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+/* 일정 카드 */
+
+.eventItemMorning,
+.eventItemEvening,
+.eventItemPersonal,
+.eventItemType3,
+.eventItemType4 {
+  width: 100%;
+
+  margin: 0;
+  padding: 6px 7px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+
+  text-align: center;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   11. 일정 더보기
+========================================= */
+
+.moreButton {
+  width: 100%;
+
+  margin-top: 5px;
+  padding: 5px;
+
+  color: #6875c4;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-align: center;
+}
+
+/* =========================================
+   12. 휴방 날짜
+========================================= */
+
+.dateCell.breakDay {
+  background: #f5f6fb;
+
+  border: 1px solid #e3e5f0;
+
+  color: #858ba9;
+}
+
+.dateCell.breakDay:hover {
+  background: #eff0f8;
+}
+
+.breakReasonTitle {
+  color: #858ba9;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.breakReasonText {
+  color: #777eaa;
+
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 휴방 이미지 */
+
+.breakDayImage {
+  border-radius: 10px;
+}
+
+/* =========================================
+   13. 플로팅 메뉴
+========================================= */
+
+.searchFloatingBtn {
+  background: #6875c4;
+
+  border-radius: 15px;
+
+  box-shadow: 0 5px 18px rgba(104, 117, 196, 0.25);
+}
+
+.searchFloatingBtn:hover {
+  background: #5967b4;
+
+  box-shadow: 0 7px 20px rgba(104, 117, 196, 0.3);
+}
+
+.floatingMenu {
+  background: white;
+
+  border: 1px solid #dde1fa;
+  border-radius: 14px;
+
+  box-shadow: 0 8px 30px rgba(104, 117, 196, 0.15);
+}
+
+.floatingMenu li {
+  color: #454b70;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.floatingMenu li:hover {
+  background: #f2f3ff;
+}
+
+/* =========================================
+   14. 태블릿
+========================================= */
+
+@media (max-width: 768px) {
+  .calendarContainer {
+    border-radius: 15px;
+
+    border: 1px solid #dde1fa;
+
+    box-shadow: 0 4px 20px rgba(104, 117, 196, 0.08);
+  }
+
+  .calendarHeader {
+    padding: 15px 12px;
+  }
+
+  .currentMonth {
+    padding: 8px 10px;
+
+    font-size: 17px;
+  }
+
+  .navButtons {
+    gap: 5px;
+  }
+
+  .navBtn {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 9px;
+  }
+
+  .todayBtn {
+    min-height: 34px;
+
+    padding: 0 12px;
+
+    font-size: 12px;
+
+    border-radius: 9px;
+  }
+
+  .calendarGrid {
+    gap: 4px;
+
+    padding: 0 8px 10px;
+  }
+
+  .dayName {
+    padding: 12px 0;
+
+    font-size: 12px;
+  }
+
+  .dateCell {
+    padding: 5px;
+
+    aspect-ratio: 1 / 1.6;
+
+    border-radius: 8px;
+  }
+
+  .dateNum {
+    font-size: 12px;
+  }
+
+  .timeDisplay {
+    font-size: 9px;
+  }
+
+  .eventItemMorning,
+  .eventItemEvening,
+  .eventItemPersonal,
+  .eventItemType3,
+  .eventItemType4 {
+    padding: 4px 3px;
+
+    font-size: 9px;
+
+    border-radius: 5px;
+  }
+}
+
+/* =========================================
+   15. 모바일
+========================================= */
+
+@media (max-width: 480px) {
+  .calendarHeader {
+    padding: 12px 8px;
+    gap: 6px;
+  }
+
+  .currentMonth {
+    padding: 7px;
+
+    font-size: 14px;
+
+    border-radius: 8px;
+  }
+
+  .navButtons {
+    gap: 3px;
+  }
+
+  .navBtn {
+    width: 29px;
+    height: 29px;
+
+    border-radius: 7px;
+  }
+
+  .navBtn svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .todayBtn {
+    min-height: 29px;
+
+    padding: 0 8px;
+
+    font-size: 10px;
+
+    border-radius: 7px;
+  }
+
+  .calendarGrid {
+    gap: 3px;
+
+    padding: 0 5px 8px;
+  }
+
+  .dayName {
+    padding: 10px 0;
+
+    font-size: 10px;
+  }
+
+  .dateCell {
+    padding: 3px;
+
+    aspect-ratio: 1 / 1.85;
+
+    border-radius: 6px;
+  }
+
+  .dateHeader {
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 2px;
+
+    margin-bottom: 4px;
+  }
+
+  .dateNum {
+    font-size: 11px;
+  }
+
+  .timeDisplay {
+    width: 100%;
+
+    font-size: 8px;
+
+    text-align: left;
+  }
+
+  .eventsList {
+    gap: 2px;
+
+    margin: 2px 0;
+  }
+
+  .eventItemMorning,
+  .eventItemEvening,
+  .eventItemPersonal,
+  .eventItemType3,
+  .eventItemType4 {
+    padding: 3px 2px;
+
+    margin: 0;
+
+    font-size: 8px;
+
+    line-height: 1.2;
+
+    border-radius: 4px;
+  }
+
+  .moreButton {
+    padding: 2px;
+
+    font-size: 7px;
+  }
+
+  .breakReasonTitle {
+    font-size: 10px;
+  }
+
+  .breakReasonText {
+    font-size: 8px;
+  }
+}
+
+/* =========================================
+   해블린 일정 수정창 리디자인 V1
+========================================= */
+
+/* 수정창 전체 */
+
+.modalContent.editModal {
+  width: min(94vw, 560px);
+  max-width: 560px;
+  max-height: 90dvh;
+
+  padding: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #dde1fa;
+  border-radius: 20px;
+
+  box-shadow: 0 20px 60px rgba(52, 56, 83, 0.22);
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  color: #343853;
+
+  font-family: "Pretendard", "Noto Sans KR", sans-serif;
+}
+
+/* =========================================
+   상단 헤더
+========================================= */
+
+.editModal .modalHeader {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin: 0;
+  padding: 22px 24px;
+
+  background: #f8f9ff;
+
+  border-bottom: 1px solid #e5e8f7;
+}
+
+.editModal .modalHeader h3 {
+  margin: 0;
+
+  color: #343853;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+/* 닫기 버튼 */
+
+.editModal .closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #e0e4f5;
+  border-radius: 10px;
+
+  color: #777eaa;
+
+  font-size: 24px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.editModal .closeBtn:hover {
+  background: #e9ebff;
+  color: #5967b4;
+}
+
+/* =========================================
+   수정창 본문
+========================================= */
+
+.editModal .modalBody {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  padding: 24px;
+
+  background: #ffffff;
+}
+
+.editModal .modalBody h4 {
+  margin: 0 0 12px;
+
+  color: #454b70;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* =========================================
+   방송 시간 영역
+========================================= */
+
+.editModal .eventTimeSection {
+  margin: 0;
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+/* 방송 시간 태그 */
+
+.editModal .broadcastTimeList {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin: 12px 0 0;
+}
+
+.editModal .broadcastTimeChip {
+  height: 34px;
+
+  padding: 5px 8px 5px 12px;
+
+  background: #e9ebff;
+
+  border: 1px solid #d7dcfa;
+  border-radius: 9px;
+
+  color: #5967b4;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.editModal .broadcastTimeRemove {
+  width: 20px;
+  height: 20px;
+
+  color: #777eaa;
+
+  font-size: 18px;
+}
+
+.editModal .broadcastTimeRemove:hover {
+  background: #fce4ea;
+  color: #d85c79;
+}
+
+/* =========================================
+   입력창 공통
+========================================= */
+
+.editModal .addEventRow {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 0;
+}
+
+.editModal .eventInput {
+  flex: 1;
+  min-width: 0;
+
+  min-height: 42px;
+
+  padding: 10px 13px;
+
+  background: #ffffff;
+
+  border: 1px solid #dce1f3;
+  border-radius: 10px;
+
+  color: #343853;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.editModal .eventInput:focus {
+  border-color: #8793d8;
+
+  box-shadow: 0 0 0 3px rgba(135, 147, 216, 0.12);
+}
+
+.editModal .eventInput::placeholder {
+  color: #a0a6c0;
+}
+
+/* 추가 및 등록 버튼 */
+
+.editModal .addEventBtn {
+  flex-shrink: 0;
+
+  min-height: 42px;
+
+  padding: 0 17px;
+
+  background: #6875c4;
+
+  border: 1px solid #6875c4;
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.editModal .addEventBtn:hover {
+  background: #5967b4;
+}
+
+/* =========================================
+   일정 종류 선택
+========================================= */
+
+.editModal .eventTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  margin: 0;
+  padding: 18px 18px 0;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+}
+
+.editModal .eventTitleRow h4 {
+  margin: 0;
+}
+
+.editModal .eventTypeGroup {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+.editModal .eventTypeBtn {
+  min-width: 36px;
+  height: 32px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.editModal .eventTypeBtn:hover {
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   일정 목록
+========================================= */
+
+.editModal .eventListModal {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  max-height: 220px;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
+  overflow-y: auto;
+}
+
+/* 등록된 일정 */
+
+.editModal .eventModalItemMorning,
+.editModal .eventModalItemEvening,
+.editModal .eventModalItemPersonal,
+.editModal .eventModalItemType3,
+.editModal .eventModalItemType4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin: 0;
+  padding: 7px 13px;
+
+  border-radius: 10px;
+
+  color: #343853;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  line-height: 1.5;
+
+  cursor: grab;
+}
+
+/* 삭제 버튼 */
+
+.editModal .deleteEventBtn {
+  flex-shrink: 0;
+
+  width: 25px;
+  height: 25px;
+
+  background: rgba(255, 255, 255, 0.65);
+
+  border: none;
+  border-radius: 7px;
+
+  color: #c45a75;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.editModal .deleteEventBtn:hover {
+  background: #ffffff;
+  color: #e33d65;
+}
+
+/* =========================================
+   페이지 이동
+========================================= */
+
+.editModal .paginationControls {
+  gap: 12px;
+
+  margin-top: 12px;
+
+  color: #777eaa;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.editModal .pageBtn {
+  padding: 8px 14px;
+
+  background: #e9ebff;
+
+  border: 1px solid #d7dcfa;
+  border-radius: 9px;
+
+  color: #5967b4;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.editModal .pageBtn:hover:not(:disabled) {
+  background: #dce1ff;
+}
+
+.editModal .pageBtn:disabled {
+  background: #f2f3f8;
+
+  border-color: #e8eaf2;
+
+  color: #b0b4c8;
+}
+
+/* =========================================
+   메모 영역
+========================================= */
+
+.editModal .memoSection {
+  margin: 0;
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+.editModal .memoHeader {
+  margin-bottom: 12px;
+}
+
+.editModal .memoHeader h4 {
+  margin: 0;
+}
+
+.editModal .memoInput {
+  width: 100%;
+  min-height: 100px;
+
+  padding: 13px;
+
+  background: #ffffff;
+
+  border: 1px solid #dce1f3;
+  border-radius: 10px;
+
+  color: #343853;
+
+  font-size: 13px;
+  line-height: 1.6;
+
+  outline: none;
+
+  resize: vertical;
+}
+
+.editModal .memoInput:focus {
+  border-color: #8793d8;
+
+  box-shadow: 0 0 0 3px rgba(135, 147, 216, 0.12);
+}
+
+.editModal .memoInput:read-only {
+  background: #f2f3f9;
+
+  border: 1px solid #e5e7f1;
+
+  color: #777eaa;
+}
+
+/* 메모 수정 버튼 */
+
+.editModal .editMemoBtn {
+  padding: 7px 13px;
+
+  background: #e9ebff;
+
+  border: 1px solid #d7dcfa;
+  border-radius: 9px;
+
+  color: #5967b4;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.editModal .editMemoBtn:hover {
+  background: #dce1ff;
+}
+
+/* =========================================
+   휴방 설정
+========================================= */
+
+.editModal .breakDayToggle {
+  display: flex;
+  align-items: center;
+
+  flex-shrink: 0;
+
+  gap: 8px;
+
+  margin-right: 0;
+}
+
+.editModal .toggleLabel {
+  color: #777eaa;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.editModal .toggleSwitch input:checked + .slider {
+  background: #8793d8;
+}
+
+.editModal .toggleSwitch input:focus-visible + .slider {
+  outline: 2px solid #6875c4;
+  outline-offset: 3px;
+}
+
+/* 휴방 이미지 선택 */
+
+.editModal .imageSelectionSection {
+  margin: 0;
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+.editModal .imageSelectBtn {
+  padding: 10px 15px;
+
+  background: #6875c4;
+
+  border: none;
+  border-radius: 10px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.editModal .imageSelectBtn:hover {
+  background: #5967b4;
+}
+
+.editModal .imageOptionsContainer {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-top: 12px;
+}
+
+.editModal .imageOptionItem {
+  width: 65px;
+  height: 65px;
+
+  background: #ffffff;
+
+  border: 2px solid #e3e6f7;
+  border-radius: 12px;
+}
+
+.editModal .imageOptionItem.selectedImage {
+  border-color: #6875c4;
+
+  box-shadow: 0 0 0 3px rgba(104, 117, 196, 0.15);
+}
+
+/* =========================================
+   하단 저장 버튼
+========================================= */
+
+.editModal .modalFooter {
+  position: sticky;
+  bottom: 0;
+
+  margin: 0;
+  padding: 16px 24px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #e5e8f7;
+
+  text-align: right;
+
+  z-index: 2;
+}
+
+.editModal .saveBtn {
+  min-height: 43px;
+
+  padding: 0 24px;
+
+  background: #6875c4;
+
+  border: none;
+  border-radius: 11px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.15);
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.editModal .saveBtn:hover {
+  background: #5967b4;
+
+  box-shadow: 0 5px 15px rgba(104, 117, 196, 0.25);
+}
+
+/* =========================================
+   모바일
+========================================= */
+
+@media (max-width: 600px) {
+  .modalContent.editModal {
+    width: calc(100% - 24px);
+    max-height: 92dvh;
+
+    border-radius: 16px;
+  }
+
+  .editModal .modalHeader {
+    gap: 8px;
+    padding: 17px 15px;
+  }
+
+  .editModal .modalHeader h3 {
+    font-size: 16px;
+  }
+
+  .editModal .modalBody {
+    gap: 14px;
+    padding: 15px;
+  }
+
+  .editModal .eventTimeSection,
+  .editModal .memoSection,
+  .editModal .imageSelectionSection {
+    padding: 14px;
+  }
+
+  .editModal .eventTitleRow {
+    padding: 14px 14px 0;
+  }
+
+  .editModal .eventInput {
+    font-size: 16px;
+  }
+
+  .editModal .addEventBtn {
+    padding: 0 12px;
+  }
+
+  .editModal .modalFooter {
+    padding: 13px 15px;
+  }
+
+  .editModal .saveBtn {
+    width: 100%;
+  }
+}
+
+/* =========================================
+   일정 수정창 레이아웃 최종 정리 V3
+========================================= */
+
+/* =========================================
+   1. 수정창 전체
+========================================= */
+
+.modalContent.editModal {
+  display: flex;
+  flex-direction: column;
+
+  width: min(94vw, 560px);
+  max-width: 560px;
+  max-height: 90dvh;
+
+  padding: 0;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   2. 상단 헤더
+========================================= */
+
+.editModal .modalHeader {
+  flex-shrink: 0;
+
+  margin: 0;
+}
+
+/* =========================================
+   3. 본문 스크롤
+========================================= */
+
+.editModal .modalBody {
+  display: block;
+
+  flex: 1 1 auto;
+  min-height: 0;
+
+  padding: 24px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: #c7ccef transparent;
+}
+
+/* =========================================
+   4. 방송 시간 설정
+========================================= */
+
+.editModal .eventTimeSection {
+  margin: 0 0 18px;
+}
+
+/* =========================================
+   5. 일정 추가 영역
+========================================= */
+
+/* 일정 제목 + 색상 버튼 */
+
+.editModal .eventTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex-wrap: wrap;
+  gap: 12px;
+
+  margin: 0;
+
+  padding: 18px 18px 12px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-bottom: none;
+
+  border-radius: 14px 14px 0 0;
+}
+
+/* 일정 입력창 */
+
+.editModal .eventTitleRow + .addEventRow {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0 0 18px;
+
+  padding: 0 18px 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-top: none;
+
+  border-radius: 0 0 14px 14px;
+}
+
+/* =========================================
+   6. 일정 목록
+========================================= */
+
+.editModal .eventListModal {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  width: 100%;
+
+  height: auto;
+  min-height: 0;
+  max-height: none;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: visible;
+
+  list-style: none;
+}
+
+/* 일정 카드 */
+
+.editModal .eventListModal li {
+  position: relative;
+
+  flex-shrink: 0;
+
+  width: 100%;
+  min-height: 44px;
+
+  margin: 0;
+  padding: 7px 13px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================
+   7. 페이지 이동 버튼
+========================================= */
+
+.editModal .paginationControls {
+  position: static;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  width: 100%;
+  height: auto;
+
+  margin: 16px 0 0;
+  padding: 0;
+
+  clear: both;
+
+  background: transparent;
+}
+
+/* 페이지 버튼 */
+
+.editModal .pageBtn {
+  position: static;
+
+  flex-shrink: 0;
+
+  padding: 8px 14px;
+
+  background: #e9ebff;
+
+  border: 1px solid #d7dcfa;
+  border-radius: 9px;
+
+  color: #5967b4;
+}
+
+/* =========================================
+   8. 메모 영역
+========================================= */
+
+.editModal .memoSection {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+
+  margin: 20px 0 0;
+
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================
+   9. 하단 버튼
+========================================= */
+
+.editModal .modalFooter {
+  position: static;
+
+  flex-shrink: 0;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 16px 24px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #e5e8f7;
+
+  box-sizing: border-box;
+}
+
+/* =========================================
+   10. 모바일
+========================================= */
+
+@media (max-width: 600px) {
+  .modalContent.editModal {
+    width: calc(100% - 24px);
+    max-height: 92dvh;
+  }
+
+  .editModal .modalBody {
+    padding: 15px;
+  }
+
+  .editModal .eventTitleRow {
+    padding: 14px 14px 10px;
+  }
+
+  .editModal .eventTitleRow + .addEventRow {
+    padding: 0 14px 14px;
+  }
+
+  .editModal .eventListModal {
+    gap: 7px;
+  }
+
+  .editModal .eventListModal li {
+    min-height: 42px;
+    padding: 9px 11px;
+  }
+
+  .editModal .memoSection {
+    padding: 14px;
+  }
+
+  .editModal .modalFooter {
+    padding: 13px 15px;
+  }
+}

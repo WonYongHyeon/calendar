@@ -542,7 +542,10 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`${styles.modalContent} ${styles.editModal}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.modalHeader}>
           <h3>
             {`${date.getFullYear()}년 ${
