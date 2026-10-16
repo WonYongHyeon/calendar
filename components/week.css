@@ -1289,3 +1289,166 @@ button {
   letter-spacing: -1px;
   line-height: 1;
 }
+
+/* ========================================
+   주간 일정표 높이 고정
+======================================== */
+
+.schedule-day {
+  height: 260px;
+  min-height: 260px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.schedule-day:focus-visible {
+  outline: 2px solid #6875c4;
+  outline-offset: -2px;
+}
+
+.schedule-day .day-content {
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 30px;
+}
+
+.schedule-day .schedule-event {
+  flex-shrink: 0;
+}
+
+.schedule-day .event-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+}
+
+/* +n개 더보기 */
+
+.schedule-more {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+
+  color: #6875c4;
+}
+
+/* ========================================
+   전체 일정 팝업
+======================================== */
+
+.schedule-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(30, 32, 60, 0.55);
+}
+
+.schedule-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 80%;
+
+  display: flex;
+  flex-direction: column;
+
+  background: white;
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+}
+
+/* 팝업 제목 */
+
+.schedule-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #dde1fa;
+}
+
+.schedule-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #343853;
+}
+
+.schedule-modal-header button {
+  border: none;
+  background: transparent;
+
+  font-size: 22px;
+  color: #777eaa;
+
+  cursor: pointer;
+}
+
+/* 팝업 일정 목록 */
+
+.schedule-modal-body {
+  padding: 20px;
+
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.schedule-modal .schedule-event {
+  margin-bottom: 10px;
+}
+
+.schedule-modal .event-title {
+  display: block;
+  width: 100%;
+
+  padding: 12px;
+
+  background: #e9ebff;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f5caa;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+
+  text-align: center;
+}
+
+.schedule-modal .event-times {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.schedule-modal .event-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: #6875c4;
+}
+
+.schedule-modal .schedule-event.off .event-title {
+  background: #f0f0f3;
+  color: #777782;
+}

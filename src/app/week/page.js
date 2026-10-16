@@ -42,6 +42,28 @@ const LINKS = [
 
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
+const MAX_VISIBLE_EVENTS = 4;
+
+function ScheduleEvent({ event }) {
+  return (
+    <div className={`schedule-event ${event.type || ""}`}>
+      {event.times ? (
+        <div className="event-times">
+          {event.times.map((time, index) => (
+            <span className="event-time" key={index}>
+              {time}
+            </span>
+          ))}
+        </div>
+      ) : (
+        event.time && <span className="event-time">{event.time}</span>
+      )}
+
+      {event.title && <span className="event-title">{event.title}</span>}
+    </div>
+  );
+}
+
 function getKoreanToday() {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Asia/Seoul",
@@ -95,6 +117,23 @@ function WeeklySchedule() {
   const [todayKey, setTodayKey] = useState("");
   const [schedule, setSchedule] = useState({});
   const [loading, setLoading] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  useEffect(() => {
+    if (!selectedDay) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setSelectedDay(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedDay]);
 
   useEffect(() => {
     const today = getKoreanToday();
@@ -321,6 +360,25 @@ function WeeklySchedule() {
             const events = schedule[key] || [];
             const isToday = key === todayKey;
 
+            // 방송 시간은 별도로 표시
+            const timeEvents = events.filter(
+              (event) => event.type === "time-only",
+            );
+
+            // 실제 일정
+            const scheduleEvents = events.filter(
+              (event) => event.type !== "time-only",
+            );
+
+            // 최대 4개까지만 표시
+            const visibleEvents = scheduleEvents.slice(0, MAX_VISIBLE_EVENTS);
+
+            // 숨겨진 일정 개수
+            const hiddenCount = Math.max(
+              0,
+              scheduleEvents.length - MAX_VISIBLE_EVENTS,
+            );
+
             // 휴방 여부 확인
             const isBreakDay = events.some((event) => event.type === "off");
 
@@ -330,6 +388,24 @@ function WeeklySchedule() {
                 className={`schedule-day ${isToday ? "is-today" : ""} ${
                   isBreakDay ? "is-break-day" : ""
                 }`}
+                role="button"
+                tabIndex={0}
+                aria-label={`${formatShort(date)} ${DAYS[index]} 전체 일정 보기`}
+                onClick={() =>
+                  setSelectedDay({
+                    key,
+                    label: `${formatShort(date)} ${DAYS[index]}`,
+                  })
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedDay({
+                      key,
+                      label: `${formatShort(date)} ${DAYS[index]}`,
+                    });
+                  }
+                }}
               >
                 <div className="day-header">
                   <div className="day-date-row">
@@ -351,30 +427,21 @@ function WeeklySchedule() {
                   ) : events.length === 0 ? (
                     <span className="empty-text">일정 없음</span>
                   ) : (
-                    events.map((event, eventIndex) => (
-                      <div
-                        className={`schedule-event ${event.type || ""}`}
-                        key={eventIndex}
-                      >
-                        {event.times ? (
-                          <div className="event-times">
-                            {event.times.map((time, index) => (
-                              <span className="event-time" key={index}>
-                                {time}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          event.time && (
-                            <span className="event-time">{event.time}</span>
-                          )
-                        )}
+                    <>
+                      {timeEvents.map((event, index) => (
+                        <ScheduleEvent key={`time-${index}`} event={event} />
+                      ))}
 
-                        {event.title && (
-                          <span className="event-title">{event.title}</span>
-                        )}
-                      </div>
-                    ))
+                      {visibleEvents.map((event, index) => (
+                        <ScheduleEvent key={`event-${index}`} event={event} />
+                      ))}
+
+                      {hiddenCount > 0 && (
+                        <div className="schedule-more">
+                          +{hiddenCount}개 더보기
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -384,6 +451,42 @@ function WeeklySchedule() {
           })}
         </div>
       </div>
+      {selectedDay && (
+        <div
+          className="schedule-modal-overlay"
+          onClick={() => setSelectedDay(null)}
+        >
+          <div
+            className="schedule-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedDay.label} 전체 일정`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="schedule-modal-header">
+              <h3>📅 {selectedDay.label}</h3>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDay(null)}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="schedule-modal-body">
+              {(schedule[selectedDay.key] || []).length === 0 ? (
+                <p className="empty-text">등록된 일정이 없습니다.</p>
+              ) : (
+                (schedule[selectedDay.key] || []).map((event, index) => (
+                  <ScheduleEvent key={index} event={event} />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
