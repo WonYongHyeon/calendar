@@ -1,5 +1,5 @@
 /* ========================================
-   기본 색상 설정
+   1. 기본 색상 설정
 ======================================== */
 
 :root {
@@ -12,16 +12,21 @@
   --cafe-surface-soft: #f2f3ff;
 
   --cafe-border: #dde1fa;
-  --cafe-hover: #e9ebff;
+  --cafe-hover: #f8f9ff;
 
   --cafe-text: #343853;
   --cafe-text-secondary: #777eaa;
 
   --cafe-shadow: rgba(104, 117, 196, 0.1);
+
+  /* 일정표 설정 */
+  --schedule-height: 210px;
+  --schedule-gap: 8px;
+  --schedule-title-size: 10px;
 }
 
 /* ========================================
-   기본 설정
+   2. 기본 설정
 ======================================== */
 
 body {
@@ -50,7 +55,7 @@ button {
 }
 
 /* ========================================
-   네이버 카페 대문 전체
+   3. 네이버 카페 대문 전체
 ======================================== */
 
 .cafe-page,
@@ -69,13 +74,14 @@ button {
 
   display: flex;
   flex-direction: column;
+
   gap: 20px;
 
   overflow-x: hidden;
 }
 
 /* ========================================
-   공통 섹션
+   4. 공통 섹션
 ======================================== */
 
 .cafe-section {
@@ -92,7 +98,9 @@ button {
   box-shadow: 0 4px 20px var(--cafe-shadow);
 }
 
-/* 섹션 헤더 */
+/* ========================================
+   5. 섹션 헤더
+======================================== */
 
 .section-header {
   display: flex;
@@ -108,6 +116,7 @@ button {
   align-items: center;
 
   gap: 12px;
+
   flex-wrap: wrap;
 }
 
@@ -116,6 +125,7 @@ button {
 
   font-size: 25px;
   font-weight: 800;
+
   letter-spacing: -0.8px;
 
   color: var(--cafe-text);
@@ -135,7 +145,7 @@ button {
 }
 
 /* ========================================
-   주간 일정표 헤더
+   6. 주간 일정표 헤더
 ======================================== */
 
 .schedule-header {
@@ -176,7 +186,6 @@ button {
 
   transition:
     transform 0.2s,
-    background 0.2s,
     box-shadow 0.2s;
 }
 
@@ -255,7 +264,7 @@ button {
 }
 
 /* ========================================
-   주간 일정표
+   7. 주간 일정표 전체
 ======================================== */
 
 .schedule-scroll {
@@ -280,20 +289,28 @@ button {
   overflow: hidden;
 }
 
-/* 개별 날짜 */
+/* ========================================
+   8. 개별 날짜 칸
+======================================== */
 
 .schedule-day {
   position: relative;
 
-  min-width: 0;
-  min-height: 230px;
-
   display: flex;
   flex-direction: column;
 
-  background: white;
+  min-width: 0;
+
+  height: var(--schedule-height);
+  min-height: var(--schedule-height);
+
+  background: #ffffff;
 
   border-right: 1px solid var(--cafe-border);
+
+  overflow: hidden;
+
+  cursor: pointer;
 
   transition: background 0.2s;
 }
@@ -302,22 +319,33 @@ button {
   border-right: none;
 }
 
+/* 일반 날짜 hover */
+
 .schedule-day:hover {
-  background: #f8f9ff;
+  background: var(--cafe-hover);
 }
 
-/* 오늘 날짜 */
+/* 오늘 날짜 기본 배경 */
 
 .schedule-day.is-today {
-  background: #eef0ff;
+  background: #ffffff;
 }
 
+/* 오늘 날짜 hover - 일반 날짜와 동일 */
+
 .schedule-day.is-today:hover {
-  background: #e9ecff;
+  background: var(--cafe-hover);
+}
+
+/* 키보드 포커스 */
+
+.schedule-day:focus-visible {
+  outline: 2px solid var(--cafe-primary-dark);
+  outline-offset: -2px;
 }
 
 /* ========================================
-   날짜 + 요일
+   9. 날짜 + 요일
 ======================================== */
 
 .day-header {
@@ -375,41 +403,54 @@ button {
 }
 
 /* ========================================
-   일정 내용
+   10. 일정 목록
 ======================================== */
 
-.day-content {
+.schedule-day .day-content {
+  position: static;
+
   flex: 1;
+  min-height: 0;
 
   display: flex;
   flex-direction: column;
 
   justify-content: flex-start;
 
-  gap: 6px;
+  gap: var(--schedule-gap);
 
-  padding: 3px 7px 22px;
+  padding: 3px 6px 30px;
+
+  overflow: hidden;
 }
 
 /* 개별 일정 */
 
-.schedule-event {
+.schedule-day .schedule-event {
   display: flex;
   flex-direction: column;
 
   align-items: center;
 
-  gap: 5px;
+  flex-shrink: 0;
 
   width: 100%;
   min-width: 0;
+  min-height: 0;
+
+  height: auto;
+
+  margin: 0;
+  padding: 0;
+
+  gap: 2px;
 }
 
 /* ========================================
-   방송 시간
+   11. 방송 시간
 ======================================== */
 
-/* 방송 시간만 표시하는 항목 */
+/* 시간만 표시하는 일정 */
 
 .schedule-event.time-only {
   display: flex;
@@ -444,45 +485,41 @@ button {
 
 /* 개별 방송 시간 */
 
-.schedule-day .event-times .event-time {
+.schedule-day .event-time {
   display: inline-block;
 
   flex: 0 1 auto;
 
-  width: auto;
   min-width: 0;
-
-  padding: 0;
-
-  color: #6573bd;
 
   font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
+
+  color: #6573bd;
 
   white-space: nowrap;
 }
 
-/* 일반 방송 시간 */
+/* 시간 그룹 내부 */
 
-.schedule-day .event-time {
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.2;
-
-  color: #6573bd;
+.schedule-day .event-times .event-time {
+  width: auto;
+  padding: 0;
 }
 
 /* ========================================
-   방송 일정 제목
+   12. 방송 일정 제목
 ======================================== */
 
 .schedule-day .event-title {
   display: block;
 
   width: 100%;
+  height: auto;
+  min-height: 0;
 
-  padding: 6px 3px;
+  padding: 3px 6px;
 
   background: #e9ebff;
 
@@ -490,41 +527,44 @@ button {
 
   color: #4f5caa;
 
-  font-size: 10px;
+  font-size: var(--schedule-title-size);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
 
   text-align: center;
 
-  overflow-wrap: anywhere;
-}
+  white-space: nowrap;
 
-/* 일정 호버 */
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-.schedule-event:not(.off):not(.time-only) .event-title {
+  overflow-wrap: normal;
+
   transition:
     background 0.2s,
     color 0.2s;
 }
 
-.schedule-event:not(.off):not(.time-only):hover .event-title {
+/* 일정 제목 hover */
+
+.schedule-day .schedule-event:not(.off):not(.time-only):hover .event-title {
   background: #dce0ff;
 
   color: #404d9b;
 }
 
 /* ========================================
-   미정 일정
+   13. 미정 일정
 ======================================== */
 
-.schedule-event.pending .event-title {
+.schedule-day .schedule-event.pending .event-title {
   background: #f0f1f7;
 
   color: #85899d;
 }
 
 /* ========================================
-   일정 없음
+   14. 일정 없음
 ======================================== */
 
 .empty-text {
@@ -536,10 +576,31 @@ button {
 }
 
 /* ========================================
-   오늘 표시
+   15. +N개 더보기
 ======================================== */
 
-.today-indicator {
+.schedule-day .schedule-more {
+  position: static;
+
+  flex-shrink: 0;
+
+  margin-top: auto;
+  padding: 3px 0 0;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+
+  text-align: center;
+
+  color: #6875c4;
+}
+
+/* ========================================
+   16. TODAY 표시
+======================================== */
+
+.schedule-day .today-indicator {
   position: absolute;
 
   bottom: 5px;
@@ -551,42 +612,46 @@ button {
 
   border-radius: 20px;
 
-  background: #7784ce;
+  background: #7986d5;
 
-  color: white;
+  color: #ffffff;
 
   font-size: 9px;
   font-weight: 800;
 
   letter-spacing: 0.5px;
+
+  white-space: nowrap;
 }
 
 /* ========================================
-   휴방 날짜 디자인
+   17. 휴방 날짜
 ======================================== */
 
-/* 휴방 날짜 전체 */
+/* 휴방 배경 */
 
 .schedule-day.is-break-day {
-  background-color: #f0f0f3;
+  background: #f0f0f3;
 
   border-right-color: #e1e1e7;
 }
 
-/* 휴방 호버 */
+/* 휴방 hover */
 
 .schedule-day.is-break-day:hover {
-  background-color: #e9e9ee;
+  background: #e9e9ee;
 }
 
 /* 오늘이 휴방일 때 */
 
 .schedule-day.is-break-day.is-today {
-  background-color: #f0f0f3;
+  background: #f0f0f3;
 }
 
+/* 오늘이 휴방일 때 hover */
+
 .schedule-day.is-break-day.is-today:hover {
-  background-color: #e9e9ee;
+  background: #e9e9ee;
 }
 
 /* 휴방 날짜 / 요일 */
@@ -612,7 +677,7 @@ button {
   overflow: hidden;
 }
 
-/* 휴방 일정 컨테이너 */
+/* 휴방 일정 */
 
 .schedule-day.is-break-day .schedule-event.off {
   display: flex;
@@ -623,7 +688,7 @@ button {
   width: 100%;
 }
 
-/* 휴방 문구 또는 메모 */
+/* 휴방 문구 */
 
 .schedule-day.is-break-day .schedule-event.off .event-title {
   background: transparent;
@@ -646,7 +711,149 @@ button {
 }
 
 /* ========================================
-   바로가기
+   18. 전체 일정 팝업
+======================================== */
+
+/* 팝업 배경 */
+
+.schedule-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(30, 32, 60, 0.55);
+}
+
+/* 팝업 본체 */
+
+.schedule-modal {
+  width: 100%;
+  max-width: 420px;
+
+  max-height: 80vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+}
+
+/* 팝업 헤더 */
+
+.schedule-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #dde1fa;
+}
+
+.schedule-modal-header h3 {
+  margin: 0;
+
+  font-size: 18px;
+
+  color: #343853;
+}
+
+/* 닫기 버튼 */
+
+.schedule-modal-header button {
+  border: none;
+
+  background: transparent;
+
+  font-size: 22px;
+
+  color: #777eaa;
+
+  cursor: pointer;
+}
+
+/* 팝업 일정 목록 */
+
+.schedule-modal-body {
+  min-height: 0;
+
+  padding: 20px;
+
+  overflow-y: auto;
+}
+
+.schedule-modal .schedule-event {
+  margin-bottom: 10px;
+}
+
+/* 팝업 일정 제목 */
+
+.schedule-modal .event-title {
+  display: block;
+
+  width: 100%;
+
+  padding: 12px;
+
+  background: #e9ebff;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #4f5caa;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+
+  text-align: center;
+}
+
+/* 팝업 방송 시간 */
+
+.schedule-modal .event-times {
+  display: flex;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.schedule-modal .event-time {
+  font-size: 13px;
+  font-weight: 700;
+
+  color: #6875c4;
+}
+
+/* 팝업 휴방 */
+
+.schedule-modal .schedule-event.off .event-title {
+  background: #f0f0f3;
+
+  color: #777782;
+}
+
+/* ========================================
+   19. 바로가기 전체
 ======================================== */
 
 .quick-links {
@@ -657,7 +864,7 @@ button {
   gap: 12px;
 }
 
-/* 공통 바로가기 */
+/* 바로가기 공통 */
 
 .quick-link {
   min-width: 0;
@@ -674,6 +881,7 @@ button {
   border-radius: 15px;
 
   color: #343853;
+
   text-decoration: none;
 
   transition:
@@ -681,6 +889,8 @@ button {
     box-shadow 0.2s,
     filter 0.2s;
 }
+
+/* 바로가기 hover */
 
 .quick-link:hover {
   transform: translateY(-4px);
@@ -699,6 +909,7 @@ button {
 .link-icon {
   font-size: 31px;
   font-weight: 900;
+
   line-height: 1;
 }
 
@@ -718,39 +929,58 @@ button {
 }
 
 /* ========================================
-   바로가기 개별 색상
+   20. 치지직 바로가기
 ======================================== */
 
-/* 치지직 */
-
 .quick-link.chzzk {
-  background: linear-gradient(135deg, #d9f1ee, #b9e0dd);
+  background: linear-gradient(135deg, #242424, #000000);
 
-  color: #315e61;
+  color: #ffffff;
 }
+
+/* CHZZK 로고 */
 
 .quick-link.chzzk .link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+
+  color: #00ffa3;
+
+  padding: 0;
+
   font-size: 24px;
+  font-weight: 900;
+
   letter-spacing: -1px;
+  line-height: 1;
 }
 
-/* 유튜브 */
+/* ========================================
+   21. 유튜브 바로가기
+======================================== */
 
 .quick-link.youtube {
-  background: linear-gradient(135deg, #dce0ff, #b8c1f3);
+  background: linear-gradient(135deg, #ff8c9c, #f04469);
 
-  color: #4655a3;
+  color: #ffffff;
 }
 
-/* X */
+/* ========================================
+   22. X 바로가기
+======================================== */
 
 .quick-link.twitter {
-  background: linear-gradient(135deg, #535b83, #343b61);
+  background: linear-gradient(135deg, #242424, #000000);
 
-  color: white;
+  color: #ffffff;
 }
 
-/* 선물 */
+/* ========================================
+   23. 선물 바로가기
+======================================== */
 
 .quick-link.gift {
   background: linear-gradient(135deg, #d3d7fc, #a8b1ed);
@@ -758,23 +988,24 @@ button {
   color: #3d498d;
 }
 
-/* OGQ */
+/* ========================================
+   24. OGQ 바로가기
+======================================== */
 
 .quick-link.ogq {
-  background: linear-gradient(135deg, #e8dcff, #c9b8f1);
+  background: linear-gradient(135deg, #fff3c4, #ffe29a);
 
-  color: #69519d;
+  color: #82612e;
 }
 
 /* ========================================
-   유튜브 최신 영상
+   25. 유튜브 최신 영상 헤더
 ======================================== */
 
 /* 유튜브 아이콘 */
 
 .youtube-icon {
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -785,7 +1016,7 @@ button {
 
   background: #7784ce;
 
-  color: white;
+  color: #ffffff;
 
   font-size: 15px;
 }
@@ -794,7 +1025,6 @@ button {
 
 .youtube-channel-button {
   display: inline-flex;
-
   align-items: center;
   justify-content: center;
 
@@ -804,7 +1034,8 @@ button {
 
   background: linear-gradient(135deg, #8793d8, #6875c4);
 
-  color: white;
+  color: #ffffff;
+
   text-decoration: none;
 
   font-size: 13px;
@@ -824,7 +1055,7 @@ button {
 }
 
 /* ========================================
-   영상 전체 레이아웃
+   26. 유튜브 영상 전체 레이아웃
 ======================================== */
 
 .videos-layout {
@@ -840,20 +1071,24 @@ button {
 /* 영상 카드 */
 
 .video-card {
-  min-width: 0;
-
   display: block;
 
+  min-width: 0;
+
   color: inherit;
+
   text-decoration: none;
 }
 
-/* 썸네일 */
+/* ========================================
+   27. 영상 썸네일
+======================================== */
 
 .video-thumbnail {
   position: relative;
 
   width: 100%;
+
   aspect-ratio: 16 / 9;
 
   overflow: hidden;
@@ -872,11 +1107,15 @@ button {
   transition: transform 0.3s;
 }
 
+/* 썸네일 hover */
+
 .video-card:hover .video-thumbnail img {
   transform: scale(1.04);
 }
 
-/* 재생 아이콘 */
+/* ========================================
+   28. 영상 재생 아이콘
+======================================== */
 
 .video-play {
   position: absolute;
@@ -887,7 +1126,6 @@ button {
   transform: translate(-50%, -50%);
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -898,7 +1136,7 @@ button {
 
   background: rgba(52, 56, 83, 0.75);
 
-  color: white;
+  color: #ffffff;
 
   font-size: 18px;
 
@@ -912,14 +1150,18 @@ button {
 }
 
 /* ========================================
-   영상 정보
+   29. 영상 정보
 ======================================== */
 
 .video-info {
   padding: 10px 2px;
 }
 
+/* 영상 제목 */
+
 .video-info h3 {
+  display: -webkit-box;
+
   margin: 0 0 7px;
 
   font-size: 15px;
@@ -928,13 +1170,13 @@ button {
 
   color: var(--cafe-text);
 
-  display: -webkit-box;
-
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 
   overflow: hidden;
 }
+
+/* 영상 설명 */
 
 .video-info p {
   margin: 0;
@@ -945,7 +1187,7 @@ button {
 }
 
 /* ========================================
-   작은 영상
+   30. 작은 영상 목록
 ======================================== */
 
 .secondary-videos {
@@ -974,12 +1216,11 @@ button {
 }
 
 /* ========================================
-   영상이 없을 때
+   31. 영상이 없을 때
 ======================================== */
 
 .video-empty {
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -997,24 +1238,22 @@ button {
 }
 
 /* ========================================
-   반응형 - 900px 이하
+   32. 반응형 - 900px 이하
 ======================================== */
 
 @media (max-width: 900px) {
+  /* 섹션 헤더 */
+
   .section-header {
     flex-wrap: wrap;
   }
 
-  /* 835px에서도 7칸 유지 */
+  /* 일정표 7칸 유지 */
 
   .schedule-grid {
     min-width: 0;
 
     grid-template-columns: repeat(7, minmax(0, 1fr));
-  }
-
-  .schedule-day {
-    min-width: 0;
   }
 
   /* 날짜 */
@@ -1030,7 +1269,7 @@ button {
     gap: 4px;
   }
 
-  .schedule-day .event-times .event-time {
+  .schedule-day .event-time {
     font-size: 10px;
   }
 
@@ -1038,8 +1277,6 @@ button {
 
   .schedule-day .event-title {
     font-size: 10px;
-
-    padding: 6px 3px;
   }
 
   /* 휴방 문구 */
@@ -1061,7 +1298,7 @@ button {
 }
 
 /* ========================================
-   반응형 - 650px 이하
+   33. 반응형 - 650px 이하
 ======================================== */
 
 @media (max-width: 650px) {
@@ -1069,6 +1306,7 @@ button {
 
   .cafe-page {
     padding: 10px;
+
     gap: 12px;
   }
 
@@ -1076,6 +1314,7 @@ button {
 
   .cafe-section {
     padding: 15px;
+
     border-radius: 16px;
   }
 
@@ -1093,11 +1332,13 @@ button {
 
   .week-navigation {
     width: 100%;
+
     gap: 5px;
   }
 
   .week-range {
     min-width: 0;
+
     flex: 1;
 
     padding: 0 5px;
@@ -1129,6 +1370,13 @@ button {
     gap: 2px;
   }
 
+  /* 일정 목록 */
+
+  .schedule-day .day-content {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+
   /* 방송 시간 */
 
   .schedule-day .event-times {
@@ -1137,7 +1385,7 @@ button {
     flex-wrap: nowrap;
   }
 
-  .schedule-day .event-times .event-time {
+  .schedule-day .event-time {
     font-size: 9px;
 
     white-space: nowrap;
@@ -1148,7 +1396,19 @@ button {
   .schedule-day .event-title {
     font-size: 9px;
 
-    padding: 5px 2px;
+    padding: 3px 2px;
+  }
+
+  /* 더보기 */
+
+  .schedule-day .schedule-more {
+    font-size: 9px;
+  }
+
+  /* 휴방 문구 */
+
+  .schedule-day.is-break-day .schedule-event.off .event-title {
+    font-size: 11px;
   }
 
   /* 바로가기 */
@@ -1165,11 +1425,17 @@ button {
     font-size: 25px;
   }
 
-  /* 영상 */
+  .quick-link.chzzk .link-icon {
+    font-size: 24px;
+  }
+
+  /* 영상 레이아웃 */
 
   .videos-layout {
     grid-template-columns: 1fr;
   }
+
+  /* 작은 영상 */
 
   .secondary-videos {
     display: grid;
@@ -1181,274 +1447,21 @@ button {
     display: block;
   }
 
+  /* 유튜브 버튼 */
+
   .youtube-channel-button {
     padding: 9px 12px;
 
     font-size: 11px;
   }
-}
 
-/* ========================================
-   바로가기 개별 색상
-======================================== */
+  /* 팝업 */
 
-/* ================================
-   치지직
-================================ */
+  .schedule-modal-header {
+    padding: 15px;
+  }
 
-/* 치지직 버튼 배경 */
-.quick-link.chzzk {
-  background: linear-gradient(135deg, #d9f1ee, #b9e0dd);
-
-  color: #315e61;
-}
-
-/* CHZZK 로고 */
-.quick-link.chzzk .link-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #111111;
-  color: #00ffa3;
-
-  padding: 9px 12px;
-
-  border-radius: 8px;
-
-  font-size: 19px;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  line-height: 1;
-}
-
-/* ================================
-   유튜브
-================================ */
-
-.quick-link.youtube {
-  background: linear-gradient(135deg, #ff8c9c, #f04469);
-
-  color: white;
-}
-
-/* ================================
-   X (트위터)
-================================ */
-
-.quick-link.twitter {
-  background: linear-gradient(135deg, #242424, #000000);
-
-  color: white;
-}
-
-/* ================================
-   선물 보낼 곳
-================================ */
-
-.quick-link.gift {
-  background: linear-gradient(135deg, #d3d7fc, #a8b1ed);
-
-  color: #3d498d;
-}
-
-/* ================================
-   OGQ - 파스텔 옐로우
-================================ */
-
-.quick-link.ogq {
-  background: linear-gradient(135deg, #fff3c4, #ffe29a);
-
-  color: #82612e;
-}
-
-/* ================================
-   치지직
-================================ */
-
-/* 치지직 버튼 전체 */
-.quick-link.chzzk {
-  background: linear-gradient(135deg, #242424, #000000);
-
-  color: #ffffff;
-}
-
-/* CHZZK 로고 */
-.quick-link.chzzk .link-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: transparent;
-  color: #00ffa3;
-
-  padding: 0;
-
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-
-/* ========================================
-   주간 일정표 높이 고정
-======================================== */
-
-.schedule-day {
-  height: 260px;
-  min-height: 260px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.schedule-day:focus-visible {
-  outline: 2px solid #6875c4;
-  outline-offset: -2px;
-}
-
-.schedule-day .day-content {
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-  padding-bottom: 30px;
-}
-
-.schedule-day .schedule-event {
-  flex-shrink: 0;
-}
-
-.schedule-day .event-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  overflow-wrap: normal;
-}
-
-/* +n개 더보기 */
-
-.schedule-more {
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  right: 0;
-
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-
-  color: #6875c4;
-}
-
-/* ========================================
-   전체 일정 팝업
-======================================== */
-
-.schedule-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 16px;
-
-  background: rgba(30, 32, 60, 0.55);
-}
-
-.schedule-modal {
-  width: 100%;
-  max-width: 420px;
-  max-height: 80%;
-
-  display: flex;
-  flex-direction: column;
-
-  background: white;
-  border-radius: 18px;
-
-  overflow: hidden;
-
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-}
-
-/* 팝업 제목 */
-
-.schedule-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 18px 20px;
-
-  border-bottom: 1px solid #dde1fa;
-}
-
-.schedule-modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  color: #343853;
-}
-
-.schedule-modal-header button {
-  border: none;
-  background: transparent;
-
-  font-size: 22px;
-  color: #777eaa;
-
-  cursor: pointer;
-}
-
-/* 팝업 일정 목록 */
-
-.schedule-modal-body {
-  padding: 20px;
-
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.schedule-modal .schedule-event {
-  margin-bottom: 10px;
-}
-
-.schedule-modal .event-title {
-  display: block;
-  width: 100%;
-
-  padding: 12px;
-
-  background: #e9ebff;
-  border-radius: 10px;
-
-  font-size: 14px;
-  font-weight: 600;
-  color: #4f5caa;
-
-  white-space: normal;
-  overflow-wrap: anywhere;
-
-  text-align: center;
-}
-
-.schedule-modal .event-times {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  margin-bottom: 12px;
-}
-
-.schedule-modal .event-time {
-  font-size: 13px;
-  font-weight: 700;
-  color: #6875c4;
-}
-
-.schedule-modal .schedule-event.off .event-title {
-  background: #f0f0f3;
-  color: #777782;
+  .schedule-modal-body {
+    padding: 15px;
+  }
 }
