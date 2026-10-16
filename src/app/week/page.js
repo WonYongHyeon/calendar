@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import "../../../components/cafe.css";
+import "../../../components/week.css";
 
 /* ========================================
    기본 설정
