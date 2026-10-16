@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 const PLAYLIST_ID = "PLKzDqnOmfjqE";
 
 // API 캐시 시간 (1시간)
-const CACHE_SECONDS = 3600;
+const CACHE_SECONDS = 1800;
 
 // ========================================
 // API 키 가져오기

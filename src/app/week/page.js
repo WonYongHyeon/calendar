@@ -555,7 +555,7 @@ function LatestVideos() {
 
     async function loadVideos() {
       try {
-        const response = await fetch("/api/youtube");
+        const response = await fetch("/api/youtube?v=2");
 
         if (!response.ok) {
           throw new Error("유튜브 데이터 요청 실패");
