@@ -29,9 +29,34 @@ const getImageUrlById = (id) => {
 };
 
 const getEventItemClassName = (event) => {
-  if (event.scheduleType === "evening") return styles.eventModalItemEvening;
-  if (event.scheduleType === "personal") return styles.eventModalItemPersonal;
+  const type = event.scheduleType;
+
+  if (type === "type2" || type === "evening") {
+    return styles.eventModalItemEvening;
+  }
+
+  if (type === "personal") {
+    return styles.eventModalItemPersonal;
+  }
+
   return styles.eventModalItemMorning;
+};
+
+// 일정 종류별 색상
+const EVENT_COLORS = {
+  morning: "#d6eaff",
+  evening: "#ffcccc",
+
+  type1: "#d6eaff",
+  type2: "#ffcccc",
+  type3: "#e9ddff",
+  type4: "#d7f7e2",
+
+  personal: "#d4ff00",
+};
+
+const getEventColor = (event) => {
+  return EVENT_COLORS[event.scheduleType] || EVENT_COLORS.type1;
 };
 
 const SortableItem = ({ event, handleDeleteEvent }) => {
@@ -49,6 +74,10 @@ const SortableItem = ({ event, handleDeleteEvent }) => {
     transition,
     cursor: "grab",
     opacity: isDragging ? 0 : 1,
+
+    // 일정 종류에 따른 색상
+    backgroundColor: getEventColor(event),
+    color: "#333",
   };
 
   return (
@@ -119,12 +148,12 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
   const [events, setEvents] = useState([]);
   const [memo, setMemo] = useState("");
   const [newEvent, setNewEvent] = useState("");
-  const [eventType, setEventType] = useState("morning");
+  const [eventType, setEventType] = useState("type1");
   const [isMemoEditing, setIsMemoEditing] = useState(false);
   const [activeId, setActiveId] = useState(null);
 
-  const [morningTime, setMorningTime] = useState("");
-  const [afternoonTime, setAfternoonTime] = useState("");
+  const [broadcastTimes, setBroadcastTimes] = useState([]);
+  const [newBroadcastTime, setNewBroadcastTime] = useState("");
   const [vodLink, setVodLink] = useState("");
 
   // isBreakDay와 breakDayImageId 상태를 컴포넌트 내부에서 관리
@@ -138,17 +167,38 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     memo: "",
     isBreakDay: false,
     breakDayImageId: null,
-    morningTime: "",
-    afternoonTime: "",
+    broadcastTimes: [],
     vodLink: "",
   });
 
   const [showImageSelector, setShowImageSelector] = useState(false);
 
   const eventTypeOptions = [
-    { value: "morning", label: "오전" },
-    { value: "evening", label: "오후" },
-    { value: "personal", label: "개인" },
+    {
+      value: "type1",
+      label: "1",
+      color: "#d6eaff",
+    },
+    {
+      value: "type2",
+      label: "2",
+      color: "#ffcccc",
+    },
+    {
+      value: "type3",
+      label: "3",
+      color: "#e9ddff",
+    },
+    {
+      value: "type4",
+      label: "4",
+      color: "#d7f7e2",
+    },
+    {
+      value: "personal",
+      label: "개인",
+      color: "#d4ff00",
+    },
   ];
 
   const [eventPage, setEventPage] = useState(1);
@@ -172,8 +222,12 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       }));
       setEvents(eventsWithId);
       setMemo(data.memo || "");
-      setMorningTime(data.morningTime || "");
-      setAfternoonTime(data.afternoonTime || "");
+      const times = Array.isArray(data.broadcastTimes)
+        ? data.broadcastTimes
+        : [data.morningTime, data.afternoonTime].filter(Boolean);
+
+      setBroadcastTimes([...times].sort());
+      setNewBroadcastTime("");
       setIsBreakDay(data.isBreakDay || false);
       setSelectedImageId(data.breakDayImageId || null);
 
@@ -187,16 +241,15 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         memo: data.memo,
         isBreakDay: data.isBreakDay,
         breakDayImageId: data.breakDayImageId,
-        morningTime: data.morningTime || "",
-        afternoonTime: data.afternoonTime || "",
+        broadcastTimes: [...times].sort(),
         vodLink: data.vodLink || "",
       });
       setEventPage(1);
     } else {
       setEvents([]);
       setMemo("");
-      setMorningTime("");
-      setAfternoonTime("");
+      setBroadcastTimes([]);
+      setNewBroadcastTime("");
       setIsBreakDay(false);
       setSelectedImageId(null);
       setVodLink("");
@@ -206,8 +259,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         memo: "",
         isBreakDay: false,
         breakDayImageId: null,
-        morningTime: "",
-        afternoonTime: "",
+        broadcastTimes: [],
         vodLink: "",
       });
       setEventPage(1);
@@ -222,8 +274,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       // 휴방일로 전환 시
       setSelectedImageId(null); // 이미지 초기화
       setEvents([]); // 이벤트 초기화
-      setMorningTime(""); // 시간 초기화
-      setAfternoonTime(""); // 시간 초기화
+      setBroadcastTimes([]);
+      setNewBroadcastTime("");
     }
 
     // onSave 함수를 호출하여 상태를 저장 (isBreakDay 상태만 변경)
@@ -236,6 +288,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       "", // 시간 비움
       "", // 시간 비움
       false, // 모달 닫지 않음
+      [],
     );
   };
 
@@ -268,6 +321,45 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       "",
       false,
     );
+  };
+
+  // 방송 시간 추가
+  const handleAddBroadcastTime = () => {
+    const input = newBroadcastTime.trim();
+
+    // HH:mm 형식 검사 (7:10, 19:00 모두 허용)
+    const match = input.match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+
+    if (!match) {
+      Swal.fire({
+        icon: "warning",
+        text: "올바른 시간을 입력해 주세요. (예: 08:00)",
+      });
+      return;
+    }
+
+    // 7:10 → 07:10
+    const normalizedTime = `${match[1].padStart(2, "0")}:${match[2]}`;
+
+    // 중복 시간 검사
+    if (broadcastTimes.includes(normalizedTime)) {
+      Swal.fire({
+        icon: "warning",
+        text: "이미 등록된 방송 시간입니다.",
+      });
+      return;
+    }
+
+    // 시간 추가 및 자동 정렬
+    setBroadcastTimes((prev) => [...prev, normalizedTime].sort());
+
+    // 입력창 초기화
+    setNewBroadcastTime("");
+  };
+
+  // 방송 시간 삭제
+  const handleDeleteBroadcastTime = (index) => {
+    setBroadcastTimes((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddEvent = (e) => {
@@ -374,8 +466,10 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       memo,
       isBreakDay,
       selectedImageId,
-      morningTime,
-      afternoonTime,
+      "",
+      "",
+      true,
+      isBreakDay ? [] : broadcastTimes,
     );
   };
 
@@ -384,15 +478,13 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       originalData.events.length === 0 &&
       originalData.memo === "" &&
       !originalData.isBreakDay &&
-      !originalData.morningTime &&
-      !originalData.afternoonTime;
+      originalData.broadcastTimes.length === 0;
     const isCurrentEmpty =
       events.length === 0 &&
       memo.trim() === "" &&
       !isBreakDay &&
       newEvent.trim() === "" &&
-      !morningTime &&
-      !afternoonTime;
+      broadcastTimes.length === 0;
     if (isInitialEmpty && isCurrentEmpty) {
       return false;
     }
@@ -400,8 +492,8 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     if (
       isBreakDay !== originalData.isBreakDay ||
       selectedImageId !== originalData.breakDayImageId ||
-      morningTime !== originalData.morningTime ||
-      afternoonTime !== originalData.afternoonTime
+      JSON.stringify(broadcastTimes) !==
+        JSON.stringify(originalData.broadcastTimes)
     ) {
       return true;
     }
@@ -476,43 +568,85 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         <div className={styles.modalBody}>
           {!isBreakDay && (
             <>
-              <div className={styles.timeSection}>
-                <div className={styles.eventTimeSection}>
-                  <h4>☀️ 오전 뱅온 시간</h4>
+              <div className={styles.eventTimeSection}>
+                <h4>방송 시간 설정</h4>
+
+                {/* 시간 입력 */}
+                <div className={styles.addEventRow}>
                   <input
                     type="text"
-                    className={styles.timeInput}
-                    placeholder="예: 7:10"
-                    value={morningTime}
-                    onChange={(e) => setMorningTime(e.target.value)}
+                    className={styles.eventInput}
+                    placeholder="예: 20:00"
+                    value={newBroadcastTime}
+                    onChange={(e) => setNewBroadcastTime(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddBroadcastTime();
+                      }
+                    }}
                   />
+
+                  <button
+                    type="button"
+                    className={styles.addEventBtn}
+                    onClick={handleAddBroadcastTime}
+                  >
+                    + 추가
+                  </button>
                 </div>
-                <div className={styles.eventTimeSection}>
-                  <h4>🌙 오후 뱅온 시간</h4>
-                  <input
-                    type="text"
-                    className={styles.timeInput}
-                    placeholder="예: 19:00"
-                    value={afternoonTime}
-                    onChange={(e) => setAfternoonTime(e.target.value)}
-                  />
-                </div>
+
+                {/* 등록된 방송 시간 */}
+                {broadcastTimes.length > 0 && (
+                  <div className={styles.broadcastTimeList}>
+                    {broadcastTimes.map((time, index) => (
+                      <div
+                        key={`${time}-${index}`}
+                        className={styles.broadcastTimeChip}
+                      >
+                        <span>{time}</span>
+
+                        <button
+                          type="button"
+                          className={styles.broadcastTimeRemove}
+                          onClick={() => handleDeleteBroadcastTime(index)}
+                          aria-label={`${time} 삭제`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+              {/* 일정 색상 선택 */}
               <div className={styles.eventTitleRow}>
                 <h4>🗓️ 일정 추가</h4>
+
                 <div className={styles.eventTypeGroup}>
-                  {eventTypeOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      className={`${styles.eventTypeBtn} ${
-                        eventType === option.value ? styles.activeTypeBtn : ""
-                      }`}
-                      onClick={() => setEventType(option.value)}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+                  {eventTypeOptions.map((option) => {
+                    const isSelected = eventType === option.value;
+
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`${styles.eventTypeBtn} ${
+                          isSelected ? styles.activeTypeBtn : ""
+                        }`}
+                        style={{
+                          backgroundColor: option.color,
+                          color: "#333",
+                          border: isSelected
+                            ? "2px solid #555"
+                            : "2px solid transparent",
+                        }}
+                        onClick={() => setEventType(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div className={styles.addEventRow}>
@@ -574,7 +708,11 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
                     {activeEvent ? (
                       <li
                         className={getEventItemClassName(activeEvent)}
-                        style={{ cursor: "grabbing" }}
+                        style={{
+                          cursor: "grabbing",
+                          backgroundColor: getEventColor(activeEvent),
+                          color: "#333",
+                        }}
                       >
                         {activeEvent.text}
                       </li>

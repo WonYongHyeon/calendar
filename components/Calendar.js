@@ -76,6 +76,22 @@ const getImageUrlById = (id) => {
   return image ? image.url : null;
 };
 
+// 일정 종류별 색상
+const EVENT_COLORS = {
+  // 기존 데이터 호환
+  morning: "#d6eaff",
+  evening: "#ffcccc",
+
+  // 새로운 일정 색상
+  type1: "#d6eaff",
+  type2: "#ffcccc",
+  type3: "#e9ddff",
+  type4: "#d7f7e2",
+
+  // 개인 일정
+  personal: "#d4ff00",
+};
+
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [datePickerAnchor, setDatePickerAnchor] = useState(null);
@@ -164,7 +180,7 @@ const Calendar = () => {
 
         const dateHeader = cell.querySelector(`.${styles.dateHeader}`);
 
-        const eventList = cell.querySelector(`.${styles.eventList}`);
+        const eventList = cell.querySelector(`.${styles.eventsList}`);
 
         const cellHeight = cell.clientHeight;
 
@@ -359,6 +375,7 @@ const Calendar = () => {
     morningTime,
     afternoonTime,
     shouldCloseModal = true,
+    broadcastTimes,
   ) => {
     const originalData = scheduleData[dateStr] || {
       events: [],
@@ -368,15 +385,41 @@ const Calendar = () => {
       breakDayImageId: null,
       morningTime: "",
       afternoonTime: "",
+      broadcastTimes: [],
     };
+
+    // 기존 오전/오후 시간 입력값이 변경되었는지 확인
+    const legacyTimesChanged =
+      morningTime !== (originalData.morningTime || "") ||
+      afternoonTime !== (originalData.afternoonTime || "");
+
+    // 저장할 방송 시간 결정
+    const timesToSave = isBreakDay
+      ? []
+      : Array.isArray(broadcastTimes)
+        ? broadcastTimes
+        : legacyTimesChanged
+          ? [morningTime, afternoonTime]
+          : Array.isArray(originalData.broadcastTimes)
+            ? originalData.broadcastTimes
+            : [morningTime, afternoonTime];
+
+    // 빈 값 제거, 중복 제거, 시간순 정렬
+    const normalizedBroadcastTimes = [
+      ...new Set(
+        timesToSave
+          .filter((time) => typeof time === "string")
+          .map((time) => time.trim())
+          .filter(Boolean),
+      ),
+    ].sort();
 
     const optimisticData = { ...scheduleData };
 
     if (
       newEvents.length > 0 ||
       newMemo.trim() ||
-      morningTime.trim() ||
-      afternoonTime.trim() ||
+      normalizedBroadcastTimes.length > 0 ||
       isBreakDay
     ) {
       optimisticData[dateStr] = {
@@ -388,6 +431,7 @@ const Calendar = () => {
         version: (originalData.version || 0) + 1,
         morningTime: isBreakDay ? "" : morningTime,
         afternoonTime: isBreakDay ? "" : afternoonTime,
+        broadcastTimes: normalizedBroadcastTimes,
       };
     } else {
       delete optimisticData[dateStr];
@@ -413,6 +457,7 @@ const Calendar = () => {
           breakDayImageId: isBreakDay ? breakDayImageId : null,
           morningTime: isBreakDay ? "" : morningTime,
           afternoonTime: isBreakDay ? "" : afternoonTime,
+          broadcastTimes: normalizedBroadcastTimes,
         }),
       });
 
@@ -437,6 +482,9 @@ const Calendar = () => {
               breakDayImageId: schedule.break_day_image_id,
               morningTime: schedule.morning_time,
               afternoonTime: schedule.afternoon_time,
+              broadcastTimes: Array.isArray(schedule.broadcast_times)
+                ? schedule.broadcast_times
+                : [],
             }
           : null;
 
@@ -488,8 +536,9 @@ const Calendar = () => {
     const events = cellData?.events || [];
     const memo = cellData?.memo || "";
     const breakDayImageId = cellData?.breakDayImageId || null;
-    const morningTime = cellData?.morningTime || "";
-    const afternoonTime = cellData?.afternoonTime || "";
+    const broadcastTimes = Array.isArray(cellData?.broadcastTimes)
+      ? cellData.broadcastTimes
+      : [cellData?.morningTime, cellData?.afternoonTime].filter(Boolean);
     const maxEventsCount = maxEventsToShow[dateStr] || 0;
     const visibleEvents = events.slice(0, maxEventsCount);
     const remainingEventsCount =
@@ -509,11 +558,13 @@ const Calendar = () => {
       >
         <div className={styles.dateHeader}>
           <div className={styles.dateNum}>{day}</div>
-          {!isBreakDay && (morningTime || afternoonTime) && (
-            <div className={styles.timeDisplay}>
-              {morningTime && <span>☀️{isMobile ? "" : morningTime}</span>}
-              {morningTime && afternoonTime && <span> / </span>}
-              {afternoonTime && <span>🌙{isMobile ? "" : afternoonTime}</span>}
+
+          {!isBreakDay && broadcastTimes.length > 0 && (
+            <div
+              className={styles.timeDisplay}
+              title={broadcastTimes.join(" · ")}
+            >
+              {broadcastTimes.join(" · ")}
             </div>
           )}
         </div>
@@ -537,36 +588,34 @@ const Calendar = () => {
         )}
         {!isBreakDay && (
           <>
-            <ul className={styles.eventList}>
+            <ul className={styles.eventsList}>
               {visibleEvents.map((evt, idx) => {
-                if (evt.scheduleType === "morning") {
-                  return (
-                    <li key={idx} className={styles.eventItemMorning}>
-                      {evt.text}
-                    </li>
-                  );
-                } else if (evt.scheduleType === "evening") {
-                  return (
-                    <li key={idx} className={styles.eventItemEvening}>
-                      {evt.text}
-                    </li>
-                  );
-                } else {
-                  return (
-                    <li key={idx} className={styles.eventItemPersonal}>
-                      {evt.text}
-                    </li>
-                  );
+                const type = evt.scheduleType;
+
+                const eventColor = EVENT_COLORS[type] || EVENT_COLORS.type1;
+
+                let eventClass = styles.eventItemMorning;
+
+                if (type === "evening" || type === "type2") {
+                  eventClass = styles.eventItemEvening;
                 }
-                // return evt.scheduleType ? (
-                //   <li key={idx} className={styles.eventItem}>
-                //     {evt.text}
-                //   </li>
-                // ) : (
-                //   <li key={idx} className={styles.eventItemImportant}>
-                //     {evt.text}
-                //   </li>
-                // );
+
+                if (type === "personal") {
+                  eventClass = styles.eventItemPersonal;
+                }
+
+                return (
+                  <li
+                    key={evt.id || idx}
+                    className={eventClass}
+                    style={{
+                      backgroundColor: eventColor,
+                      color: "#333",
+                    }}
+                  >
+                    {evt.text}
+                  </li>
+                );
               })}
             </ul>
             {remainingEventsCount > 0 && (
@@ -758,8 +807,7 @@ const Calendar = () => {
               version: 0,
               isBreakDay: false,
               breakDayImageId: null,
-              morningTime: "",
-              afternoonTime: "",
+              broadcastTimes: [],
             }
           }
           onClose={handleCloseModal}
