@@ -1465,3 +1465,58 @@ button {
     padding: 15px;
   }
 }
+
+/* ========================================
+   주간 일정표 - 기존 일정 색상 적용
+======================================== */
+
+/* 1번 - 하늘색 */
+.schedule-event.type1,
+.schedule-event.morning {
+  --event-bg: #d6eaff;
+}
+
+/* 2번 - 분홍색 */
+.schedule-event.type2,
+.schedule-event.evening {
+  --event-bg: #ffcccc;
+}
+
+/* 3번 - 연보라색 */
+.schedule-event.type3 {
+  --event-bg: #e9ddff;
+}
+
+/* 4번 - 연두색 */
+.schedule-event.type4 {
+  --event-bg: #d7f7e2;
+}
+
+/* 개인 - 형광 연두색 */
+.schedule-event.personal {
+  --event-bg: #d4ff00;
+}
+
+/* ========================================
+   일정 제목 색상 적용
+======================================== */
+
+.schedule-day .schedule-event:not(.off):not(.time-only) .event-title,
+.schedule-modal .schedule-event:not(.off):not(.time-only) .event-title {
+  background: var(--event-bg, #e9ebff);
+  color: #333333;
+
+  transition: filter 0.2s ease;
+}
+
+/* ========================================
+   Hover 효과
+======================================== */
+
+.schedule-day .schedule-event:not(.off):not(.time-only):hover .event-title,
+.schedule-modal .schedule-event:not(.off):not(.time-only):hover .event-title {
+  background: var(--event-bg, #e9ebff);
+  color: #333333;
+
+  filter: brightness(0.97);
+}
