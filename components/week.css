@@ -1,17 +1,42 @@
 /* ========================================
+   기본 색상 설정
+======================================== */
+
+:root {
+  --cafe-primary: #d3d7fc;
+  --cafe-primary-dark: #6875c4;
+  --cafe-primary-hover: #5967b4;
+
+  --cafe-background: #f7f8ff;
+  --cafe-surface: #ffffff;
+  --cafe-surface-soft: #f2f3ff;
+
+  --cafe-border: #dde1fa;
+  --cafe-hover: #e9ebff;
+
+  --cafe-text: #343853;
+  --cafe-text-secondary: #777eaa;
+
+  --cafe-shadow: rgba(104, 117, 196, 0.1);
+}
+
+/* ========================================
    기본 설정
 ======================================== */
 
 body {
   margin: 0;
-  background: #fff7fa;
+
+  background: var(--cafe-background);
+
   font-family:
     "Pretendard",
     "Noto Sans KR",
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  color: #292438;
+
+  color: var(--cafe-text);
 }
 
 button,
@@ -24,15 +49,29 @@ button {
   cursor: pointer;
 }
 
+/* ========================================
+   네이버 카페 대문 전체
+======================================== */
+
+.cafe-page,
+.cafe-page *,
+.cafe-page *::before,
+.cafe-page *::after {
+  box-sizing: border-box;
+}
+
 .cafe-page {
   width: 100%;
-  max-width: 1200px;
+  max-width: 835px;
+
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
 
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  overflow-x: hidden;
 }
 
 /* ========================================
@@ -41,28 +80,33 @@ button {
 
 .cafe-section {
   width: 100%;
-  padding: 22px;
+  min-width: 0;
 
-  background: #ffffff;
+  padding: 18px;
 
-  border: 1px solid #ffd4e1;
-  border-radius: 22px;
+  background: var(--cafe-surface);
 
-  box-shadow: 0 4px 20px rgba(244, 122, 164, 0.08);
+  border: 1px solid var(--cafe-border);
+  border-radius: 20px;
+
+  box-shadow: 0 4px 20px var(--cafe-shadow);
 }
+
+/* 섹션 헤더 */
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 15px;
 
+  gap: 15px;
   margin-bottom: 20px;
 }
 
 .section-title {
   display: flex;
   align-items: center;
+
   gap: 12px;
   flex-wrap: wrap;
 }
@@ -73,6 +117,8 @@ button {
   font-size: 25px;
   font-weight: 800;
   letter-spacing: -0.8px;
+
+  color: var(--cafe-text);
 }
 
 .title-icon {
@@ -82,7 +128,9 @@ button {
 .english-title {
   font-size: 13px;
   font-weight: 600;
-  color: #f18cac;
+
+  color: var(--cafe-primary-dark);
+
   letter-spacing: 0.3px;
 }
 
@@ -97,35 +145,57 @@ button {
 .week-navigation {
   display: flex;
   align-items: center;
+
   gap: 8px;
 }
+
+/* 이전 / 다음 버튼 */
 
 .week-arrow {
   display: flex;
   align-items: center;
   justify-content: center;
 
+  flex-shrink: 0;
+
   width: 46px;
   height: 46px;
+
   padding: 0;
 
   border: none;
   border-radius: 12px;
 
-  background: linear-gradient(135deg, #ffa5c0, #f36d9b);
+  background: linear-gradient(135deg, #8793d8, #6875c4);
 
   color: white;
+
   font-size: 31px;
   font-weight: 400;
   line-height: 1;
 
-  transition: 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.week-arrow svg {
+  display: block;
+  flex-shrink: 0;
 }
 
 .week-arrow:hover {
   transform: translateY(-2px);
-  filter: brightness(1.05);
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.25);
 }
+
+.week-arrow:active {
+  transform: scale(0.96);
+}
+
+/* 주간 날짜 범위 */
 
 .week-range {
   min-width: 220px;
@@ -137,13 +207,20 @@ button {
 
   padding: 0 15px;
 
-  background: #fff5f8;
+  background: var(--cafe-surface-soft);
+
+  border: 1px solid var(--cafe-border);
   border-radius: 12px;
+
+  color: var(--cafe-text);
 
   font-size: 15px;
   font-weight: 700;
+
   white-space: nowrap;
 }
+
+/* 이번 주 버튼 */
 
 .today-button {
   height: 46px;
@@ -153,17 +230,28 @@ button {
   border: none;
   border-radius: 12px;
 
-  background: linear-gradient(135deg, #ff9fbb, #f16b99);
+  background: linear-gradient(135deg, #8793d8, #6875c4);
 
   color: white;
+
   font-size: 14px;
   font-weight: 700;
 
   white-space: nowrap;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .today-button:hover {
-  filter: brightness(1.05);
+  transform: translateY(-2px);
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.25);
+}
+
+.today-button:active {
+  transform: scale(0.96);
 }
 
 /* ========================================
@@ -172,18 +260,27 @@ button {
 
 .schedule-scroll {
   width: 100%;
+  max-width: 100%;
+
   overflow-x: auto;
 }
 
+/* 7일 그리드 */
+
 .schedule-grid {
   display: grid;
+
   grid-template-columns: repeat(7, minmax(0, 1fr));
 
-  border: 1px solid #ffdce7;
+  min-width: 0;
+
+  border: 1px solid var(--cafe-border);
   border-radius: 16px;
 
   overflow: hidden;
 }
+
+/* 개별 날짜 */
 
 .schedule-day {
   position: relative;
@@ -194,9 +291,9 @@ button {
   display: flex;
   flex-direction: column;
 
-  background: #ffffff;
+  background: white;
 
-  border-right: 1px solid #ffe0e9;
+  border-right: 1px solid var(--cafe-border);
 
   transition: background 0.2s;
 }
@@ -206,715 +303,301 @@ button {
 }
 
 .schedule-day:hover {
-  background: #fff8fb;
+  background: #f8f9ff;
 }
+
+/* 오늘 날짜 */
 
 .schedule-day.is-today {
-  background: #fff1f6;
+  background: #eef0ff;
 }
 
-/* 날짜 */
+.schedule-day.is-today:hover {
+  background: #e9ecff;
+}
 
-/* 날짜 + 요일 가로 정렬 */
+/* ========================================
+   날짜 + 요일
+======================================== */
+
 .day-header {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
-  gap: 6px;
-  padding: 16px 5px 12px;
+  padding: 14px 5px 0;
+
+  gap: 0;
+}
+
+.day-date-row {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
 
   white-space: nowrap;
 }
 
 /* 날짜 */
+
 .day-date {
   font-size: 14px;
   font-weight: 700;
-  color: #cc668a;
+
+  color: #656fae;
 }
 
 /* 요일 */
+
 .day-name {
   font-size: 14px;
   font-weight: 800;
-  color: #f16a99;
+
+  color: #6875c4;
 }
 
 /* 토요일 */
+
 .day-name.saturday {
-  color: #439bdc;
+  color: #4585c4;
 }
 
 /* 일요일 */
+
 .day-name.sunday {
-  color: #f06a91;
+  color: #8170bb;
 }
 
-/* 일정 내용 */
+/* ========================================
+   일정 내용
+======================================== */
 
 .day-content {
   flex: 1;
 
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
 
-  padding: 12px 7px 22px;
+  justify-content: flex-start;
+
+  gap: 6px;
+
+  padding: 3px 7px 22px;
 }
+
+/* 개별 일정 */
 
 .schedule-event {
   display: flex;
   flex-direction: column;
+
   align-items: center;
-  gap: 10px;
+
+  gap: 5px;
 
   width: 100%;
+  min-width: 0;
 }
 
-.event-time {
-  font-size: 15px;
-  font-weight: 700;
-  color: #654057;
+/* ========================================
+   방송 시간
+======================================== */
+
+/* 방송 시간만 표시하는 항목 */
+
+.schedule-event.time-only {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: 0;
+  margin: 0;
 }
 
-.event-title {
+/* 방송 시간 그룹 */
+
+.schedule-day .event-times {
+  display: flex;
+  flex-direction: row;
+
+  flex-wrap: nowrap;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-width: 0;
+
+  gap: 4px;
+}
+
+/* 개별 방송 시간 */
+
+.schedule-day .event-times .event-time {
+  display: inline-block;
+
+  flex: 0 1 auto;
+
+  width: auto;
+  min-width: 0;
+
+  padding: 0;
+
+  color: #6573bd;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+/* 일반 방송 시간 */
+
+.schedule-day .event-time {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+
+  color: #6573bd;
+}
+
+/* ========================================
+   방송 일정 제목
+======================================== */
+
+.schedule-day .event-title {
+  display: block;
+
   width: 100%;
 
-  padding: 10px 5px;
+  padding: 6px 3px;
 
-  background: #ffe7ef;
-  border-radius: 10px;
+  background: #e9ebff;
 
-  color: #c74878;
+  border-radius: 8px;
 
-  font-size: 13px;
+  color: #4f5caa;
+
+  font-size: 10px;
   font-weight: 700;
+  line-height: 1.3;
 
   text-align: center;
-  line-height: 1.5;
 
   overflow-wrap: anywhere;
 }
 
-/* 휴방 */
+/* 일정 호버 */
 
-.schedule-event.off .event-title {
-  background: #f0f0f3;
-  color: #777787;
+.schedule-event:not(.off):not(.time-only) .event-title {
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
-/* 미정 */
+.schedule-event:not(.off):not(.time-only):hover .event-title {
+  background: #dce0ff;
+
+  color: #404d9b;
+}
+
+/* ========================================
+   미정 일정
+======================================== */
 
 .schedule-event.pending .event-title {
-  background: #f5f5f7;
-  color: #888899;
+  background: #f0f1f7;
+
+  color: #85899d;
 }
 
-/* 일정 없음 */
+/* ========================================
+   일정 없음
+======================================== */
 
 .empty-text {
   font-size: 12px;
-  color: #aaa;
+
+  color: #a0a4b9;
+
   text-align: center;
 }
 
-/* 오늘 표시 */
+/* ========================================
+   오늘 표시
+======================================== */
 
 .today-indicator {
   position: absolute;
+
   bottom: 5px;
   left: 50%;
+
   transform: translateX(-50%);
 
   padding: 3px 9px;
 
   border-radius: 20px;
 
-  background: #f58cad;
+  background: #7784ce;
+
   color: white;
 
   font-size: 9px;
   font-weight: 800;
-}
 
-/* ========================================
-   바로가기
-======================================== */
-
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.quick-link {
-  min-width: 0;
-  min-height: 115px;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
-
-  border-radius: 15px;
-
-  color: white;
-  text-decoration: none;
-
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
-}
-
-.quick-link:hover {
-  transform: translateY(-4px);
-
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-}
-
-.link-icon {
-  font-size: 31px;
-  font-weight: 900;
-  line-height: 1;
-}
-
-.link-name {
-  font-size: 15px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.link-unset {
-  cursor: default;
-}
-
-/* 치지직 */
-
-.quick-link.chzzk {
-  background: linear-gradient(135deg, #9cf1d7, #54d8b4);
-
-  color: #123e36;
-}
-
-.quick-link.chzzk .link-icon {
-  font-size: 24px;
-  letter-spacing: -1px;
-}
-
-/* 유튜브 */
-
-.quick-link.youtube {
-  background: linear-gradient(135deg, #ff8c9c, #f04469);
-}
-
-/* X */
-
-.quick-link.twitter {
-  background: linear-gradient(135deg, #45414f, #1c1a22);
-}
-
-/* 선물 */
-
-.quick-link.gift {
-  background: linear-gradient(135deg, #aeb4fa, #8e88e4);
-}
-
-/* OGQ */
-
-.quick-link.ogq {
-  background: linear-gradient(135deg, #ffb3d0, #f17eae);
-}
-
-/* ========================================
-   유튜브 최신 영상
-======================================== */
-
-.youtube-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 35px;
-  height: 26px;
-
-  border-radius: 7px;
-
-  background: #f34e79;
-  color: white;
-
-  font-size: 15px;
-}
-
-.youtube-channel-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 12px 20px;
-
-  border-radius: 12px;
-
-  background: linear-gradient(135deg, #ff9fbb, #ef6796);
-
-  color: white;
-  text-decoration: none;
-
-  font-size: 13px;
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
-.youtube-channel-button:hover {
-  filter: brightness(1.05);
-}
-
-/* 영상 전체 */
-
-.videos-layout {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 20px;
-  align-items: start;
-}
-
-.video-card {
-  min-width: 0;
-
-  display: block;
-
-  color: inherit;
-  text-decoration: none;
-}
-
-.video-thumbnail {
-  position: relative;
-
-  width: 100%;
-  aspect-ratio: 16 / 9;
-
-  overflow: hidden;
-
-  border-radius: 13px;
-  background: #ffe8f0;
-}
-
-.video-thumbnail img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  transition: transform 0.3s;
-}
-
-.video-card:hover .video-thumbnail img {
-  transform: scale(1.04);
-}
-
-.video-play {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-
-  transform: translate(-50%, -50%);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 48px;
-  height: 48px;
-
-  border-radius: 50%;
-
-  background: rgba(0, 0, 0, 0.65);
-  color: white;
-
-  font-size: 18px;
-
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.video-card:hover .video-play {
-  opacity: 1;
-}
-
-.video-info {
-  padding: 10px 2px;
-}
-
-.video-info h3 {
-  margin: 0 0 7px;
-
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.5;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-
-  overflow: hidden;
-}
-
-.video-info p {
-  margin: 0;
-
-  color: #9994a3;
-  font-size: 12px;
-}
-
-/* 작은 영상 */
-
-.secondary-videos {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.secondary-videos .video-card {
-  display: grid;
-  grid-template-columns: 46% 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
-.secondary-videos .video-info {
-  padding: 2px 0;
-}
-
-.secondary-videos .video-info h3 {
-  font-size: 13px;
-}
-
-/* 영상 없을 때 */
-
-.video-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 220px;
-
-  border-radius: 14px;
-  background: #fff6f9;
-
-  color: #a87b90;
-  font-size: 14px;
-  text-align: center;
-}
-
-/* ========================================
-   반응형
-======================================== */
-
-@media (max-width: 900px) {
-  .section-header {
-    flex-wrap: wrap;
-  }
-
-  .schedule-grid {
-    min-width: 760px;
-  }
-
-  .quick-links {
-    gap: 8px;
-  }
-
-  .link-name {
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 650px) {
-  .cafe-page {
-    padding: 10px;
-    gap: 12px;
-  }
-
-  .cafe-section {
-    padding: 15px;
-    border-radius: 16px;
-  }
-
-  .section-title h2 {
-    font-size: 20px;
-  }
-
-  .english-title {
-    font-size: 10px;
-  }
-
-  .week-navigation {
-    width: 100%;
-    gap: 5px;
-  }
-
-  .week-range {
-    min-width: 0;
-    flex: 1;
-
-    padding: 0 5px;
-    font-size: 12px;
-  }
-
-  .week-arrow {
-    width: 38px;
-    height: 40px;
-    font-size: 25px;
-  }
-
-  .today-button {
-    height: 40px;
-    padding: 0 10px;
-    font-size: 11px;
-  }
-
-  .quick-links {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .quick-link {
-    min-height: 90px;
-  }
-
-  .link-icon {
-    font-size: 25px;
-  }
-
-  .videos-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .secondary-videos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .secondary-videos .video-card {
-    display: block;
-  }
-
-  .youtube-channel-button {
-    padding: 9px 12px;
-    font-size: 11px;
-  }
-}
-
-/* 방송 시간만 표시하는 항목 */
-.schedule-event.time-only {
-  gap: 0;
-}
-
-.schedule-event.time-only .event-time {
-  display: block;
-  width: 100%;
-  text-align: center;
-
-  padding: 5px 0;
-
-  color: #d65d89;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-/* 일정이 여러 개일 때 간격 */
-.day-content {
-  gap: 10px;
-}
-
-/* 방송 일정 제목 */
-.schedule-event .event-title {
-  box-sizing: border-box;
-}
-
-/* ========================================
-   방송 시간 가로 정렬
-======================================== */
-
-/* 방송 시간 그룹 */
-.event-times {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-
-  flex-wrap: nowrap;
-  gap: 8px;
-
-  width: 100%;
-  min-width: 0;
-}
-
-/* 개별 방송 시간 */
-.event-times .event-time {
-  display: inline-block;
-  width: auto;
-
-  font-size: 13px;
-  font-weight: 800;
-  color: #d65d89;
-
-  padding: 4px 0;
-  white-space: nowrap;
-}
-
-/* 방송 시간 전용 일정 */
-.schedule-event.time-only {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-
-  width: 100%;
-  gap: 0;
-}
-
-/* 작은 화면 */
-@media (max-width: 900px) {
-  .event-times {
-    gap: 5px;
-  }
-
-  .event-times .event-time {
-    font-size: 11px;
-  }
-}
-
-/* ========================================
-   날짜 / 방송 시간 / 일정 세로 배치
-======================================== */
-
-/* 날짜 헤더 */
-.day-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 14px 5px 0;
-  gap: 0;
-}
-
-/* 날짜 + 요일 */
-.day-date-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-
-  gap: 5px;
-  white-space: nowrap;
-}
-
-/* 날짜 */
-.day-date {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-/* 요일 */
-.day-name {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-/* 일정 전체 */
-.day-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-
-  gap: 8px;
-  padding: 3px 7px 22px;
-}
-
-/* 방송 시간 */
-.schedule-event.time-only {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  margin: 0;
-}
-
-/* 방송 시간 가로 정렬 */
-.event-times {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-
-  flex-wrap: nowrap;
-  gap: 7px;
-
-  width: 100%;
-}
-
-/* 개별 시간 */
-.event-times .event-time {
-  display: inline-block;
-  width: auto;
-
-  padding: 0;
-
-  font-size: 13px;
-  font-weight: 800;
-  color: #d65d89;
-
-  white-space: nowrap;
-}
-
-/* 모바일 */
-@media (max-width: 900px) {
-  .event-times {
-    gap: 5px;
-  }
-
-  .event-times .event-time {
-    font-size: 11px;
-  }
+  letter-spacing: 0.5px;
 }
 
 /* ========================================
    휴방 날짜 디자인
 ======================================== */
 
-/* 휴방 날짜 칸 전체 */
+/* 휴방 날짜 전체 */
+
 .schedule-day.is-break-day {
-  background-color: #f3f3f5;
-  border-right-color: #e2e2e6;
+  background-color: #f0f0f3;
+
+  border-right-color: #e1e1e7;
 }
 
-/* 휴방 날짜 마우스 오버 */
+/* 휴방 호버 */
+
 .schedule-day.is-break-day:hover {
-  background-color: #ebebef;
+  background-color: #e9e9ee;
 }
 
-/* 오늘이 휴방인 경우에도 회색 유지 */
+/* 오늘이 휴방일 때 */
+
 .schedule-day.is-break-day.is-today {
-  background-color: #f3f3f5;
+  background-color: #f0f0f3;
 }
 
 .schedule-day.is-break-day.is-today:hover {
-  background-color: #ebebef;
+  background-color: #e9e9ee;
 }
 
-/* 휴방 날짜의 날짜 및 요일 */
+/* 휴방 날짜 / 요일 */
+
 .schedule-day.is-break-day .day-date,
 .schedule-day.is-break-day .day-name {
   color: #8c8c98;
 }
 
 /* 휴방 내용 중앙 정렬 */
+
 .schedule-day.is-break-day .day-content {
   display: flex;
   flex-direction: column;
@@ -925,18 +608,23 @@ button {
   flex: 1;
 
   padding: 10px;
+
+  overflow: hidden;
 }
 
 /* 휴방 일정 컨테이너 */
+
 .schedule-day.is-break-day .schedule-event.off {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
   width: 100%;
 }
 
-/* 휴방 문구 및 메모 */
+/* 휴방 문구 또는 메모 */
+
 .schedule-day.is-break-day .schedule-event.off .event-title {
   background: transparent;
 
@@ -957,59 +645,371 @@ button {
   border-radius: 0;
 }
 
-/* 휴방 메모가 길어질 경우 */
-.schedule-day.is-break-day .day-content {
-  overflow: hidden;
+/* ========================================
+   바로가기
+======================================== */
+
+.quick-links {
+  display: grid;
+
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  gap: 12px;
 }
 
-/* 모바일 및 작은 화면 */
-@media (max-width: 900px) {
-  .schedule-day.is-break-day .schedule-event.off .event-title {
-    font-size: 13px;
-    line-height: 1.5;
-  }
+/* 공통 바로가기 */
+
+.quick-link {
+  min-width: 0;
+  min-height: 115px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 13px;
+
+  border-radius: 15px;
+
+  color: #343853;
+  text-decoration: none;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    filter 0.2s;
+}
+
+.quick-link:hover {
+  transform: translateY(-4px);
+
+  box-shadow: 0 8px 18px rgba(104, 117, 196, 0.18);
+
+  filter: brightness(1.02);
+}
+
+.quick-link:active {
+  transform: scale(0.97);
+}
+
+/* 아이콘 */
+
+.link-icon {
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* 이름 */
+
+.link-name {
+  font-size: 15px;
+  font-weight: 800;
+
+  text-align: center;
+}
+
+/* 링크 미설정 */
+
+.link-unset {
+  cursor: default;
 }
 
 /* ========================================
-   네이버 카페 대문 835px 최적화
+   바로가기 개별 색상
 ======================================== */
 
-/* 모든 요소의 크기에 padding, border 포함 */
-.cafe-page,
-.cafe-page *,
-.cafe-page *::before,
-.cafe-page *::after {
-  box-sizing: border-box;
+/* 치지직 */
+
+.quick-link.chzzk {
+  background: linear-gradient(135deg, #d9f1ee, #b9e0dd);
+
+  color: #315e61;
 }
 
-/* 전체 페이지 */
-.cafe-page {
-  width: 100%;
-  max-width: 835px;
-  margin: 0 auto;
-  padding: 12px;
-
-  overflow-x: hidden;
+.quick-link.chzzk .link-icon {
+  font-size: 24px;
+  letter-spacing: -1px;
 }
 
-/* 각 섹션 */
-.cafe-section {
-  width: 100%;
+/* 유튜브 */
+
+.quick-link.youtube {
+  background: linear-gradient(135deg, #dce0ff, #b8c1f3);
+
+  color: #4655a3;
+}
+
+/* X */
+
+.quick-link.twitter {
+  background: linear-gradient(135deg, #535b83, #343b61);
+
+  color: white;
+}
+
+/* 선물 */
+
+.quick-link.gift {
+  background: linear-gradient(135deg, #d3d7fc, #a8b1ed);
+
+  color: #3d498d;
+}
+
+/* OGQ */
+
+.quick-link.ogq {
+  background: linear-gradient(135deg, #e8dcff, #c9b8f1);
+
+  color: #69519d;
+}
+
+/* ========================================
+   유튜브 최신 영상
+======================================== */
+
+/* 유튜브 아이콘 */
+
+.youtube-icon {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 35px;
+  height: 26px;
+
+  border-radius: 7px;
+
+  background: #7784ce;
+
+  color: white;
+
+  font-size: 15px;
+}
+
+/* 유튜브 채널 버튼 */
+
+.youtube-channel-button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px 20px;
+
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #8793d8, #6875c4);
+
+  color: white;
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.youtube-channel-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.25);
+}
+
+/* ========================================
+   영상 전체 레이아웃
+======================================== */
+
+.videos-layout {
+  display: grid;
+
+  grid-template-columns: 1.3fr 1fr;
+
+  gap: 20px;
+
+  align-items: start;
+}
+
+/* 영상 카드 */
+
+.video-card {
   min-width: 0;
-  padding: 18px;
+
+  display: block;
+
+  color: inherit;
+  text-decoration: none;
 }
 
-/* 주간 일정표 */
-.schedule-scroll {
+/* 썸네일 */
+
+.video-thumbnail {
+  position: relative;
+
   width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
+  aspect-ratio: 16 / 9;
+
+  overflow: hidden;
+
+  border-radius: 13px;
+
+  background: #e9ebff;
 }
 
-/* 835px 이하에서도 7칸 유지 */
+.video-thumbnail img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  transition: transform 0.3s;
+}
+
+.video-card:hover .video-thumbnail img {
+  transform: scale(1.04);
+}
+
+/* 재생 아이콘 */
+
+.video-play {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  background: rgba(52, 56, 83, 0.75);
+
+  color: white;
+
+  font-size: 18px;
+
+  opacity: 0;
+
+  transition: opacity 0.2s;
+}
+
+.video-card:hover .video-play {
+  opacity: 1;
+}
+
+/* ========================================
+   영상 정보
+======================================== */
+
+.video-info {
+  padding: 10px 2px;
+}
+
+.video-info h3 {
+  margin: 0 0 7px;
+
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.5;
+
+  color: var(--cafe-text);
+
+  display: -webkit-box;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+.video-info p {
+  margin: 0;
+
+  color: var(--cafe-text-secondary);
+
+  font-size: 12px;
+}
+
+/* ========================================
+   작은 영상
+======================================== */
+
+.secondary-videos {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.secondary-videos .video-card {
+  display: grid;
+
+  grid-template-columns: 46% 1fr;
+
+  gap: 12px;
+
+  align-items: start;
+}
+
+.secondary-videos .video-info {
+  padding: 2px 0;
+}
+
+.secondary-videos .video-info h3 {
+  font-size: 13px;
+}
+
+/* ========================================
+   영상이 없을 때
+======================================== */
+
+.video-empty {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 220px;
+
+  border-radius: 14px;
+
+  background: #f0f1ff;
+
+  color: #777eaa;
+
+  font-size: 14px;
+
+  text-align: center;
+}
+
+/* ========================================
+   반응형 - 900px 이하
+======================================== */
+
 @media (max-width: 900px) {
+  .section-header {
+    flex-wrap: wrap;
+  }
+
+  /* 835px에서도 7칸 유지 */
+
   .schedule-grid {
     min-width: 0;
+
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
@@ -1017,38 +1017,275 @@ button {
     min-width: 0;
   }
 
-  .event-title {
-    font-size: 12px;
-    padding: 8px 3px;
+  /* 날짜 */
+
+  .day-date,
+  .day-name {
+    font-size: 14px;
   }
 
-  .event-time {
+  /* 방송 시간 */
+
+  .schedule-day .event-times {
+    gap: 4px;
+  }
+
+  .schedule-day .event-times .event-time {
+    font-size: 10px;
+  }
+
+  /* 일정 제목 */
+
+  .schedule-day .event-title {
+    font-size: 10px;
+
+    padding: 6px 3px;
+  }
+
+  /* 휴방 문구 */
+
+  .schedule-day.is-break-day .schedule-event.off .event-title {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* 바로가기 */
+
+  .quick-links {
+    gap: 8px;
+  }
+
+  .link-name {
+    font-size: 13px;
+  }
+}
+
+/* ========================================
+   반응형 - 650px 이하
+======================================== */
+
+@media (max-width: 650px) {
+  /* 전체 페이지 */
+
+  .cafe-page {
+    padding: 10px;
+    gap: 12px;
+  }
+
+  /* 섹션 */
+
+  .cafe-section {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  /* 섹션 제목 */
+
+  .section-title h2 {
+    font-size: 20px;
+  }
+
+  .english-title {
+    font-size: 10px;
+  }
+
+  /* 주간 이동 */
+
+  .week-navigation {
+    width: 100%;
+    gap: 5px;
+  }
+
+  .week-range {
+    min-width: 0;
+    flex: 1;
+
+    padding: 0 5px;
+
     font-size: 12px;
   }
+
+  .week-arrow {
+    width: 38px;
+    height: 40px;
+  }
+
+  .today-button {
+    height: 40px;
+
+    padding: 0 10px;
+
+    font-size: 11px;
+  }
+
+  /* 날짜 */
+
+  .day-date,
+  .day-name {
+    font-size: 11px;
+  }
+
+  .day-date-row {
+    gap: 2px;
+  }
+
+  /* 방송 시간 */
+
+  .schedule-day .event-times {
+    gap: 2px;
+
+    flex-wrap: nowrap;
+  }
+
+  .schedule-day .event-times .event-time {
+    font-size: 9px;
+
+    white-space: nowrap;
+  }
+
+  /* 일정 제목 */
+
+  .schedule-day .event-title {
+    font-size: 9px;
+
+    padding: 5px 2px;
+  }
+
+  /* 바로가기 */
+
+  .quick-links {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .quick-link {
+    min-height: 90px;
+  }
+
+  .link-icon {
+    font-size: 25px;
+  }
+
+  /* 영상 */
+
+  .videos-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .secondary-videos {
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .secondary-videos .video-card {
+    display: block;
+  }
+
+  .youtube-channel-button {
+    padding: 9px 12px;
+
+    font-size: 11px;
+  }
+}
+
+/* ========================================
+   바로가기 개별 색상
+======================================== */
+
+/* ================================
+   치지직
+================================ */
+
+/* 치지직 버튼 배경 */
+.quick-link.chzzk {
+  background: linear-gradient(135deg, #d9f1ee, #b9e0dd);
+
+  color: #315e61;
+}
+
+/* CHZZK 로고 */
+.quick-link.chzzk .link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #111111;
+  color: #00ffa3;
+
+  padding: 9px 12px;
+
+  border-radius: 8px;
+
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 /* ================================
-   주간 일정표 폰트 크기 조정
+   유튜브
 ================================ */
 
-/* 일정 제목 */
-.schedule-event .event-title {
-  font-size: 10px;
-  line-height: 1.4;
-  padding: 7px 3px;
+.quick-link.youtube {
+  background: linear-gradient(135deg, #ff8c9c, #f04469);
+
+  color: white;
 }
 
-/* 방송 시간 */
-.schedule-event .event-time {
-  font-size: 11px;
-  line-height: 1.3;
+/* ================================
+   X (트위터)
+================================ */
+
+.quick-link.twitter {
+  background: linear-gradient(135deg, #242424, #000000);
+
+  color: white;
 }
 
-/* 일정 사이 간격 */
-.day-content {
-  gap: 6px;
+/* ================================
+   선물 보낼 곳
+================================ */
+
+.quick-link.gift {
+  background: linear-gradient(135deg, #d3d7fc, #a8b1ed);
+
+  color: #3d498d;
 }
 
-.schedule-event {
-  gap: 5px;
+/* ================================
+   OGQ - 파스텔 옐로우
+================================ */
+
+.quick-link.ogq {
+  background: linear-gradient(135deg, #fff3c4, #ffe29a);
+
+  color: #82612e;
+}
+
+/* ================================
+   치지직
+================================ */
+
+/* 치지직 버튼 전체 */
+.quick-link.chzzk {
+  background: linear-gradient(135deg, #242424, #000000);
+
+  color: #ffffff;
+}
+
+/* CHZZK 로고 */
+.quick-link.chzzk .link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  color: #00ffa3;
+
+  padding: 0;
+
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
 }
