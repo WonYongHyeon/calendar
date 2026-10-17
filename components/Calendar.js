@@ -244,7 +244,81 @@ const Calendar = ({ isAdmin = false }) => {
           Math.floor(availableHeight / eventHeight),
         );
 
-        newMaxEvents[dateStr] = maxEvents;
+        // 실제 CSS 크기를 기준으로 표시 개수 보정
+        let safeMaxEvents = maxEvents;
+
+        const totalEvents = scheduleData[dateStr]?.events?.length ?? 0;
+
+        if (totalEvents > 0 && eventList) {
+          const cellRect = cell.getBoundingClientRect();
+          const listRect = eventList.getBoundingClientRect();
+          const listStyle = window.getComputedStyle(eventList);
+
+          const gap = parseFloat(listStyle.rowGap) || 0;
+
+          // 실제 일정 카드 높이 측정
+          const sampleEvent = document.createElement("li");
+
+          sampleEvent.className = styles.eventItemMorning;
+          sampleEvent.textContent = "높이 측정";
+          sampleEvent.style.visibility = "hidden";
+
+          eventList.appendChild(sampleEvent);
+
+          const sampleRect = sampleEvent.getBoundingClientRect();
+          const sampleStyle = window.getComputedStyle(sampleEvent);
+
+          const itemHeight =
+            sampleRect.height +
+            (parseFloat(sampleStyle.marginTop) || 0) +
+            (parseFloat(sampleStyle.marginBottom) || 0);
+
+          sampleEvent.remove();
+
+          // 실제 더보기 버튼 높이 측정
+          const sampleMore = document.createElement("div");
+
+          sampleMore.className = styles.moreButton;
+          sampleMore.textContent = "+99개 더보기";
+          sampleMore.style.visibility = "hidden";
+
+          cell.appendChild(sampleMore);
+
+          const moreRect = sampleMore.getBoundingClientRect();
+          const moreStyle = window.getComputedStyle(sampleMore);
+
+          const moreHeight =
+            moreRect.height +
+            (parseFloat(moreStyle.marginTop) || 0) +
+            (parseFloat(moreStyle.marginBottom) || 0);
+
+          sampleMore.remove();
+
+          const listMarginBottom = parseFloat(listStyle.marginBottom) || 0;
+
+          // 실제 사용할 수 있는 공간
+          const realAvailableHeight =
+            cellRect.bottom -
+            paddingBottom -
+            listRect.top -
+            listMarginBottom -
+            moreHeight -
+            2;
+
+          // 실제 카드 높이와 간격으로 계산
+          const realMaxEvents =
+            itemHeight + gap > 0
+              ? Math.max(
+                  0,
+                  Math.floor((realAvailableHeight + gap) / (itemHeight + gap)),
+                )
+              : 0;
+
+          // 기존 계산보다 많이 표시하지 않도록 제한
+          safeMaxEvents = Math.min(maxEvents, realMaxEvents);
+        }
+
+        newMaxEvents[dateStr] = safeMaxEvents;
       });
 
       setMaxEventsToShow(newMaxEvents);
