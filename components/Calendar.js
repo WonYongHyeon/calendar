@@ -167,6 +167,8 @@ const Calendar = ({ isAdmin = false }) => {
   }, [highlightedDate]);
 
   useLayoutEffect(() => {
+    if (isLoading) return;
+
     const calculateMaxEvents = () => {
       const calendar = calendarRef.current;
       if (!calendar) return;
@@ -271,7 +273,7 @@ const Calendar = ({ isAdmin = false }) => {
 
       window.removeEventListener("resize", calculateMaxEvents);
     };
-  }, [currentDate, scheduleData]);
+  }, [currentDate, scheduleData, isLoading]);
   const handlePrevMonth = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
