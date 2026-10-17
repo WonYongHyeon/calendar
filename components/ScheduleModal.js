@@ -154,7 +154,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
 
   const [broadcastTimes, setBroadcastTimes] = useState([]);
   const [newBroadcastTime, setNewBroadcastTime] = useState("");
-  const [vodLink, setVodLink] = useState("");
 
   // isBreakDay와 breakDayImageId 상태를 컴포넌트 내부에서 관리
   const [isBreakDay, setIsBreakDay] = useState(data?.isBreakDay || false);
@@ -168,7 +167,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     isBreakDay: false,
     breakDayImageId: null,
     broadcastTimes: [],
-    vodLink: "",
   });
 
   const [showImageSelector, setShowImageSelector] = useState(false);
@@ -242,7 +240,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         isBreakDay: data.isBreakDay,
         breakDayImageId: data.breakDayImageId,
         broadcastTimes: [...times].sort(),
-        vodLink: data.vodLink || "",
       });
       setEventPage(1);
     } else {
@@ -252,7 +249,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       setNewBroadcastTime("");
       setIsBreakDay(false);
       setSelectedImageId(null);
-      setVodLink("");
 
       setOriginalData({
         events: [],
@@ -260,7 +256,6 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         isBreakDay: false,
         breakDayImageId: null,
         broadcastTimes: [],
-        vodLink: "",
       });
       setEventPage(1);
     }

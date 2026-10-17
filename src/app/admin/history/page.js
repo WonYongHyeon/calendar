@@ -14,7 +14,6 @@ const FIELD_NAMES = {
   broadcast_times: "방송 시간",
   morning_time: "기존 오전 시간",
   afternoon_time: "기존 오후 시간",
-  vod_link: "다시보기 링크",
   version: "수정 버전",
 };
 

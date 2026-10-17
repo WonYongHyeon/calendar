@@ -26,10 +26,6 @@ export default function ScheduleReadOnlyModal({ dateStr, data, onClose }) {
     (image) => image.id === data?.breakDayImageId,
   );
 
-  const vodLink = data?.vodLink;
-  const validVodLink =
-    typeof vodLink === "string" && /^https?:\/\//i.test(vodLink);
-
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div

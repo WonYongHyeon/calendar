@@ -96,8 +96,6 @@ function normalizeSnapshot(snapshot, date) {
 
     broadcastTimes: JSON.stringify(broadcastTimes),
 
-    vodLink: snapshot.vod_link ?? null,
-
     version:
       Number.isInteger(snapshot.version) && snapshot.version >= 0
         ? snapshot.version
@@ -360,8 +358,6 @@ export async function POST(request) {
           broadcast_times =
             ${target.broadcastTimes}::jsonb,
 
-          vod_link = ${target.vodLink},
-
           version = schedules.version + 1
 
         WHERE date = ${date}::date;
@@ -385,7 +381,6 @@ export async function POST(request) {
           morning_time,
           afternoon_time,
           broadcast_times,
-          vod_link
         )
 
         VALUES (
@@ -398,7 +393,6 @@ export async function POST(request) {
           ${target.morningTime},
           ${target.afternoonTime},
           ${target.broadcastTimes}::jsonb,
-          ${target.vodLink}
         );
       `;
 

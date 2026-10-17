@@ -1351,14 +1351,6 @@
   margin-bottom: 10px;
 }
 
-.vodLinkIcon {
-  width: 25px;
-  height: 25px;
-
-  fill: #3498db;
-  cursor: pointer;
-}
-
 /* 기존 시간 표시 호환 */
 
 .liveTime {
