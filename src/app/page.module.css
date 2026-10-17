@@ -354,7 +354,10 @@ a.secondary {
 }
 
 .eyebrow span {
-  font-size: 20px;
+  font-size: 12px;
+  height: 12px;
+  line-height: 25px;
+  margin-left: 5px;
 }
 
 /* 페이지 제목 */

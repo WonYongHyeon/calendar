@@ -32,7 +32,10 @@ export default function ScheduleReadOnlyModal({ dateStr, data, onClose }) {
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`${styles.modalContent} ${styles.readOnlyModal}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 날짜 */}
         <div className={styles.modalHeader}>
           <h3>

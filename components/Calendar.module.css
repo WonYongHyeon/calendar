@@ -3305,3 +3305,455 @@
     padding: 13px 15px;
   }
 }
+
+/* =========================================
+   일반 사용자 일정 상세창 폰트 수정
+========================================= */
+
+.modalContent.readOnlyModal {
+  font-family:
+    "Pretendard",
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+  color: #343853;
+}
+
+/* 날짜 제목 */
+
+.readOnlyModal .modalHeader h3 {
+  font-family: inherit;
+  font-weight: 800;
+}
+
+/* 방송 시간 / 일정 / 메모 제목 */
+
+.readOnlyModal .modalBody h4 {
+  font-family: inherit;
+  font-weight: 800;
+}
+
+/* 방송 시간 */
+
+.readOnlyModal .broadcastTimeChip {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* 일정 내용 */
+
+.readOnlyModal .modalBody li {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 메모 */
+
+.readOnlyModal .memoSection {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 닫기 버튼 */
+
+.readOnlyModal .closeBtn,
+.readOnlyModal .saveBtn {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+/* =========================================
+   일반 사용자 일정 상세창 리디자인 V1
+========================================= */
+
+/* =========================================
+   1. 상세창 전체
+========================================= */
+
+.modalContent.readOnlyModal {
+  display: flex;
+  flex-direction: column;
+
+  width: min(94vw, 560px);
+  max-width: 560px;
+  max-height: 90dvh;
+
+  padding: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #dde1fa;
+  border-radius: 20px;
+
+  box-shadow: 0 20px 60px rgba(52, 56, 83, 0.22);
+
+  overflow: hidden;
+
+  color: #343853;
+
+  font-family:
+    "Pretendard",
+    "Noto Sans KR",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+
+/* =========================================
+   2. 상단 헤더
+========================================= */
+
+.readOnlyModal .modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  flex-shrink: 0;
+
+  gap: 12px;
+
+  margin: 0;
+  padding: 22px 24px;
+
+  background: #f8f9ff;
+
+  border-bottom: 1px solid #e5e8f7;
+}
+
+.readOnlyModal .modalHeader h3 {
+  margin: 0;
+
+  color: #343853;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+}
+
+/* 닫기 X 버튼 */
+
+.readOnlyModal .closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #e0e4f5;
+  border-radius: 10px;
+
+  color: #777eaa;
+
+  font-size: 24px;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.readOnlyModal .closeBtn:hover {
+  background: #e9ebff;
+  color: #5967b4;
+}
+
+/* =========================================
+   3. 본문 스크롤
+========================================= */
+
+.readOnlyModal .modalBody {
+  display: block;
+
+  flex: 1 1 auto;
+  min-height: 0;
+
+  padding: 24px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: #c7ccef transparent;
+}
+
+/* =========================================
+   4. 방송 시간
+========================================= */
+
+.readOnlyModal .eventTimeSection {
+  margin: 0 0 18px;
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+.readOnlyModal .eventTimeSection h4 {
+  margin: 0 0 12px;
+
+  color: #454b70;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.readOnlyModal .broadcastTimeList {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin: 0;
+}
+
+.readOnlyModal .broadcastTimeChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: auto;
+  height: 34px;
+
+  padding: 5px 12px;
+
+  background: #e9ebff;
+
+  border: 1px solid #d7dcfa;
+  border-radius: 9px;
+
+  color: #5967b4;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+/* =========================================
+   5. 일정 영역
+========================================= */
+
+/* 일정 영역 전체 카드 */
+
+.readOnlyModal .modalBody > div:not(.eventTimeSection):not(.memoSection) {
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+/* 일정 제목 */
+
+.readOnlyModal .modalBody h4 {
+  color: #454b70;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* 일정 목록 */
+
+.readOnlyModal .modalBody ul {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  list-style: none;
+}
+
+/* 일정 카드 */
+
+.readOnlyModal .modalBody li {
+  width: 100%;
+
+  min-height: 44px;
+
+  border: 1px solid rgba(52, 56, 83, 0.05);
+
+  box-sizing: border-box;
+
+  color: #343853;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   6. 메모 영역
+========================================= */
+
+.readOnlyModal .memoSection {
+  padding: 18px;
+
+  background: #f8f9ff;
+
+  border: 1px solid #e3e6f7;
+  border-radius: 14px;
+}
+
+.readOnlyModal .memoSection h4 {
+  margin: 0;
+
+  color: #454b70;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* 메모 내용 */
+
+.readOnlyModal .memoSection > div {
+  border: 1px solid #e3e6f7;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  line-height: 1.7;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   7. 휴방 표시
+========================================= */
+
+.readOnlyModal .modalBody > div > h3 {
+  margin: 0 0 12px;
+
+  color: #777eaa;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.readOnlyModal .modalBody img {
+  display: block;
+
+  max-width: 100%;
+  height: auto;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  border-radius: 12px;
+}
+
+/* =========================================
+   8. 하단 닫기 버튼
+========================================= */
+
+.readOnlyModal .modalFooter {
+  position: static;
+
+  flex-shrink: 0;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 16px 24px;
+
+  background: #ffffff;
+
+  border-top: 1px solid #e5e8f7;
+
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.readOnlyModal .saveBtn {
+  min-height: 43px;
+
+  padding: 0 24px;
+
+  background: #6875c4;
+
+  border: none;
+  border-radius: 11px;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 12px rgba(104, 117, 196, 0.15);
+
+  transition: 0.2s;
+}
+
+.readOnlyModal .saveBtn:hover {
+  background: #5967b4;
+
+  box-shadow: 0 5px 15px rgba(104, 117, 196, 0.25);
+}
+
+/* =========================================
+   9. 모바일
+========================================= */
+
+@media (max-width: 600px) {
+  .modalContent.readOnlyModal {
+    width: calc(100% - 24px);
+    max-height: 92dvh;
+
+    border-radius: 16px;
+  }
+
+  .readOnlyModal .modalHeader {
+    padding: 17px 15px;
+  }
+
+  .readOnlyModal .modalHeader h3 {
+    font-size: 16px;
+  }
+
+  .readOnlyModal .modalBody {
+    padding: 15px;
+  }
+
+  .readOnlyModal .eventTimeSection,
+  .readOnlyModal .memoSection {
+    padding: 14px;
+  }
+
+  .readOnlyModal .modalBody > div:not(.eventTimeSection):not(.memoSection) {
+    padding: 14px;
+  }
+
+  .readOnlyModal .modalBody li {
+    min-height: 42px;
+
+    font-size: 12px;
+  }
+
+  .readOnlyModal .modalFooter {
+    padding: 13px 15px;
+  }
+
+  .readOnlyModal .saveBtn {
+    width: 100%;
+  }
+}

@@ -108,15 +108,9 @@ export default function Home() {
         <header className={styles.redesignHeader}>
           <div className={styles.headerContent}>
             <div className={styles.eyebrow}>
-              <span>🌸</span>
-              MONTHLY SCHEDULE
+              <h1 className={styles.pageTitle}>해블린 월간 일정표</h1>{" "}
+              <span>MONTHLY SCHEDULE</span>
             </div>
-
-            <h1 className={styles.pageTitle}>해블린 월간 일정표</h1>
-
-            <p className={styles.pageDescription}>
-              해블린의 방송 일정을 한눈에 확인해 보세요.
-            </p>
           </div>
         </header>
 
