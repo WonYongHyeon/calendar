@@ -1,5 +1,3 @@
-// src/app/api/auth/login/route.js
-
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
@@ -12,13 +10,13 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// 세션 유지 기간: 7일
 const SESSION_DURATION = 60 * 60 * 24 * 7;
 
 // 로그인
 export async function POST(request) {
   try {
     const body = await request.json();
-
     const { username, password } = body ?? {};
 
     // 입력값 확인
@@ -38,18 +36,16 @@ export async function POST(request) {
 
     // 관리자 계정 조회
     const { rows } = await sql`
-  SELECT
-    id,
-    username,
-    password_hash,
-    role,
-    is_active,
-    split_part(password_hash, '$', 2) AS hash_iterations,
-    md5(password_hash) AS hash_fingerprint
-  FROM admins
-  WHERE LOWER(username) = LOWER(${username})
-  LIMIT 1;
-`;
+      SELECT
+        id,
+        username,
+        password_hash,
+        role,
+        is_active
+      FROM admins
+      WHERE LOWER(username) = LOWER(${username})
+      LIMIT 1;
+    `;
 
     const admin = rows[0];
 
@@ -57,15 +53,6 @@ export async function POST(request) {
     const isValidPassword = admin?.is_active
       ? await verifyPassword(password, admin.password_hash)
       : false;
-
-    // Cloudflare 로그인 진단용
-    console.log("========== LOGIN DEBUG ==========");
-    console.log("관리자 계정 존재:", !!admin);
-    console.log("관리자 계정 활성화:", admin?.is_active === true);
-    console.log("비밀번호 검증 성공:", isValidPassword);
-    console.log("DB 해시 반복 횟수:", admin?.hash_iterations);
-    console.log("DB 해시 지문:", admin?.hash_fingerprint);
-    console.log("=================================");
 
     if (!admin || !isValidPassword) {
       return NextResponse.json(
@@ -76,7 +63,6 @@ export async function POST(request) {
 
     // 세션 생성
     const token = generateSessionToken();
-
     const tokenHash = await hashSessionToken(token);
 
     const expiresAt = new Date(
