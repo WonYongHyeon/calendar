@@ -35,7 +35,7 @@ export async function verifyPassword(password, storedHash) {
 
     const iterations = Number(iterationsText);
 
-    if (iterations !== 600000) return false;
+    if (![600000, 10000].includes(iterations)) return false;
 
     const salt = hexToBytes(saltHex);
     const expectedHash = hexToBytes(hashHex);
@@ -110,7 +110,7 @@ export async function hashPassword(password) {
     {
       name: "PBKDF2",
       salt,
-      iterations: 600000,
+      iterations: 10000,
       hash: "SHA-256",
     },
     key,
@@ -119,5 +119,5 @@ export async function hashPassword(password) {
 
   const hash = new Uint8Array(derivedBits);
 
-  return `pbkdf2_sha256$600000$${bytesToHex(salt)}$${bytesToHex(hash)}`;
+  return `pbkdf2_sha256$10000$${bytesToHex(salt)}$${bytesToHex(hash)}`;
 }
