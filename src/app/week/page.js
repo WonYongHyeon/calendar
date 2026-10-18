@@ -32,17 +32,138 @@ const LINKS = [
     url: "https://haevelyn-schedule.vercel.app/gift",
     className: "gift",
   },
-  {
-    name: "OGQ",
-    icon: "OGQ",
-    url: "https://ogqmarket.naver.com/creators/%ED%95%B4%EB%B8%94%EB%A6%B0",
-    className: "ogq",
-  },
+  // {
+  //   name: "OGQ",
+  //   icon: "OGQ",
+  //   url: "https://ogqmarket.naver.com/creators/%ED%95%B4%EB%B8%94%EB%A6%B0",
+  //   className: "ogq",
+  // },
 ];
 
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
+// 하루에 표시할 최대 일정 수
 const MAX_VISIBLE_EVENTS = 4;
+
+// 유튜브 API 주소
+const YOUTUBE_API_URL = "/api/youtube?v=4";
+
+/* ========================================
+   날짜 관련 함수
+======================================== */
+
+// 한국 시간 기준 오늘 날짜
+function getKoreanToday() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const get = (type) => Number(parts.find((part) => part.type === type).value);
+
+  return new Date(Date.UTC(get("year"), get("month") - 1, get("day")));
+}
+
+// 해당 날짜가 속한 주의 월요일
+function getMonday(date) {
+  const result = new Date(date);
+  const day = result.getUTCDay();
+
+  result.setUTCDate(result.getUTCDate() + (day === 0 ? -6 : 1 - day));
+
+  return result;
+}
+
+// 날짜 더하기
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+}
+
+// YYYY-MM-DD
+function formatDate(date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+// M.DD
+function formatShort(date) {
+  const month = date.getUTCMonth() + 1;
+  const day = String(date.getUTCDate()).padStart(2, "0");
+
+  return `${month}.${day}`;
+}
+
+// 월요일부터 일요일까지
+function getWeekDates(weekStart) {
+  return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+}
+
+/* ========================================
+   일정 데이터 변환
+======================================== */
+
+// 방송 시간 정리
+function normalizeBroadcastTimes(times) {
+  if (!Array.isArray(times)) return [];
+
+  return [
+    ...new Set(times.filter((time) => typeof time === "string" && time.trim())),
+  ].sort((a, b) => {
+    const [hourA, minuteA] = a.split(":").map(Number);
+    const [hourB, minuteB] = b.split(":").map(Number);
+
+    return hourA * 60 + minuteA - (hourB * 60 + minuteB);
+  });
+}
+
+// API 데이터를 화면용 일정으로 변환
+function formatSchedule(data) {
+  if (!data) return [];
+
+  // 휴방
+  if (data.isBreakDay) {
+    return [
+      {
+        type: "off",
+        title: data.memo?.trim() || "휴방",
+      },
+    ];
+  }
+
+  const times = normalizeBroadcastTimes(data.broadcastTimes);
+
+  const events = Array.isArray(data.events) ? data.events : [];
+
+  return [
+    // 방송 시간
+    ...(times.length > 0
+      ? [
+          {
+            type: "time-only",
+            times,
+            title: "",
+          },
+        ]
+      : []),
+
+    // 일반 일정
+    ...events.map((event) => ({
+      type: event.scheduleType || "",
+      title: event.text || "",
+    })),
+  ];
+}
+
+/* ========================================
+   일정 표시 컴포넌트
+======================================== */
 
 function ScheduleEvent({ event }) {
   return (
@@ -64,50 +185,6 @@ function ScheduleEvent({ event }) {
   );
 }
 
-function getKoreanToday() {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const get = (type) => Number(parts.find((part) => part.type === type).value);
-
-  return new Date(Date.UTC(get("year"), get("month") - 1, get("day")));
-}
-
-function getMonday(date) {
-  const result = new Date(date);
-  const day = result.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-
-  result.setUTCDate(result.getUTCDate() + diff);
-
-  return result;
-}
-
-function addDays(date, days) {
-  const result = new Date(date);
-  result.setUTCDate(result.getUTCDate() + days);
-  return result;
-}
-
-function formatDate(date) {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function formatShort(date) {
-  return `${date.getUTCMonth() + 1}.${String(date.getUTCDate()).padStart(
-    2,
-    "0",
-  )}`;
-}
-
 /* ========================================
    주간 일정표
 ======================================== */
@@ -115,18 +192,30 @@ function formatShort(date) {
 function WeeklySchedule() {
   const [weekStart, setWeekStart] = useState(null);
   const [todayKey, setTodayKey] = useState("");
+
   const [schedule, setSchedule] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
   const [selectedDay, setSelectedDay] = useState(null);
 
+  // 오늘 날짜 초기화
+  useEffect(() => {
+    const today = getKoreanToday();
+
+    setWeekStart(getMonday(today));
+    setTodayKey(formatDate(today));
+  }, []);
+
+  // 모달 ESC 닫기
   useEffect(() => {
     if (!selectedDay) return;
 
-    const handleKeyDown = (event) => {
+    function handleKeyDown(event) {
       if (event.key === "Escape") {
         setSelectedDay(null);
       }
-    };
+    }
 
     window.addEventListener("keydown", handleKeyDown);
 
@@ -135,13 +224,7 @@ function WeeklySchedule() {
     };
   }, [selectedDay]);
 
-  useEffect(() => {
-    const today = getKoreanToday();
-
-    setWeekStart(getMonday(today));
-    setTodayKey(formatDate(today));
-  }, []);
-
+  // 주간 일정 조회
   useEffect(() => {
     if (!weekStart) return;
 
@@ -149,15 +232,13 @@ function WeeklySchedule() {
 
     async function loadSchedule() {
       setLoading(true);
+      setError(false);
+      setSchedule({});
 
       try {
-        // 월요일부터 일요일까지
-        const weekDates = Array.from({ length: 7 }, (_, index) =>
-          addDays(weekStart, index),
-        );
+        const weekDates = getWeekDates(weekStart);
 
-        // 주간 일정이 두 달에 걸쳐 있을 수 있으므로
-        // 필요한 연도와 월을 모두 확인
+        // 해당 주에 포함된 연도와 월 추출
         const months = [
           ...new Set(
             weekDates.map(
@@ -166,14 +247,16 @@ function WeeklySchedule() {
           ),
         ];
 
-        // 기존 일정 API 호출
+        // 월별 일정 조회
         const responses = await Promise.all(
           months.map(async (monthKey) => {
             const [year, month] = monthKey.split("-");
 
             const response = await fetch(
               `/api/schedules?year=${year}&month=${month}`,
-              { signal: controller.signal },
+              {
+                signal: controller.signal,
+              },
             );
 
             if (!response.ok) {
@@ -184,80 +267,26 @@ function WeeklySchedule() {
           }),
         );
 
+        if (controller.signal.aborted) return;
+
         // 월별 데이터 합치기
         const scheduleData = Object.assign({}, ...responses);
 
+        // 주간 데이터 구성
         const formattedSchedule = {};
 
         weekDates.forEach((date) => {
           const dateKey = formatDate(date);
-          const data = scheduleData[dateKey];
 
-          if (!data) {
-            formattedSchedule[dateKey] = [];
-            return;
-          }
-
-          // 휴방
-          if (data.isBreakDay) {
-            formattedSchedule[dateKey] = [
-              {
-                type: "off",
-                title: data.memo?.trim() || "휴방",
-              },
-            ];
-            return;
-          }
-
-          // 방송 시간
-          const broadcastTimes = Array.isArray(data.broadcastTimes)
-            ? data.broadcastTimes
-            : [];
-
-          // 기존 오전/오후 시간 호환
-          const legacyTimes = [data.morningTime, data.afternoonTime].filter(
-            Boolean,
-          );
-
-          const times = [
-            ...new Set(
-              (broadcastTimes.length > 0 ? broadcastTimes : legacyTimes).filter(
-                Boolean,
-              ),
-            ),
-          ].sort();
-
-          // 방송 일정
-          const events = Array.isArray(data.events) ? data.events : [];
-
-          formattedSchedule[dateKey] = [
-            // 방송 시간을 하나의 그룹으로 묶기
-            ...(times.length > 0
-              ? [
-                  {
-                    type: "time-only",
-                    times: times,
-                    title: "",
-                  },
-                ]
-              : []),
-
-            // 기존 방송 일정
-            ...events.map((event) => ({
-              type: event.scheduleType || "",
-              title: event.text || "",
-            })),
-          ];
+          formattedSchedule[dateKey] = formatSchedule(scheduleData[dateKey]);
         });
 
-        if (!controller.signal.aborted) {
-          setSchedule(formattedSchedule);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error(error);
-          setSchedule({});
-        }
+        setSchedule(formattedSchedule);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+
+        console.error("주간 일정 조회 실패:", err);
+        setError(true);
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -270,40 +299,57 @@ function WeeklySchedule() {
     return () => controller.abort();
   }, [weekStart]);
 
+  // 주 이동
+  function moveWeek(amount) {
+    setSelectedDay(null);
+    setWeekStart((prev) => addDays(prev, amount * 7));
+  }
+
+  // 이번 주 이동
+  function goToday() {
+    const today = getKoreanToday();
+
+    setSelectedDay(null);
+    setTodayKey(formatDate(today));
+    setWeekStart(getMonday(today));
+  }
+
+  // 일정 모달 열기
+  function openDay(date, index) {
+    setSelectedDay({
+      key: formatDate(date),
+      label: `${formatShort(date)} ${DAYS[index]}`,
+    });
+  }
+
   if (!weekStart) {
     return (
       <section className="cafe-section schedule-section">
-        <h2>🌸 주간 일정표</h2>
+        <h2>🗓️ 주간 일정표</h2>
         <p>일정을 불러오는 중...</p>
       </section>
     );
   }
 
-  const weekDates = Array.from({ length: 7 }, (_, index) =>
-    addDays(weekStart, index),
-  );
-
+  const weekDates = getWeekDates(weekStart);
   const weekEnd = weekDates[6];
-
-  function moveWeek(amount) {
-    setWeekStart((prev) => addDays(prev, amount * 7));
-  }
-
-  function goToday() {
-    setWeekStart(getMonday(getKoreanToday()));
-  }
 
   return (
     <section className="cafe-section schedule-section">
+      {/* 헤더 */}
+
       <div className="section-header schedule-header">
         <div className="section-title">
-          <span className="title-icon">🌸</span>
+          <span className="title-icon">🗓️</span>
           <h2>주간 일정표</h2>
           <span className="english-title">WEEKLY SCHEDULE</span>
         </div>
 
+        {/* 주간 이동 */}
+
         <div className="week-navigation">
           <button
+            type="button"
             className="week-arrow"
             onClick={() => moveWeek(-1)}
             aria-label="이전 주"
@@ -329,6 +375,7 @@ function WeeklySchedule() {
           </div>
 
           <button
+            type="button"
             className="week-arrow"
             onClick={() => moveWeek(1)}
             aria-label="다음 주"
@@ -347,94 +394,98 @@ function WeeklySchedule() {
             </svg>
           </button>
 
-          <button className="today-button" onClick={goToday}>
+          <button type="button" className="today-button" onClick={goToday}>
             ▣ 이번 주
           </button>
         </div>
       </div>
 
+      {/* 주간 달력 */}
+
       <div className="schedule-scroll">
         <div className="schedule-grid">
           {weekDates.map((date, index) => {
-            const key = formatDate(date);
-            const events = schedule[key] || [];
-            const isToday = key === todayKey;
+            const dateKey = formatDate(date);
+            const events = schedule[dateKey] || [];
 
-            // 방송 시간은 별도로 표시
+            const isToday = dateKey === todayKey;
+
+            const isBreakDay = events.some((event) => event.type === "off");
+
+            // 방송 시간과 일반 일정 분리
             const timeEvents = events.filter(
               (event) => event.type === "time-only",
             );
 
-            // 실제 일정
             const scheduleEvents = events.filter(
               (event) => event.type !== "time-only",
             );
 
-            // 최대 4개까지만 표시
+            // 표시할 일정
             const visibleEvents = scheduleEvents.slice(0, MAX_VISIBLE_EVENTS);
 
-            // 숨겨진 일정 개수
             const hiddenCount = Math.max(
               0,
               scheduleEvents.length - MAX_VISIBLE_EVENTS,
             );
 
-            // 휴방 여부 확인
-            const isBreakDay = events.some((event) => event.type === "off");
-
             return (
               <div
-                key={key}
-                className={`schedule-day ${isToday ? "is-today" : ""} ${
-                  isBreakDay ? "is-break-day" : ""
-                }`}
+                key={dateKey}
+                className={`schedule-day ${
+                  isToday ? "is-today" : ""
+                } ${isBreakDay ? "is-break-day" : ""}`}
                 role="button"
                 tabIndex={0}
                 aria-label={`${formatShort(date)} ${DAYS[index]} 전체 일정 보기`}
-                onClick={() =>
-                  setSelectedDay({
-                    key,
-                    label: `${formatShort(date)} ${DAYS[index]}`,
-                  })
-                }
+                onClick={() => openDay(date, index)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    setSelectedDay({
-                      key,
-                      label: `${formatShort(date)} ${DAYS[index]}`,
-                    });
+                    openDay(date, index);
                   }
                 }}
               >
+                {/* 날짜 */}
+
                 <div className="day-header">
                   <div className="day-date-row">
                     <span className="day-date">{formatShort(date)}</span>
 
                     <span
-                      className={`day-name ${index === 5 ? "saturday" : ""} ${
-                        index === 6 ? "sunday" : ""
-                      }`}
+                      className={`day-name ${
+                        index === 5 ? "saturday" : ""
+                      } ${index === 6 ? "sunday" : ""}`}
                     >
                       {DAYS[index]}
                     </span>
                   </div>
                 </div>
 
+                {/* 일정 */}
+
                 <div className="day-content">
                   {loading ? (
                     <span className="empty-text">불러오는 중</span>
+                  ) : error ? (
+                    <span className="empty-text">불러오기 실패</span>
                   ) : events.length === 0 ? (
                     <span className="empty-text">일정 없음</span>
                   ) : (
                     <>
+                      {/* 방송 시간 */}
+
                       {timeEvents.map((event, index) => (
                         <ScheduleEvent key={`time-${index}`} event={event} />
                       ))}
 
+                      {/* 일반 일정 */}
+
                       {visibleEvents.map((event, index) => (
                         <ScheduleEvent key={`event-${index}`} event={event} />
                       ))}
+
+                      {/* 더보기 */}
 
                       {hiddenCount > 0 && (
                         <div className="schedule-more">
@@ -445,12 +496,17 @@ function WeeklySchedule() {
                   )}
                 </div>
 
+                {/* 오늘 표시 */}
+
                 {isToday && <div className="today-indicator">TODAY</div>}
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* 전체 일정 모달 */}
+
       {selectedDay && (
         <div
           className="schedule-modal-overlay"
@@ -476,7 +532,11 @@ function WeeklySchedule() {
             </div>
 
             <div className="schedule-modal-body">
-              {(schedule[selectedDay.key] || []).length === 0 ? (
+              {loading ? (
+                <p className="empty-text">일정을 불러오는 중...</p>
+              ) : error ? (
+                <p className="empty-text">일정을 불러오지 못했습니다.</p>
+              ) : (schedule[selectedDay.key] || []).length === 0 ? (
                 <p className="empty-text">등록된 일정이 없습니다.</p>
               ) : (
                 (schedule[selectedDay.key] || []).map((event, index) => (
@@ -507,31 +567,20 @@ function QuickLinks() {
       </div>
 
       <div className="quick-links">
-        {LINKS.map((link) =>
-          link.url ? (
-            <a
-              href={link.url}
-              key={link.name}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`quick-link ${link.className}`}
-            >
-              <span className="link-icon">{link.icon}</span>
+        {LINKS.map((link) => (
+          <a
+            key={link.name}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`quick-link ${link.className}`}
+          >
+            <span className="link-icon">{link.icon}</span>
 
-              <span className="link-name">{link.name} ↗</span>
-            </a>
-          ) : (
-            <div
-              key={link.name}
-              className={`quick-link ${link.className} link-unset`}
-              title="링크 주소를 설정해 주세요"
-            >
-              <span className="link-icon">{link.icon}</span>
-
-              <span className="link-name">{link.name} ↗</span>
-            </div>
-          ),
-        )}
+            <span className="link-name">{link.name} ↗</span>
+          </a>
+        ))}
+        <div className="quick-link"> 수정중! </div>
       </div>
     </section>
   );
@@ -544,42 +593,44 @@ function QuickLinks() {
 function LatestVideos() {
   const [videos, setVideos] = useState([]);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const youtubeLink =
     LINKS.find((link) => link.className === "youtube")?.url || "";
 
+  // 유튜브 영상 조회
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
 
     async function loadVideos() {
       try {
-        const response = await fetch("/api/youtube?v=2");
+        setLoading(true);
+        setError(false);
+
+        const response = await fetch(YOUTUBE_API_URL, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
-          throw new Error("유튜브 데이터 요청 실패");
+          throw new Error(`유튜브 데이터 요청 실패 (${response.status})`);
         }
 
         const data = await response.json();
 
-        if (!active) return;
+        if (controller.signal.aborted) return;
 
-        const videoList = data.videos || [];
+        const videoList = Array.isArray(data.videos) ? data.videos : [];
 
         setVideos(videoList);
+      } catch (err) {
+        if (controller.signal.aborted) return;
 
-        if (videoList.length > 0) {
-          setSelectedVideoId(videoList[0].id);
-        }
-      } catch (error) {
-        console.error(error);
-
-        if (active) {
-          setError(true);
-        }
+        console.error("유튜브 영상 조회 실패:", err);
+        setError(true);
       } finally {
-        if (active) {
+        if (!controller.signal.aborted) {
           setLoading(false);
         }
       }
@@ -587,21 +638,16 @@ function LatestVideos() {
 
     loadVideos();
 
-    return () => {
-      active = false;
-    };
+    return () => controller.abort();
   }, []);
 
+  // 선택된 영상
   const selectedVideo =
     videos.find((video) => video.id === selectedVideoId) || videos[0];
 
-  function selectVideo(videoId) {
-    setSelectedVideoId(videoId);
-  }
-
   return (
     <section className="cafe-section youtube-section">
-      {/* 유튜브 헤더 */}
+      {/* 헤더 */}
 
       <div className="section-header">
         <div className="section-title">
@@ -624,7 +670,7 @@ function LatestVideos() {
         )}
       </div>
 
-      {/* 로딩 */}
+      {/* 영상 영역 */}
 
       {loading ? (
         <div className="video-empty">영상을 불러오는 중...</div>
@@ -634,7 +680,7 @@ function LatestVideos() {
         <div className="video-empty">등록된 영상이 없습니다.</div>
       ) : (
         <div className="youtube-layout">
-          {/* 왼쪽 플레이어 */}
+          {/* 메인 플레이어 */}
 
           <div className="youtube-main">
             <div className="youtube-player">
@@ -650,7 +696,7 @@ function LatestVideos() {
             </div>
           </div>
 
-          {/* 오른쪽 영상 목록 */}
+          {/* 영상 목록 */}
 
           <div className="youtube-sidebar">
             <div className="youtube-list-header">
@@ -670,9 +716,11 @@ function LatestVideos() {
                     className={`youtube-list-item ${
                       isSelected ? "selected" : ""
                     }`}
-                    onClick={() => selectVideo(video.id)}
+                    onClick={() => setSelectedVideoId(video.id)}
                     aria-pressed={isSelected}
                   >
+                    {/* 썸네일 */}
+
                     <div className="youtube-list-thumbnail">
                       {video.thumbnail && (
                         <img src={video.thumbnail} alt="" loading="lazy" />
@@ -680,6 +728,8 @@ function LatestVideos() {
 
                       {isSelected && <span className="youtube-playing">▶</span>}
                     </div>
+
+                    {/* 영상 제목 */}
 
                     <div className="youtube-list-info">
                       <span className="youtube-list-title">{video.title}</span>
@@ -703,9 +753,7 @@ export default function CafePage() {
   return (
     <main className="cafe-page">
       <WeeklySchedule />
-
       <QuickLinks />
-
       <LatestVideos />
     </main>
   );

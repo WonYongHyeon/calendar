@@ -23,6 +23,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { createPortal } from "react-dom";
 import { BREAK_DAY_IMAGES } from "./images";
 
+// 방송 시간을 실제 시간순으로 정렬
+const sortBroadcastTimes = (times) => {
+  return [...times].sort((a, b) => {
+    const [hourA, minuteA] = a.split(":").map(Number);
+    const [hourB, minuteB] = b.split(":").map(Number);
+
+    return hourA * 60 + minuteA - (hourB * 60 + minuteB);
+  });
+};
+
 const getImageUrlById = (id) => {
   const image = BREAK_DAY_IMAGES.find((img) => img.id === id);
   return image ? image.url : null;
@@ -222,9 +232,9 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
       setMemo(data.memo || "");
       const times = Array.isArray(data.broadcastTimes)
         ? data.broadcastTimes
-        : [data.morningTime, data.afternoonTime].filter(Boolean);
+        : [];
 
-      setBroadcastTimes([...times].sort());
+      setBroadcastTimes(sortBroadcastTimes(times));
       setNewBroadcastTime("");
       setIsBreakDay(data.isBreakDay || false);
       setSelectedImageId(data.breakDayImageId || null);
@@ -239,7 +249,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
         memo: data.memo,
         isBreakDay: data.isBreakDay,
         breakDayImageId: data.breakDayImageId,
-        broadcastTimes: [...times].sort(),
+        broadcastTimes: sortBroadcastTimes(times),
       });
       setEventPage(1);
     } else {
@@ -346,7 +356,7 @@ const ScheduleModal = ({ dateStr, data, onClose, onSave }) => {
     }
 
     // 시간 추가 및 자동 정렬
-    setBroadcastTimes((prev) => [...prev, normalizedTime].sort());
+    setBroadcastTimes((prev) => sortBroadcastTimes([...prev, normalizedTime]));
 
     // 입력창 초기화
     setNewBroadcastTime("");

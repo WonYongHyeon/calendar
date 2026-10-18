@@ -20,7 +20,7 @@ export default function ScheduleReadOnlyModal({ dateStr, data, onClose }) {
 
   const broadcastTimes = Array.isArray(data?.broadcastTimes)
     ? data.broadcastTimes
-    : [data?.morningTime, data?.afternoonTime].filter(Boolean);
+    : [];
 
   const breakDayImage = BREAK_DAY_IMAGES.find(
     (image) => image.id === data?.breakDayImageId,

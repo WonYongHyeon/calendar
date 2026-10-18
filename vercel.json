@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/week",
+      "destination": "https://calendar.quin1392.workers.dev/week",
+      "permanent": false
+    }
+  ]
+}

@@ -40,14 +40,9 @@ export async function GET(request) {
         version: row.version,
         breakDayImageId: row.break_day_image_id,
 
-        // 새로운 방송 시간 배열
         broadcastTimes: Array.isArray(row.broadcast_times)
           ? row.broadcast_times
           : [],
-
-        // 기존 사이트 호환용 (임시 유지)
-        morningTime: row.morning_time || "",
-        afternoonTime: row.afternoon_time || "",
       };
       return acc;
     }, {});

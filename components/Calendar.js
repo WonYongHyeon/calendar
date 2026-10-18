@@ -615,7 +615,7 @@ const Calendar = ({ isAdmin = false }) => {
     const breakDayImageId = cellData?.breakDayImageId || null;
     const broadcastTimes = Array.isArray(cellData?.broadcastTimes)
       ? cellData.broadcastTimes
-      : [cellData?.morningTime, cellData?.afternoonTime].filter(Boolean);
+      : [];
     const maxEventsCount = maxEventsToShow[dateStr] || 0;
     const visibleEvents = events.slice(0, maxEventsCount);
     const remainingEventsCount =

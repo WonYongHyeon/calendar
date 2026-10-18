@@ -114,6 +114,7 @@ button {
 .section-title {
   display: flex;
   align-items: center;
+  justify-content: center;
 
   gap: 12px;
 
@@ -125,6 +126,7 @@ button {
 
   font-size: 25px;
   font-weight: 800;
+  line-height: 1.2;
 
   letter-spacing: -0.8px;
 
@@ -1014,7 +1016,7 @@ button {
 
   border-radius: 7px;
 
-  background: #7784ce;
+  background: red;
 
   color: #ffffff;
 
