@@ -32,12 +32,12 @@ const LINKS = [
     url: "https://haevelyn-schedule.vercel.app/gift",
     className: "gift",
   },
-  // {
-  //   name: "OGQ",
-  //   icon: "OGQ",
-  //   url: "https://ogqmarket.naver.com/creators/%ED%95%B4%EB%B8%94%EB%A6%B0",
-  //   className: "ogq",
-  // },
+  {
+    name: "OGQ",
+    icon: "OGQ",
+    url: "https://ogqmarket.naver.com/creators/%ED%95%B4%EB%B8%94%EB%A6%B0",
+    className: "ogq",
+  },
 ];
 
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
@@ -580,7 +580,6 @@ function QuickLinks() {
             <span className="link-name">{link.name} ↗</span>
           </a>
         ))}
-        <div className="quick-link"> 수정중! </div>
       </div>
     </section>
   );

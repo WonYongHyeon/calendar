@@ -8,6 +8,9 @@ export default function AdminPage() {
   const [admin, setAdmin] = useState(null);
   const [admins, setAdmins] = useState([]);
 
+  // 관리자별 아이디 표시 상태
+  const [visibleUsernames, setVisibleUsernames] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
@@ -247,6 +250,15 @@ export default function AdminPage() {
     }
   }
 
+  // 관리자 아이디 표시 / 숨기기
+  function toggleUsername(adminId) {
+    setVisibleUsernames((prev) =>
+      prev.includes(adminId)
+        ? prev.filter((id) => id !== adminId)
+        : [...prev, adminId],
+    );
+  }
+
   // 날짜 표시
   function formatDate(date) {
     if (!date) return "-";
@@ -361,8 +373,72 @@ export default function AdminPage() {
                   </div>
 
                   <div className={styles.adminDetails}>
-                    <span>아이디: {item.username}</span>
+                    {/* 관리자 아이디 */}
+                    <div className={styles.usernameRow}>
+                      <span>아이디:</span>
+
+                      <span className={styles.usernameValue}>
+                        {visibleUsernames.includes(item.id)
+                          ? item.username
+                          : "•".repeat(12)}
+                      </span>
+
+                      <button
+                        type="button"
+                        className={styles.visibilityButton}
+                        onClick={() => toggleUsername(item.id)}
+                        aria-label={
+                          visibleUsernames.includes(item.id)
+                            ? "아이디 숨기기"
+                            : "아이디 표시"
+                        }
+                        aria-pressed={visibleUsernames.includes(item.id)}
+                        title={
+                          visibleUsernames.includes(item.id)
+                            ? "아이디 숨기기"
+                            : "아이디 표시"
+                        }
+                      >
+                        {visibleUsernames.includes(item.id) ? (
+                          // 아이디 표시 중 - 눈 감기
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M3 3l18 18" />
+                            <path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c5.5 0 9.5 4.5 10 7-.3 1.4-1.8 3.5-4 5" />
+                            <path d="M6.3 6.3C4.2 7.6 2.7 10 2 12c.8 3 4.8 7 10 7 1.6 0 3.1-.4 4.4-1" />
+                            <path d="M10 10a3 3 0 0 0 4 4" />
+                          </svg>
+                        ) : (
+                          // 아이디 숨김 중 - 눈 뜨기
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+
                     <span>생성일: {formatDate(item.created_at)}</span>
+
                     <span>마지막 로그인: {formatDate(item.last_login_at)}</span>
                   </div>
                   {/* 일반 관리자 계정 관리 */}
