@@ -73,7 +73,9 @@ export async function verifyPassword(password, storedHash) {
     }
 
     return difference === 0;
-  } catch {
+  } catch (error) {
+    console.error("비밀번호 검증 오류:", error.name, error.message);
+
     return false;
   }
 }
