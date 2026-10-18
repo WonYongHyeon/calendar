@@ -38,16 +38,18 @@ export async function POST(request) {
 
     // 관리자 계정 조회
     const { rows } = await sql`
-      SELECT
-        id,
-        username,
-        password_hash,
-        role,
-        is_active
-      FROM admins
-      WHERE LOWER(username) = LOWER(${username})
-      LIMIT 1;
-    `;
+  SELECT
+    id,
+    username,
+    password_hash,
+    role,
+    is_active,
+    split_part(password_hash, '$', 2) AS hash_iterations,
+    md5(password_hash) AS hash_fingerprint
+  FROM admins
+  WHERE LOWER(username) = LOWER(${username})
+  LIMIT 1;
+`;
 
     const admin = rows[0];
 
@@ -61,6 +63,8 @@ export async function POST(request) {
     console.log("관리자 계정 존재:", !!admin);
     console.log("관리자 계정 활성화:", admin?.is_active === true);
     console.log("비밀번호 검증 성공:", isValidPassword);
+    console.log("DB 해시 반복 횟수:", admin?.hash_iterations);
+    console.log("DB 해시 지문:", admin?.hash_fingerprint);
     console.log("=================================");
 
     if (!admin || !isValidPassword) {
