@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
 
   const [username, setUsername] = useState("");
+  const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -120,6 +121,7 @@ export default function AdminPage() {
         },
         body: JSON.stringify({
           username: username.trim(),
+          nickname: nickname.trim(),
           password,
         }),
       });
@@ -131,6 +133,7 @@ export default function AdminPage() {
       }
 
       setUsername("");
+      setNickname("");
       setPassword("");
       setConfirmPassword("");
 
@@ -294,7 +297,7 @@ export default function AdminPage() {
           <div>
             <h1>관리자 계정 관리</h1>
 
-            <p>최고 관리자: {admin.username}</p>
+            <p>최고 관리자: {admin.nickname || admin.username}</p>
           </div>
 
           <div className={styles.headerActions}>
@@ -332,7 +335,7 @@ export default function AdminPage() {
               <div key={item.id} className={styles.adminItem}>
                 <div className={styles.adminInfo}>
                   <div className={styles.adminTitle}>
-                    <strong>{item.username}</strong>
+                    <strong>{item.nickname || item.username}</strong>
 
                     <span
                       className={
@@ -358,8 +361,8 @@ export default function AdminPage() {
                   </div>
 
                   <div className={styles.adminDetails}>
+                    <span>아이디: {item.username}</span>
                     <span>생성일: {formatDate(item.created_at)}</span>
-
                     <span>마지막 로그인: {formatDate(item.last_login_at)}</span>
                   </div>
                   {/* 일반 관리자 계정 관리 */}
@@ -475,6 +478,22 @@ export default function AdminPage() {
                 minLength={3}
                 maxLength={50}
                 pattern="[a-zA-Z0-9_]{3,50}"
+                autoComplete="off"
+                required
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="nickname">관리자 닉네임</label>
+
+              <input
+                id="nickname"
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="화면에 표시할 닉네임 (1~30자)"
+                minLength={1}
+                maxLength={30}
                 autoComplete="off"
                 required
               />

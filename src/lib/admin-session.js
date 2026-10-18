@@ -21,6 +21,7 @@ export async function getCurrentAdmin() {
     SELECT
       a.id::text AS id,
       a.username,
+      a.nickname,
       a.role
     FROM admin_sessions s
     JOIN admins a ON a.id = s.admin_id
@@ -40,6 +41,7 @@ export async function getCurrentAdmin() {
   return {
     id: admin.id,
     username: admin.username,
+    nickname: admin.nickname || admin.username,
     role: admin.role,
   };
 }

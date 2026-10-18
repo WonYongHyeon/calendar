@@ -39,6 +39,7 @@ export async function POST(request) {
       SELECT
         id,
         username,
+        nickname,
         password_hash,
         role,
         is_active

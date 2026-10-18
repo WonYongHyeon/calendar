@@ -43,6 +43,7 @@ export async function GET() {
       SELECT
         id::text AS id,
         username,
+        nickname,
         role,
         is_active,
         created_at,
@@ -94,6 +95,9 @@ export async function POST(request) {
     const username =
       typeof body?.username === "string" ? body.username.trim() : "";
 
+    const nickname =
+      typeof body?.nickname === "string" ? body.nickname.trim() : "";
+
     const password = body?.password;
 
     // 아이디 형식 확인
@@ -102,6 +106,16 @@ export async function POST(request) {
         {
           error:
             "아이디는 영문, 숫자, 밑줄(_)을 사용해 3~50자로 입력해 주세요.",
+        },
+        { status: 400 },
+      );
+    }
+
+    // 닉네임 확인
+    if (nickname.length < 1 || nickname.length > 30) {
+      return NextResponse.json(
+        {
+          error: "닉네임은 1~30자로 입력해 주세요.",
         },
         { status: 400 },
       );
@@ -139,10 +153,10 @@ export async function POST(request) {
     // 비밀번호 해시 생성
     const passwordHash = await hashPassword(password);
 
-    // 일반 관리자 계정 생성
     const { rows } = await sql`
       INSERT INTO admins (
         username,
+        nickname,
         password_hash,
         role,
         is_active,
@@ -150,6 +164,7 @@ export async function POST(request) {
       )
       VALUES (
         ${username},
+        ${nickname},
         ${passwordHash},
         'admin',
         TRUE,
@@ -158,6 +173,7 @@ export async function POST(request) {
       RETURNING
         id::text AS id,
         username,
+        nickname,
         role,
         is_active,
         created_at;

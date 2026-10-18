@@ -430,7 +430,7 @@ export default function ScheduleHistoryPage() {
 
                 {admins.map((admin) => (
                   <option key={admin.id} value={admin.id}>
-                    {admin.username}
+                    {admin.nickname || admin.username}
                   </option>
                 ))}
               </select>
@@ -509,7 +509,7 @@ export default function ScheduleHistoryPage() {
                     {/* 관리자 */}
                     <div className={styles.itemInfo}>
                       <span>👤 수정 관리자</span>
-                      <strong>{item.username}</strong>
+                      <strong>{item.nickname || item.username}</strong>
                     </div>
 
                     {/* 날짜 */}

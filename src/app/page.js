@@ -134,7 +134,7 @@ export default function Home() {
           ) : admin ? (
             <>
               <span className={styles.adminName}>
-                👤 {admin.username}
+                👤 {admin.nickname || admin.username}
                 {admin.role === "super_admin" && (
                   <span className={styles.superAdminBadge}>최고 관리자</span>
                 )}

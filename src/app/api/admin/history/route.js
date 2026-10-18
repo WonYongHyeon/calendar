@@ -115,48 +115,54 @@ export async function GET(request) {
     // =====================================
 
     const { rows } = await sql`
-      SELECT
-        h.id::text AS id,
+  SELECT
+    h.id::text AS id,
 
-        TO_CHAR(
-          h.schedule_date,
-          'YYYY-MM-DD'
-        ) AS schedule_date,
+    TO_CHAR(
+      h.schedule_date,
+      'YYYY-MM-DD'
+    ) AS schedule_date,
 
-        h.action,
-        h.admin_id::text AS admin_id,
+    h.action,
+    h.admin_id::text AS admin_id,
 
-        COALESCE(
-          a.username,
-          '알 수 없는 관리자'
-        ) AS username,
+    COALESCE(
+      NULLIF(TRIM(a.nickname), ''),
+      a.username,
+      '알 수 없는 관리자'
+    ) AS nickname,
 
-        h.before_data,
-        h.after_data,
-        h.created_at
+    COALESCE(
+      a.username,
+      '알 수 없는 관리자'
+    ) AS username,
 
-      FROM schedule_history h
+    h.before_data,
+    h.after_data,
+    h.created_at
 
-      LEFT JOIN admins a
-        ON h.admin_id = a.id
+  FROM schedule_history h
 
-      WHERE
-        (${date}::date IS NULL
-          OR h.schedule_date = ${date}::date)
+  LEFT JOIN admins a
+    ON h.admin_id = a.id
 
-        AND (${adminId}::bigint IS NULL
-          OR h.admin_id = ${adminId}::bigint)
+  WHERE
+    (${date}::date IS NULL
+      OR h.schedule_date = ${date}::date)
 
-        AND (${action}::text IS NULL
-          OR h.action = ${action})
+    AND (${adminId}::bigint IS NULL
+      OR h.admin_id = ${adminId}::bigint)
 
-      ORDER BY
-        h.created_at DESC,
-        h.id DESC
+    AND (${action}::text IS NULL
+      OR h.action = ${action})
 
-      LIMIT ${PAGE_SIZE}
-      OFFSET ${offset};
-    `;
+  ORDER BY
+    h.created_at DESC,
+    h.id DESC
+
+  LIMIT ${PAGE_SIZE}
+  OFFSET ${offset};
+`;
 
     // =====================================
     // 5. 결과 반환
