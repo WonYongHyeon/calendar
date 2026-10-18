@@ -56,6 +56,13 @@ export async function POST(request) {
       ? await verifyPassword(password, admin.password_hash)
       : false;
 
+    // Cloudflare 로그인 진단용
+    console.log("========== LOGIN DEBUG ==========");
+    console.log("관리자 계정 존재:", !!admin);
+    console.log("관리자 계정 활성화:", admin?.is_active === true);
+    console.log("비밀번호 검증 성공:", isValidPassword);
+    console.log("=================================");
+
     if (!admin || !isValidPassword) {
       return NextResponse.json(
         { error: "아이디 또는 비밀번호가 올바르지 않습니다." },
