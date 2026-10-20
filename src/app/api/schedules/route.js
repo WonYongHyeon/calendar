@@ -7,33 +7,66 @@ import { getCurrentAdmin } from "@/lib/admin-session";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
+
     const year = searchParams.get("year");
     const month = searchParams.get("month");
 
-    if (!year || !month) {
+    // =====================================
+    // 1. 년도 및 월 검증
+    // =====================================
+
+    if (!year || !month || !/^\d{4}$/.test(year) || !/^\d{1,2}$/.test(month)) {
       return NextResponse.json(
-        { error: "Year and month parameters are required." },
+        { error: "올바른 년도와 월을 입력해 주세요." },
         { status: 400 },
       );
     }
 
-    const formattedMonth = String(month).padStart(2, "0");
+    const yearNumber = Number(year);
+    const monthNumber = Number(month);
+
+    if (yearNumber < 1 || monthNumber < 1 || monthNumber > 12) {
+      return NextResponse.json(
+        { error: "올바르지 않은 날짜입니다." },
+        { status: 400 },
+      );
+    }
+
+    // =====================================
+    // 2. 검색 시작 날짜 생성
+    // =====================================
+
+    const formattedMonth = String(monthNumber).padStart(2, "0");
+
+    const startDate = `${year}-${formattedMonth}-01`;
+
+    // =====================================
+    // 3. 일정 조회
+    // =====================================
 
     const { rows } = await sql`
-      SELECT * FROM schedules 
-      WHERE date::text LIKE ${`${year}-${formattedMonth}-%`}
+      SELECT
+        TO_CHAR(date, 'YYYY-MM-DD') AS date_key,
+        events,
+        memo,
+        is_break_day,
+        version,
+        break_day_image_id,
+        broadcast_times
+      FROM schedules
+      WHERE date >= ${startDate}::date
+        AND date < (${startDate}::date + INTERVAL '1 month')
       ORDER BY date ASC;
     `;
 
-    const scheduleData = rows.reduce((acc, row) => {
-      const formattedDate =
-        row.date instanceof Date
-          ? `${row.date.getFullYear()}-${String(
-              row.date.getMonth() + 1,
-            ).padStart(2, "0")}-${String(row.date.getDate()).padStart(2, "0")}`
-          : row.date;
+    // =====================================
+    // 4. 응답 데이터 생성
+    // =====================================
 
-      acc[formattedDate] = {
+    const scheduleData = {};
+
+    for (const row of rows) {
+      scheduleData[row.date_key] = {
         events: row.events || [],
         memo: row.memo || "",
         isBreakDay: row.is_break_day || false,
@@ -44,10 +77,15 @@ export async function GET(request) {
           ? row.broadcast_times
           : [],
       };
-      return acc;
-    }, {});
+    }
 
-    return NextResponse.json(scheduleData, { status: 200 });
+    // =====================================
+    // 5. 결과 반환
+    // =====================================
+
+    return NextResponse.json(scheduleData, {
+      status: 200,
+    });
   } catch (error) {
     console.error(
       "SCHEDULE_DB_DEBUG:",
@@ -59,6 +97,7 @@ export async function GET(request) {
         causeCode: error?.cause?.code ?? null,
       }),
     );
+
     return NextResponse.json(
       { error: "Failed to fetch schedules" },
       { status: 500 },
