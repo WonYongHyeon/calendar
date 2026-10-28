@@ -29,7 +29,7 @@ const LINKS = [
   {
     name: "선물 보낼 곳",
     icon: "🎁",
-    url: "https://haevelyn-schedule.vercel.app/gift",
+    url: "https://calendar.haevelyn.workers.dev/gift",
     className: "gift",
   },
   {
