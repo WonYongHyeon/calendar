@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouletteStore } from "../store/useRouletteStore";
 
 export function useChzzkChat(channelId) {
-  const [status, setStatus] = useState("IDLE"); // IDLE | CONNECTING | CONNECTED | ERROR
+  const [status, setStatus] = useState("IDLE");
   const [errorMsg, setErrorMsg] = useState("");
   const wsRef = useRef(null);
   const pingRef = useRef(null);
@@ -41,6 +41,7 @@ export function useChzzkChat(channelId) {
 
         ws.onopen = () => {
           if (cancelled) return;
+
           ws.send(
             JSON.stringify({
               ver: "3",
@@ -70,29 +71,64 @@ export function useChzzkChat(channelId) {
           try {
             const packet = JSON.parse(event.data);
 
+            // 서버 Ping 응답
             if (packet.cmd === 10000) {
               ws.send(JSON.stringify({ ver: "3", cmd: 10000 }));
               return;
             }
 
+            // 일반 채팅 메시지(cmd: 93101) 처리
             if (packet.cmd === 93101 && Array.isArray(packet.bdy)) {
               for (const chat of packet.bdy) {
                 let profile = {};
+                let extras = {};
+
                 try {
                   profile = JSON.parse(chat.profile || "{}");
                 } catch {
                   profile = {};
                 }
+
+                try {
+                  extras =
+                    typeof chat.extras === "string"
+                      ? JSON.parse(chat.extras || "{}")
+                      : chat.extras || {};
+                } catch {
+                  extras = {};
+                }
+
+                // 후원(치즈)·미션·이벤트성 메시지 제외
+                if (
+                  extras?.payAmount ||
+                  extras?.donationType ||
+                  extras?.missionDonationType
+                ) {
+                  continue;
+                }
+
+                // 일반 텍스트 메시지 타입(1)만 허용
+                const msgTypeCode = chat.msgTypeCode ?? extras?.msgTypeCode;
+                if (typeof msgTypeCode === "number" && msgTypeCode !== 1) {
+                  continue;
+                }
+
+                const cleanMsg =
+                  typeof chat.msg === "string" ? chat.msg.trim() : "";
+                if (!cleanMsg) continue;
+
                 const uid = profile.userIdHash || chat.uid || "";
                 const nickname = profile.nickname || "시청자";
-                const msg = chat.msg || "";
-                if (msg) {
-                  processChatMessage(uid, nickname, msg);
-                }
+
+                console.log(
+                  `[채팅 수신] ${nickname || "시청자"} -> "${cleanMsg}"`,
+                );
+
+                processChatMessage(uid, nickname, cleanMsg);
               }
             }
           } catch {
-            // 개별 메시지 파싱 오류 무시
+            // 개별 패킷 파싱 오류 무시
           }
         };
 

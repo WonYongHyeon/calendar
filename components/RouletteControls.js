@@ -91,16 +91,20 @@ export default function RouletteControls({
             />
           </label>
 
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={settings.allowDuplicateUser}
-              onChange={(e) =>
-                setSettings({ allowDuplicateUser: e.target.checked })
-              }
-            />
-            중복 투표 허용
-          </label>
+          <button
+            type="button"
+            aria-pressed={settings.allowDuplicateUser}
+            onClick={() =>
+              setSettings({ allowDuplicateUser: !settings.allowDuplicateUser })
+            }
+            className={styles.secondaryBtn}
+            style={{
+              background: settings.allowDuplicateUser ? "#10b981" : "#334155",
+              color: "#ffffff",
+            }}
+          >
+            {settings.allowDuplicateUser ? "중복 투표: ON" : "중복 투표: OFF"}
+          </button>
         </div>
 
         <div className={styles.row}>

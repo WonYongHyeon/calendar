@@ -22,7 +22,7 @@ export const useRouletteStore = create((set, get) => ({
       isCollecting: typeof active === "boolean" ? active : !state.isCollecting,
     })),
 
-  processChatMessage: (uid, _nickname, message) => {
+  processChatMessage: (uid, nickname, message) => {
     const { isCollecting, isSpinning, settings, votedUserIds, items } = get();
     if (!isCollecting || isSpinning || !message) return;
 
@@ -42,13 +42,15 @@ export const useRouletteStore = create((set, get) => ({
     if (uid) nextVoted.add(uid);
 
     const idx = items.findIndex((item) => item.id === normalizedId);
+    const nextCount = idx > -1 ? items[idx].count + 1 : 1;
+
     const nextItems =
       idx > -1
         ? items.map((item, i) =>
             i === idx
               ? {
                   ...item,
-                  count: item.count + 1,
+                  count: nextCount,
                   voters: uid ? [...item.voters, uid] : item.voters,
                 }
               : item,
@@ -62,6 +64,11 @@ export const useRouletteStore = create((set, get) => ({
               voters: uid ? [uid] : [],
             },
           ];
+
+    // 실제 투표에 반영된 채팅만 콘솔에 출력
+    console.log(
+      `[투표 반영] ${nickname || "시청자"} -> "${rawLabel}" (현재 ${nextCount}표) | 원본: "${trimmed}"`,
+    );
 
     set({ items: nextItems, votedUserIds: nextVoted });
   },
