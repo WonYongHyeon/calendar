@@ -15,15 +15,21 @@ const PALETTE = [
   "#14B8A6",
 ];
 
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
+function easeOutQuart(t) {
+  return 1 - Math.pow(1 - t, 4);
 }
 
 export default function RouletteCanvas() {
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
   const rotationRef = useRef(0);
+  const chargeIntervalRef = useRef(null);
+  const chargeStartRef = useRef(0);
+  const powerRef = useRef(0);
+  const isChargingRef = useRef(false);
+
   const [displayAngle, setDisplayAngle] = useState(0);
+  const [power, setPower] = useState(0); // 0 ~ 100 (%)
 
   const items = useRouletteStore((s) => s.items);
   const isSpinning = useRouletteStore((s) => s.isSpinning);
@@ -78,7 +84,6 @@ export default function RouletteCanvas() {
         ctx.strokeStyle = "#ffffff";
         ctx.stroke();
 
-        // 부채꼴 중앙 텍스트
         const midAngle = currentAngle + sliceAngle / 2;
         ctx.save();
         ctx.translate(cx, cy);
@@ -97,7 +102,6 @@ export default function RouletteCanvas() {
         currentAngle = endAngle;
       });
 
-      // 중앙 캡
       ctx.beginPath();
       ctx.arc(cx, cy, 24, 0, Math.PI * 2);
       ctx.fillStyle = "#0f172a";
@@ -113,76 +117,126 @@ export default function RouletteCanvas() {
     drawWheel(displayAngle);
   }, [drawWheel, displayAngle]);
 
+  const clearChargeTimer = useCallback(() => {
+    if (chargeIntervalRef.current) {
+      clearInterval(chargeIntervalRef.current);
+      chargeIntervalRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      clearChargeTimer();
     };
-  }, []);
+  }, [clearChargeTimer]);
 
-  const handleSpin = () => {
+  const executeSpin = useCallback(
+    (spinPower) => {
+      if (isSpinning || items.length === 0 || totalVotes <= 0) return;
+
+      const selected = startSpin();
+      if (!selected) return;
+
+      let acc = 0;
+      let sliceStart = 0;
+      let sliceSize = 0;
+
+      for (const item of items) {
+        const size = (item.count / totalVotes) * Math.PI * 2;
+        if (item.id === selected.id) {
+          sliceStart = acc;
+          sliceSize = size;
+          break;
+        }
+        acc += size;
+      }
+
+      const margin = Math.min(sliceSize * 0.15, 0.05);
+      const targetOffsetInSlice =
+        margin + Math.random() * Math.max(sliceSize - margin * 2, 0.01);
+      const pointerAngle = -Math.PI / 2;
+      const desiredFinalMod =
+        (((pointerAngle - (sliceStart + targetOffsetInSlice)) % (Math.PI * 2)) +
+          Math.PI * 2) %
+        (Math.PI * 2);
+
+      const startRotation = rotationRef.current;
+      const currentMod =
+        ((startRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const deltaMod =
+        (((desiredFinalMod - currentMod) % (Math.PI * 2)) + Math.PI * 2) %
+        (Math.PI * 2);
+
+      // 강도(10~100)에 따라 최소 3바퀴 ~ 최대 14바퀴, 2.4초 ~ 6.2초로 회전
+      const clampedPower = Math.max(10, Math.min(100, spinPower));
+      const extraSpins =
+        Math.round(3 + (clampedPower / 100) * 11) * Math.PI * 2;
+      const duration = 2400 + (clampedPower / 100) * 3800;
+
+      const targetRotation = startRotation + extraSpins + deltaMod;
+      const startTime = performance.now();
+
+      const step = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOutQuart(progress);
+        const nextAngle =
+          startRotation + (targetRotation - startRotation) * eased;
+
+        rotationRef.current = nextAngle;
+        setDisplayAngle(nextAngle);
+
+        if (progress < 1) {
+          animFrameRef.current = requestAnimationFrame(step);
+        } else {
+          rotationRef.current = targetRotation;
+          setDisplayAngle(targetRotation);
+          finishSpin();
+        }
+      };
+
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = requestAnimationFrame(step);
+    },
+    [isSpinning, items, totalVotes, startSpin, finishSpin],
+  );
+
+  const handlePressStart = useCallback(() => {
     if (isSpinning || items.length === 0 || totalVotes <= 0) return;
+    if (isChargingRef.current) return;
 
-    const selected = startSpin();
-    if (!selected) return;
+    clearChargeTimer();
+    isChargingRef.current = true;
+    chargeStartRef.current = performance.now();
+    powerRef.current = 10;
+    setPower(10);
 
-    // 당첨 항목의 누적 각도 구간 계산 (0 ~ 2*PI 기준)
-    let acc = 0;
-    let sliceStart = 0;
-    let sliceSize = 0;
+    chargeIntervalRef.current = window.setInterval(() => {
+      const elapsed = performance.now() - chargeStartRef.current;
+      // 약 1.2초 동안 10% -> 100%까지 충전
+      const nextPower = Math.min(100, Math.round(10 + (elapsed / 1200) * 90));
+      powerRef.current = nextPower;
+      setPower(nextPower);
+    }, 30);
+  }, [isSpinning, items.length, totalVotes, clearChargeTimer]);
 
-    for (const item of items) {
-      const size = (item.count / totalVotes) * Math.PI * 2;
-      if (item.id === selected.id) {
-        sliceStart = acc;
-        sliceSize = size;
-        break;
-      }
-      acc += size;
-    }
+  const handlePressEnd = useCallback(() => {
+    clearChargeTimer();
+    if (!isChargingRef.current) return;
 
-    // 12시 방향(-PI/2)에 당첨 조각 내부가 오도록 목표 회전각 계산
-    const margin = Math.min(sliceSize * 0.15, 0.05);
-    const targetOffsetInSlice =
-      margin + Math.random() * Math.max(sliceSize - margin * 2, 0.01);
-    const pointerAngle = -Math.PI / 2;
-    const desiredFinalMod =
-      (((pointerAngle - (sliceStart + targetOffsetInSlice)) % (Math.PI * 2)) +
-        Math.PI * 2) %
-      (Math.PI * 2);
+    isChargingRef.current = false;
+    const finalPower = powerRef.current || 10;
+    powerRef.current = 0;
+    setPower(0);
 
-    const startRotation = rotationRef.current;
-    const currentMod =
-      ((startRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-    const deltaMod =
-      (((desiredFinalMod - currentMod) % (Math.PI * 2)) + Math.PI * 2) %
-      (Math.PI * 2);
+    executeSpin(finalPower);
+  }, [clearChargeTimer, executeSpin]);
 
-    const extraSpins = 6 * Math.PI * 2;
-    const targetRotation = startRotation + extraSpins + deltaMod;
-    const duration = 3800;
-    const startTime = performance.now();
+  const isDisabled = isSpinning || items.length === 0 || totalVotes <= 0;
 
-    const step = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOutCubic(progress);
-      const nextAngle =
-        startRotation + (targetRotation - startRotation) * eased;
-
-      rotationRef.current = nextAngle;
-      setDisplayAngle(nextAngle);
-
-      if (progress < 1) {
-        animFrameRef.current = requestAnimationFrame(step);
-      } else {
-        rotationRef.current = targetRotation;
-        setDisplayAngle(targetRotation);
-        finishSpin();
-      }
-    };
-
-    animFrameRef.current = requestAnimationFrame(step);
-  };
+  const gaugeColor =
+    power >= 75 ? "#ef4444" : power >= 40 ? "#f59e0b" : "#10b981";
 
   return (
     <div className={styles.wheelSection}>
@@ -198,13 +252,43 @@ export default function RouletteCanvas() {
         />
       </div>
 
+      {/* 강도 충전 게이지 */}
+      <div
+        style={{
+          width: "220px",
+          height: "10px",
+          background: "#1e293b",
+          borderRadius: "999px",
+          overflow: "hidden",
+          border: "1px solid #334155",
+        }}
+        aria-label="회전 강도 게이지"
+      >
+        <div
+          style={{
+            width: `${power}%`,
+            height: "100%",
+            background: gaugeColor,
+            transition: power === 0 ? "width 0.15s ease" : "none",
+          }}
+        />
+      </div>
+
       <button
         type="button"
-        onClick={handleSpin}
-        disabled={isSpinning || items.length === 0}
+        disabled={isDisabled}
+        onPointerDown={handlePressStart}
+        onPointerUp={handlePressEnd}
+        onPointerCancel={handlePressEnd}
+        onPointerLeave={handlePressEnd}
         className={styles.spinBtn}
+        style={{ userSelect: "none", touchAction: "none" }}
       >
-        {isSpinning ? "추첨 중..." : "룰렛 돌리기"}
+        {isSpinning
+          ? "추첨 중..."
+          : power > 0
+            ? `강도 ${power}% (떼면 회전)`
+            : "길게 눌러서 강도 조절"}
       </button>
 
       {!isSpinning && winner && (
