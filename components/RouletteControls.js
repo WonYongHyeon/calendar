@@ -19,6 +19,7 @@ export default function RouletteControls({
 }) {
   const [inputChannel, setInputChannel] = useState(channelId || "");
   const [manualLabel, setManualLabel] = useState("");
+  const [expandedItemIds, setExpandedItemIds] = useState(() => new Set());
 
   const items = useRouletteStore((s) => s.items);
   const isCollecting = useRouletteStore((s) => s.isCollecting);
@@ -34,6 +35,18 @@ export default function RouletteControls({
 
   const totalVotes = items.reduce((sum, item) => sum + item.count, 0);
 
+  const toggleExpandItem = (id) => {
+    setExpandedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const handleConnectSubmit = (e) => {
     e.preventDefault();
     onChangeChannelId(inputChannel.trim());
@@ -44,6 +57,24 @@ export default function RouletteControls({
     if (!manualLabel.trim()) return;
     addManualItem(manualLabel, 1);
     setManualLabel("");
+  };
+
+  const handlePrintVoters = () => {
+    const rows = items.flatMap((item) =>
+      (item.votersDetail || []).map((v) => ({
+        항목: item.label,
+        닉네임: v.nickname,
+        표수: v.count,
+      })),
+    );
+
+    if (rows.length === 0) {
+      console.log("[투표자 목록] 기록된 채팅 투표자가 없습니다.");
+      return;
+    }
+
+    console.log("[투표자 전체 목록]");
+    console.table(rows);
   };
 
   return (
@@ -124,6 +155,16 @@ export default function RouletteControls({
             전체 초기화
           </button>
         </div>
+
+        <div className={styles.row}>
+          <button
+            type="button"
+            onClick={handlePrintVoters}
+            className={styles.secondaryBtn}
+          >
+            투표자 목록 콘솔 출력
+          </button>
+        </div>
       </div>
 
       {/* 3. 항목 수동 추가 */}
@@ -156,6 +197,14 @@ export default function RouletteControls({
           items.map((item) => {
             const pct =
               totalVotes > 0 ? Math.round((item.count / totalVotes) * 100) : 0;
+            const details = item.votersDetail || [];
+            const isExpanded = expandedItemIds.has(item.id);
+            const voterSummary = details
+              .map((v) =>
+                v.count > 1 ? `${v.nickname}(${v.count}표)` : v.nickname,
+              )
+              .join(", ");
+
             return (
               <li key={item.id} className={styles.itemRow}>
                 <div className={styles.itemInfo}>
@@ -163,7 +212,41 @@ export default function RouletteControls({
                   <span className={styles.itemMeta}>
                     {item.count}표 ({pct}%)
                   </span>
+
+                  {details.length > 0 && (
+                    <div style={{ marginTop: "4px" }}>
+                      <button
+                        type="button"
+                        aria-expanded={isExpanded}
+                        onClick={() => toggleExpandItem(item.id)}
+                        className={styles.secondaryBtn}
+                        style={{
+                          padding: "2px 8px",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {isExpanded
+                          ? `투표자 접기 (${details.length}명)`
+                          : `투표자 보기 (${details.length}명) ▾`}
+                      </button>
+
+                      {isExpanded && (
+                        <div
+                          className={styles.itemMeta}
+                          style={{
+                            marginTop: "6px",
+                            fontSize: "12px",
+                            lineHeight: 1.45,
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {voterSummary}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+
                 <div className={styles.itemActions}>
                   <button
                     type="button"

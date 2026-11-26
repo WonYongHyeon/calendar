@@ -15,8 +15,8 @@ const PALETTE = [
   "#14B8A6",
 ];
 
-function easeOutQuart(t) {
-  return 1 - Math.pow(1 - t, 4);
+function easeOutQuint(t) {
+  return 1 - Math.pow(1 - t, 5);
 }
 
 export default function RouletteCanvas() {
@@ -168,11 +168,11 @@ export default function RouletteCanvas() {
         (((desiredFinalMod - currentMod) % (Math.PI * 2)) + Math.PI * 2) %
         (Math.PI * 2);
 
-      // 강도(10~100)에 따라 최소 3바퀴 ~ 최대 14바퀴, 2.4초 ~ 6.2초로 회전
+      // 강도(10~100)에 따라 6~22바퀴, 5.0초~10.0초로 회전
       const clampedPower = Math.max(10, Math.min(100, spinPower));
       const extraSpins =
-        Math.round(3 + (clampedPower / 100) * 11) * Math.PI * 2;
-      const duration = 2400 + (clampedPower / 100) * 3800;
+        Math.round(6 + (clampedPower / 100) * 16) * Math.PI * 2;
+      const duration = 5000 + (clampedPower / 100) * 5000;
 
       const targetRotation = startRotation + extraSpins + deltaMod;
       const startTime = performance.now();
@@ -180,7 +180,7 @@ export default function RouletteCanvas() {
       const step = (now) => {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        const eased = easeOutQuart(progress);
+        const eased = easeOutQuint(progress);
         const nextAngle =
           startRotation + (targetRotation - startRotation) * eased;
 
@@ -214,7 +214,6 @@ export default function RouletteCanvas() {
 
     chargeIntervalRef.current = window.setInterval(() => {
       const elapsed = performance.now() - chargeStartRef.current;
-      // 약 1.2초 동안 10% -> 100%까지 충전
       const nextPower = Math.min(100, Math.round(10 + (elapsed / 1200) * 90));
       powerRef.current = nextPower;
       setPower(nextPower);
@@ -252,7 +251,6 @@ export default function RouletteCanvas() {
         />
       </div>
 
-      {/* 강도 충전 게이지 */}
       <div
         style={{
           width: "220px",

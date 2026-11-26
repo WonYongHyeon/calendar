@@ -1,7 +1,7 @@
 import { create } from "zustand";
 
 export const useRouletteStore = create((set, get) => ({
-  items: [], // { id, label, count, voters }
+  items: [], // { id, label, count, voters, votersDetail }
   votedUserIds: new Set(),
   isCollecting: true,
   isSpinning: false,
@@ -41,8 +41,23 @@ export const useRouletteStore = create((set, get) => ({
     const nextVoted = new Set(votedUserIds);
     if (uid) nextVoted.add(uid);
 
+    const safeNickname = (nickname || "").trim() || "시청자";
+    const voterKey = uid || safeNickname;
+
     const idx = items.findIndex((item) => item.id === normalizedId);
-    const nextCount = idx > -1 ? items[idx].count + 1 : 1;
+    const prevItem = idx > -1 ? items[idx] : null;
+    const nextCount = prevItem ? prevItem.count + 1 : 1;
+
+    const prevDetails = prevItem?.votersDetail || [];
+    const voterIdx = prevDetails.findIndex((v) => v.key === voterKey);
+    const nextVotersDetail =
+      voterIdx > -1
+        ? prevDetails.map((v, i) =>
+            i === voterIdx
+              ? { ...v, nickname: safeNickname, count: v.count + 1 }
+              : v,
+          )
+        : [...prevDetails, { key: voterKey, nickname: safeNickname, count: 1 }];
 
     const nextItems =
       idx > -1
@@ -52,6 +67,7 @@ export const useRouletteStore = create((set, get) => ({
                   ...item,
                   count: nextCount,
                   voters: uid ? [...item.voters, uid] : item.voters,
+                  votersDetail: nextVotersDetail,
                 }
               : item,
           )
@@ -62,12 +78,12 @@ export const useRouletteStore = create((set, get) => ({
               label: rawLabel,
               count: 1,
               voters: uid ? [uid] : [],
+              votersDetail: nextVotersDetail,
             },
           ];
 
-    // 실제 투표에 반영된 채팅만 콘솔에 출력
     console.log(
-      `[투표 반영] ${nickname || "시청자"} -> "${rawLabel}" (현재 ${nextCount}표) | 원본: "${trimmed}"`,
+      `[투표 반영] ${safeNickname} -> "${rawLabel}" (현재 ${nextCount}표) | 원본: "${trimmed}"`,
     );
 
     set({ items: nextItems, votedUserIds: nextVoted });
@@ -88,7 +104,13 @@ export const useRouletteStore = create((set, get) => ({
             )
           : [
               ...state.items,
-              { id: normalizedId, label: clean, count: safeCount, voters: [] },
+              {
+                id: normalizedId,
+                label: clean,
+                count: safeCount,
+                voters: [],
+                votersDetail: [],
+              },
             ],
       };
     });
