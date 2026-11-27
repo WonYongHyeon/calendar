@@ -40,6 +40,12 @@ const LINKS = [
   },
 ];
 
+const TOP_BANNER_URL =
+  "https://ecimg.cafe24img.com/pg2395b21531260022/sandboxpop/web/upload/appfiles/ZaReJam3QiELznoZeGGkMG/6ec015e0dfbc1602a807ddea859f9602.png";
+
+const TOP_BANNER_LINK =
+  "https://sandboxpop.cafe24.com/product/list.html?cate_no=261"; // 이동할 주소로 변경
+
 const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
 // 하루에 표시할 최대 일정 수
@@ -751,6 +757,39 @@ function LatestVideos() {
 export default function CafePage() {
   return (
     <main className="cafe-page">
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "16px",
+        }}
+      >
+        <a
+          href={TOP_BANNER_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            width: "100%",
+            maxWidth: "100%",
+            borderRadius: "12px",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={TOP_BANNER_URL}
+            alt="상단 배너"
+            style={{
+              width: "100%",
+              maxWidth: "100%",
+              height: "auto",
+              borderRadius: "12px",
+              display: "block",
+            }}
+          />
+        </a>
+      </div>
       <WeeklySchedule />
       <QuickLinks />
       <LatestVideos />
