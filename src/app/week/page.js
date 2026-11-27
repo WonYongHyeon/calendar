@@ -762,7 +762,6 @@ export default function CafePage() {
           width: "100%",
           display: "flex",
           justifyContent: "center",
-          marginBottom: "16px",
         }}
       >
         <a
